@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -22,12 +23,12 @@ func NewDataSourceCTEPolicyLDTKeyRule() datasource.DataSource {
 }
 
 type dataSourceCTEPolicyLDTKeyRule struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEPolicyLDTKeyRuleDataSourceModel struct {
-	PolicyID types.String                         `tfsdk:"policy"`
-	Rules    []tfsdkCTEPolicyLDTKeyRulesListModel `tfsdk:"rules"`
+	PolicyID types.String                    `tfsdk:"policy"`
+	Rules    []CTEPolicyLDTKeyRulesListTFSDK `tfsdk:"rules"`
 }
 
 func (d *dataSourceCTEPolicyLDTKeyRule) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -89,17 +90,16 @@ func (d *dataSourceCTEPolicyLDTKeyRule) Schema(_ context.Context, _ datasource.S
 
 func (d *dataSourceCTEPolicyLDTKeyRule) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
 	var state CTEPolicyLDTKeyRuleDataSourceModel
 	req.Config.Get(ctx, &state)
-	tflog.Info(ctx, "AnuragJain =====> "+state.PolicyID.ValueString())
 
 	jsonStr, err := d.client.GetAll(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+state.PolicyID.ValueString()+"/ldtkeyrules")
+		common.URL_CTE_POLICY+"/"+state.PolicyID.ValueString()+"/ldtkeyrules")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Policy LDT Key Rules from CM",
 			err.Error(),
@@ -111,16 +111,7 @@ func (d *dataSourceCTEPolicyLDTKeyRule) Read(ctx context.Context, req datasource
 
 	err = json.Unmarshal([]byte(jsonStr), &rules)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE Policy LDT Key Rules from CM",
-			err.Error(),
-		)
-		return
-	}
-
-	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Policy LDT Key Rules from CM",
 			err.Error(),
@@ -129,7 +120,7 @@ func (d *dataSourceCTEPolicyLDTKeyRule) Read(ctx context.Context, req datasource
 	}
 
 	for _, rule := range rules {
-		ldtKeyRule := tfsdkCTEPolicyLDTKeyRulesListModel{}
+		ldtKeyRule := CTEPolicyLDTKeyRulesListTFSDK{}
 		ldtKeyRule.ID = types.StringValue(rule.ID)
 		ldtKeyRule.PolicyID = types.StringValue(rule.PolicyID)
 		ldtKeyRule.OrderNumber = types.Int64Value(rule.OrderNumber)
@@ -143,7 +134,7 @@ func (d *dataSourceCTEPolicyLDTKeyRule) Read(ctx context.Context, req datasource
 		state.Rules = append(state.Rules, ldtKeyRule)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -156,7 +147,7 @@ func (d *dataSourceCTEPolicyLDTKeyRule) Configure(ctx context.Context, req datas
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

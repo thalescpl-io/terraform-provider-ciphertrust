@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -22,12 +23,12 @@ func NewDataSourceCTEPolicySignatureRule() datasource.DataSource {
 }
 
 type dataSourceCTEPolicySignatureRule struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEPolicySignatureRuleDataSourceModel struct {
-	PolicyID types.String                            `tfsdk:"policy"`
-	Rules    []tfsdkCTEPolicySignatureRulesListModel `tfsdk:"rules"`
+	PolicyID types.String                       `tfsdk:"policy"`
+	Rules    []CTEPolicySignatureRulesListTFSDK `tfsdk:"rules"`
 }
 
 func (d *dataSourceCTEPolicySignatureRule) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -78,16 +79,16 @@ func (d *dataSourceCTEPolicySignatureRule) Schema(_ context.Context, _ datasourc
 
 func (d *dataSourceCTEPolicySignatureRule) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
 	var state CTEPolicySignatureRuleDataSourceModel
 	req.Config.Get(ctx, &state)
 
 	jsonStr, err := d.client.GetAll(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+state.PolicyID.ValueString()+"/signaturerules")
+		common.URL_CTE_POLICY+"/"+state.PolicyID.ValueString()+"/signaturerules")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Policy Signature Rules from CM",
 			err.Error(),
@@ -99,16 +100,7 @@ func (d *dataSourceCTEPolicySignatureRule) Read(ctx context.Context, req datasou
 
 	err = json.Unmarshal([]byte(jsonStr), &rules)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE Policy Signature Rules from CM",
-			err.Error(),
-		)
-		return
-	}
-
-	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Policy Signature Rules from CM",
 			err.Error(),
@@ -117,7 +109,7 @@ func (d *dataSourceCTEPolicySignatureRule) Read(ctx context.Context, req datasou
 	}
 
 	for _, rule := range rules {
-		signatureRule := tfsdkCTEPolicySignatureRulesListModel{}
+		signatureRule := CTEPolicySignatureRulesListTFSDK{}
 		signatureRule.ID = types.StringValue(rule.ID)
 		signatureRule.URI = types.StringValue(rule.URI)
 		signatureRule.Account = types.StringValue(rule.Account)
@@ -130,7 +122,7 @@ func (d *dataSourceCTEPolicySignatureRule) Read(ctx context.Context, req datasou
 		state.Rules = append(state.Rules, signatureRule)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_policy_signaturerules.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -143,7 +135,7 @@ func (d *dataSourceCTEPolicySignatureRule) Configure(ctx context.Context, req da
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -25,7 +26,7 @@ func NewResourceCTEPolicyDataTXRule() resource.Resource {
 }
 
 type resourceCTEPolicyDataTXRule struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEPolicyDataTXRule) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -77,10 +78,10 @@ func (r *resourceCTEPolicyDataTXRule) Schema(_ context.Context, _ resource.Schem
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEPolicyDataTXRule) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_policy_datatxrules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_policy_datatxrules.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkAddDataTXRulePolicy
+	var plan AddDataTXRulePolicyTFSDK
 	var payload DataTxRuleJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -101,7 +102,7 @@ func (r *resourceCTEPolicyDataTXRule) Create(ctx context.Context, req resource.C
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Data TX Rule Creation",
 			err.Error(),
@@ -112,11 +113,11 @@ func (r *resourceCTEPolicyDataTXRule) Create(ctx context.Context, req resource.C
 	response, err := r.client.PostData(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/datatxrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/datatxrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Policy Data TX Rule on CipherTrust Manager: ",
 			"Could not create CTE Policy Data TX Rule, unexpected error: "+err.Error(),
@@ -126,7 +127,7 @@ func (r *resourceCTEPolicyDataTXRule) Create(ctx context.Context, req resource.C
 
 	plan.DataTXRuleID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_datatxrules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_datatxrules.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -140,7 +141,7 @@ func (r *resourceCTEPolicyDataTXRule) Read(ctx context.Context, req resource.Rea
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkAddDataTXRulePolicy
+	var plan AddDataTXRulePolicyTFSDK
 	var payload DataTxRuleUpdateJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -164,7 +165,7 @@ func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.U
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Update]["+plan.DataTXRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Update]["+plan.DataTXRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Data TX Rule Update",
 			err.Error(),
@@ -175,11 +176,11 @@ func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.U
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.DataTXRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/datatxrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/datatxrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Update]["+plan.DataTXRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Update]["+plan.DataTXRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy Data TX Rule on CipherTrust Manager: ",
 			"Could not update CTE Policy Data TX Rule, unexpected error: "+err.Error(),
@@ -197,7 +198,7 @@ func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.U
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEPolicyDataTXRule) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkAddDataTXRulePolicy
+	var state AddDataTXRulePolicyTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -208,8 +209,8 @@ func (r *resourceCTEPolicyDataTXRule) Delete(ctx context.Context, req resource.D
 	output, err := r.client.DeleteByID(
 		ctx,
 		state.DataTXRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/datatxrules")
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_datatxrules.go -> Delete]["+state.DataTXRuleID.ValueString()+"]["+output+"]")
+		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/datatxrules")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_datatxrules.go -> Delete]["+state.DataTXRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CTE Policy",
@@ -224,7 +225,7 @@ func (d *resourceCTEPolicyDataTXRule) Configure(_ context.Context, req resource.
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -23,11 +24,11 @@ func NewDataSourceCTEProcessSets() datasource.DataSource {
 }
 
 type dataSourceCTEProcessSets struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEProcessSetsDataSourceModel struct {
-	ProcessSets []tfsdkCTEProcessSetsListModel `tfsdk:"process_sets"`
+	ProcessSets []CTEProcessSetsListTFSDK `tfsdk:"process_sets"`
 }
 
 func (d *dataSourceCTEProcessSets) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -93,12 +94,12 @@ func (d *dataSourceCTEProcessSets) Schema(_ context.Context, _ datasource.Schema
 
 func (d *dataSourceCTEProcessSets) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_process_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_process_sets.go -> Read]["+id+"]")
 	var state CTEProcessSetsDataSourceModel
 
-	jsonStr, err := d.client.GetAll(ctx, id, URL_CTE_PROCESS_SET)
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_CTE_PROCESS_SET)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_process_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_process_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE process sets from CM",
 			err.Error(),
@@ -106,20 +107,11 @@ func (d *dataSourceCTEProcessSets) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	processSets := []ProcessSetJSON{}
+	processSets := []CTEProcessSetListItemJSON{}
 
 	err = json.Unmarshal([]byte(jsonStr), &processSets)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_process_sets.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE process sets from CM",
-			err.Error(),
-		)
-		return
-	}
-
-	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_process_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_process_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE process sets from CM",
 			err.Error(),
@@ -128,7 +120,7 @@ func (d *dataSourceCTEProcessSets) Read(ctx context.Context, req datasource.Read
 	}
 
 	for _, processSet := range processSets {
-		processSetState := tfsdkCTEProcessSetsListModel{}
+		processSetState := CTEProcessSetsListTFSDK{}
 		processSetState.ID = types.StringValue(processSet.ID)
 		processSetState.URI = types.StringValue(processSet.URI)
 		processSetState.Account = types.StringValue(processSet.Account)
@@ -138,7 +130,7 @@ func (d *dataSourceCTEProcessSets) Read(ctx context.Context, req datasource.Read
 		processSetState.Description = types.StringValue(processSet.Description)
 
 		for _, process := range processSet.Processes {
-			_processData := tfsdkCTEProcessSet{
+			_processData := CTEProcessSetListItemTFSDK{
 				Index:         types.Int64Value(process.Index),
 				Directory:     types.StringValue(process.Directory),
 				File:          types.StringValue(process.File),
@@ -151,7 +143,7 @@ func (d *dataSourceCTEProcessSets) Read(ctx context.Context, req datasource.Read
 		state.ProcessSets = append(state.ProcessSets, processSetState)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_process_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_process_sets.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -164,7 +156,7 @@ func (d *dataSourceCTEProcessSets) Configure(ctx context.Context, req datasource
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

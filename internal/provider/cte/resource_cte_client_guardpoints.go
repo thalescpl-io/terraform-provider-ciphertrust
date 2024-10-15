@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -25,7 +26,7 @@ func NewResourceCTEClientGP() resource.Resource {
 }
 
 type resourceCTEClientGP struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEClientGP) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -143,11 +144,11 @@ func (r *resourceCTEClientGP) Schema(_ context.Context, _ resource.SchemaRequest
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEClientGP) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_client_guardpoints.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_client_guardpoints.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkCTEClientGuardPoint
-	var guardpointParamsPlan tfsdkCTEClientGuardPointParamsModel
+	var plan CTEClientGuardPointTFSDK
+	var guardpointParamsPlan CTEClientGuardPointParamsTFSDK
 	var payload CTEClientGuardPointJSON
 	var guardpointParamsPayload CTEClientGuardPointParamsJSON
 
@@ -157,7 +158,7 @@ func (r *resourceCTEClientGP) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	if (tfsdkCTEClientGuardPointParamsModel{} != plan.GuardPointParams) {
+	if (CTEClientGuardPointParamsTFSDK{} != plan.GuardPointParams) {
 		if guardpointParamsPlan.GPType.ValueString() != "" && guardpointParamsPlan.GPType.ValueString() != types.StringNull().ValueString() {
 			guardpointParamsPayload.GPType = string(guardpointParamsPlan.GPType.ValueString())
 		}
@@ -209,7 +210,7 @@ func (r *resourceCTEClientGP) Create(ctx context.Context, req resource.CreateReq
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Client Guardpoint Creation",
 			err.Error(),
@@ -220,11 +221,11 @@ func (r *resourceCTEClientGP) Create(ctx context.Context, req resource.CreateReq
 	response, err := r.client.PostData(
 		ctx,
 		id,
-		URL_CTE_CLIENT+"/"+plan.CTEClientID.ValueString()+"/guardpoints",
+		common.URL_CTE_CLIENT+"/"+plan.CTEClientID.ValueString()+"/guardpoints",
 		payloadJSON,
 		"guardpoints")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Client Guardpoint on CipherTrust Manager: ",
 			"Could not create CTE Client Guardpoint, unexpected error: "+err.Error(),
@@ -234,7 +235,7 @@ func (r *resourceCTEClientGP) Create(ctx context.Context, req resource.CreateReq
 
 	//plan.UserID = types.StringValue(response)
 	tflog.Debug(ctx, response)
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_client_guardpoints.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_client_guardpoints.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -248,8 +249,8 @@ func (r *resourceCTEClientGP) Read(ctx context.Context, req resource.ReadRequest
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEClientGP) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkUpdateGPModel
-	var payload UpdateGPJSON
+	var plan UpdateCTEGuardPointTFSDK
+	var payload UpdateCTEGuardPointJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -275,7 +276,7 @@ func (r *resourceCTEClientGP) Update(ctx context.Context, req resource.UpdateReq
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Update]["+plan.GPID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Update]["+plan.GPID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Client Guardpoint Update",
 			err.Error(),
@@ -286,11 +287,11 @@ func (r *resourceCTEClientGP) Update(ctx context.Context, req resource.UpdateReq
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.GPID.ValueString(),
-		URL_CTE_CLIENT+"/"+plan.CTEClientID.ValueString()+"/guardpoints",
+		common.URL_CTE_CLIENT+"/"+plan.CTEClientID.ValueString()+"/guardpoints",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Update]["+plan.GPID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_client_guardpoints.go -> Update]["+plan.GPID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Client Guardpoint on CipherTrust Manager: ",
 			"Could not update CTE Client Guardpoint, unexpected error: "+err.Error(),
@@ -308,7 +309,7 @@ func (r *resourceCTEClientGP) Update(ctx context.Context, req resource.UpdateReq
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEClientGP) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkUpdateGPModel
+	var state UpdateCTEGuardPointTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -319,8 +320,8 @@ func (r *resourceCTEClientGP) Delete(ctx context.Context, req resource.DeleteReq
 	output, err := r.client.DeleteByID(
 		ctx,
 		state.GPID.ValueString(),
-		URL_CTE_CLIENT+"/"+state.CTEClientID.ValueString()+"/guardpoints")
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_client_guardpoints.go -> Delete]["+state.GPID.ValueString()+"]["+output+"]")
+		common.URL_CTE_CLIENT+"/"+state.CTEClientID.ValueString()+"/guardpoints")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_client_guardpoints.go -> Delete]["+state.GPID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CipherTrust CTE Client Guardpoint",
@@ -335,7 +336,7 @@ func (d *resourceCTEClientGP) Configure(_ context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

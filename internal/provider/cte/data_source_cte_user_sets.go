@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -23,11 +24,11 @@ func NewDataSourceCTEUserSets() datasource.DataSource {
 }
 
 type dataSourceCTEUserSets struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEUserSetsDataSourceModel struct {
-	UserSet []tfsdkCTEUserSetsListModel `tfsdk:"user_sets"`
+	UserSet []CTEUserSetsListTFSDK `tfsdk:"user_sets"`
 }
 
 func (d *dataSourceCTEUserSets) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -96,12 +97,12 @@ func (d *dataSourceCTEUserSets) Schema(_ context.Context, _ datasource.SchemaReq
 
 func (d *dataSourceCTEUserSets) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_user_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_user_sets.go -> Read]["+id+"]")
 	var state CTEUserSetsDataSourceModel
 
-	jsonStr, err := d.client.GetAll(ctx, id, URL_CTE_USER_SET)
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_CTE_USER_SET)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_user_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_user_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE usersets from CM",
 			err.Error(),
@@ -109,20 +110,11 @@ func (d *dataSourceCTEUserSets) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	usersets := []UserSetJSON{}
+	usersets := []CTEUserSetsListJSON{}
 
 	err = json.Unmarshal([]byte(jsonStr), &usersets)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_user_sets.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE usersets from CM",
-			err.Error(),
-		)
-		return
-	}
-
-	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_user_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_user_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE usersets from CM",
 			err.Error(),
@@ -131,7 +123,7 @@ func (d *dataSourceCTEUserSets) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	for _, userset := range usersets {
-		userState := tfsdkCTEUserSetsListModel{}
+		userState := CTEUserSetsListTFSDK{}
 		userState.ID = types.StringValue(userset.ID)
 		userState.URI = types.StringValue(userset.URI)
 		userState.Account = types.StringValue(userset.Account)
@@ -141,7 +133,7 @@ func (d *dataSourceCTEUserSets) Read(ctx context.Context, req datasource.ReadReq
 		userState.Description = types.StringValue(userset.Description)
 
 		for _, userResponse := range userset.Users {
-			user := tfsdkCTEUserSet{
+			user := CTEUserSetsListItemTFSDK{
 				Index:    types.Int64Value(userResponse.Index),
 				GID:      types.Int64Value(userResponse.Index),
 				GName:    types.StringValue(userResponse.GName),
@@ -155,7 +147,7 @@ func (d *dataSourceCTEUserSets) Read(ctx context.Context, req datasource.ReadReq
 		state.UserSet = append(state.UserSet, userState)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_user_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_user_sets.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -168,7 +160,7 @@ func (d *dataSourceCTEUserSets) Configure(ctx context.Context, req datasource.Co
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -27,7 +28,7 @@ func NewResourceLDTGroupCommSvc() resource.Resource {
 }
 
 type resourceLDTGroupCommSvc struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceLDTGroupCommSvc) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -74,11 +75,11 @@ func (r *resourceLDTGroupCommSvc) Schema(_ context.Context, _ resource.SchemaReq
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkLDTGroupCommSvc
-	var payload jsonLDTGroupCommSvc
+	var plan LDTGroupCommSvcTFSDK
+	var payload LDTGroupCommSvcJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -86,15 +87,15 @@ func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	payload.Name = trimString(plan.Name.String())
+	payload.Name = common.TrimString(plan.Name.String())
 
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-		payload.Description = trimString(plan.Description.String())
+		payload.Description = common.TrimString(plan.Description.String())
 	}
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: LDT Group Communication Service Creation",
 			err.Error(),
@@ -102,9 +103,9 @@ func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, URL_LDT_GROUP_COMM_SVC, payloadJSON, "id")
+	response, err := r.client.PostData(ctx, id, common.URL_LDT_GROUP_COMM_SVC, payloadJSON, "id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating LDT Group Communication Service on CipherTrust Manager: ",
 			"Could not create LDT Group Communication Service, unexpected error: "+err.Error(),
@@ -114,7 +115,7 @@ func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.Creat
 
 	plan.ID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -128,8 +129,8 @@ func (r *resourceLDTGroupCommSvc) Read(ctx context.Context, req resource.ReadReq
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkLDTGroupCommSvc
-	var payload jsonLDTGroupCommSvc
+	var plan LDTGroupCommSvcTFSDK
+	var payload LDTGroupCommSvcJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -140,19 +141,19 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 	if plan.OpType.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
 		if plan.OpType.ValueString() == "update" {
 			if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-				payload.Description = trimString(plan.Description.String())
+				payload.Description = common.TrimString(plan.Description.String())
 				payloadJSON, err := json.Marshal(payload)
 				if err != nil {
-					tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+					tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
 					resp.Diagnostics.AddError(
 						"Invalid data input: LDT Group Communication Service Update",
 						err.Error(),
 					)
 					return
 				}
-				response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), URL_CTE_PROCESS_SET, payloadJSON, "id")
+				response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_PROCESS_SET, payloadJSON, "id")
 				if err != nil {
-					tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+					tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
 					resp.Diagnostics.AddError(
 						"Error creating LDT Group Communication Service on CipherTrust Manager: ",
 						"Could not create LDT Group Communication Service, unexpected error: "+err.Error(),
@@ -177,7 +178,7 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 					payload.ClientList = clientsArr
 					payloadJSON, err := json.Marshal(payload)
 					if err != nil {
-						tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
 						resp.Diagnostics.AddError(
 							"Invalid data input: LDT Group Communication Service Update",
 							err.Error(),
@@ -187,11 +188,11 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 					response, err := r.client.PostData(
 						ctx,
 						plan.ID.ValueString(),
-						URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients",
+						common.URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients",
 						payloadJSON,
 						"id")
 					if err != nil {
-						tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
 						resp.Diagnostics.AddError(
 							"Error adding clients list to the LDT Group Communication Service on CipherTrust Manager: ",
 							"Could not add clients list to the LDT Group Communication Service, unexpected error: "+err.Error(),
@@ -208,7 +209,7 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 					payload.ClientList = clientsArr
 					payloadJSON, err := json.Marshal(payload)
 					if err != nil {
-						tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
 						resp.Diagnostics.AddError(
 							"Invalid data input: LDT Group Communication Service Update",
 							err.Error(),
@@ -218,11 +219,11 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 					response, err := r.client.UpdateData(
 						ctx,
 						plan.ID.ValueString(),
-						URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients/delete",
+						common.URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients/delete",
 						payloadJSON,
 						"id")
 					if err != nil {
-						tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
 						resp.Diagnostics.AddError(
 							"Error deleting clients list from the LDT Group Communication Service on CipherTrust Manager: ",
 							"Could not delete clients list from the LDT Group Communication Service, unexpected error: "+err.Error(),
@@ -251,7 +252,7 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceLDTGroupCommSvc) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkAWSConnectionModel
+	var state LDTGroupCommSvcTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -259,8 +260,8 @@ func (r *resourceLDTGroupCommSvc) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), URL_CTE_PROCESS_SET)
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
+	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_LDT_GROUP_COMM_SVC)
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting LDT Group Communication Service",
@@ -275,7 +276,7 @@ func (d *resourceLDTGroupCommSvc) Configure(_ context.Context, req resource.Conf
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -23,11 +24,11 @@ func NewDataSourceCTEProfiles() datasource.DataSource {
 }
 
 type dataSourceCTEProfiles struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEProfilesDataSourceModel struct {
-	Profiles []tfsdkCTEProfilesList `tfsdk:"cte_profiles"`
+	Profiles []CTEProfilesListTFSDK `tfsdk:"cte_profiles"`
 }
 
 func (d *dataSourceCTEProfiles) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -434,12 +435,12 @@ func (d *dataSourceCTEProfiles) Schema(_ context.Context, _ datasource.SchemaReq
 
 func (d *dataSourceCTEProfiles) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_profiles.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_profiles.go -> Read]["+id+"]")
 	var state CTEProfilesDataSourceModel
 
-	jsonStr, err := d.client.GetAll(ctx, id, URL_CTE_PROFILE)
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_CTE_PROFILE)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_profiles.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_profiles.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Client profiles from CM",
 			err.Error(),
@@ -447,20 +448,11 @@ func (d *dataSourceCTEProfiles) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	profiles := []jsonCTEProfilesList{}
+	profiles := []CTEProfilesListJSON{}
 
 	err = json.Unmarshal([]byte(jsonStr), &profiles)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_profiles.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE Client profiles from CM",
-			err.Error(),
-		)
-		return
-	}
-
-	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_profiles.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_profiles.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Client profiles from CM",
 			err.Error(),
@@ -469,7 +461,7 @@ func (d *dataSourceCTEProfiles) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	for _, profile := range profiles {
-		profileState := tfsdkCTEProfilesList{}
+		profileState := CTEProfilesListTFSDK{}
 		profileState.ID = types.StringValue(profile.ID)
 		profileState.URI = types.StringValue(profile.URI)
 		profileState.Account = types.StringValue(profile.Account)
@@ -482,7 +474,7 @@ func (d *dataSourceCTEProfiles) Read(ctx context.Context, req datasource.ReadReq
 		state.Profiles = append(state.Profiles, profileState)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_profiles.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_profiles.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -495,7 +487,7 @@ func (d *dataSourceCTEProfiles) Configure(ctx context.Context, req datasource.Co
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

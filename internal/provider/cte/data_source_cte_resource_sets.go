@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -23,11 +24,11 @@ func NewDataSourceCTEResourceSets() datasource.DataSource {
 }
 
 type dataSourceCTEResourceSets struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEResourceSetsDataSourceModel struct {
-	ResourceSet []tfsdkCTEResourceSetsListModel `tfsdk:"resource_sets"`
+	ResourceSet []CTEResourceSetsListTFSDK `tfsdk:"resource_sets"`
 }
 
 func (d *dataSourceCTEResourceSets) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -96,12 +97,12 @@ func (d *dataSourceCTEResourceSets) Schema(_ context.Context, _ datasource.Schem
 
 func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_resource_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_resource_sets.go -> Read]["+id+"]")
 	var state CTEResourceSetsDataSourceModel
 
-	jsonStr, err := d.client.GetAll(ctx, id, URL_CTE_RESOURCE_SET)
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_CTE_RESOURCE_SET)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE resource sets from CM",
 			err.Error(),
@@ -109,11 +110,11 @@ func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	resourceSets := []ResourceSetJSON{}
+	resourceSets := []CTEResourceSetsListJSON{}
 
 	err = json.Unmarshal([]byte(jsonStr), &resourceSets)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE resource sets from CM",
 			err.Error(),
@@ -122,7 +123,7 @@ func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.Rea
 	}
 
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE resource sets from CM",
 			err.Error(),
@@ -131,7 +132,7 @@ func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.Rea
 	}
 
 	for _, resourceSet := range resourceSets {
-		resourceSetState := tfsdkCTEResourceSetsListModel{}
+		resourceSetState := CTEResourceSetsListTFSDK{}
 		resourceSetState.ID = types.StringValue(resourceSet.ID)
 		resourceSetState.URI = types.StringValue(resourceSet.URI)
 		resourceSetState.Account = types.StringValue(resourceSet.Account)
@@ -142,7 +143,7 @@ func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.Rea
 		resourceSetState.Type = types.StringValue(resourceSet.Type)
 
 		for _, resource := range resourceSet.Resources {
-			_resourceData := tfsdkCTEResourceSet{
+			_resourceData := CTEResourceSetListItemTFSDK{
 				Index:             types.Int64Value(resource.Index),
 				Directory:         types.StringValue(resource.Directory),
 				File:              types.StringValue(resource.File),
@@ -155,7 +156,7 @@ func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.Rea
 		state.ResourceSet = append(state.ResourceSet, resourceSetState)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_resource_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_resource_sets.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -168,7 +169,7 @@ func (d *dataSourceCTEResourceSets) Configure(ctx context.Context, req datasourc
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

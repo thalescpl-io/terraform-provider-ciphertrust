@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -25,7 +26,7 @@ func NewResourceCTEPolicyKeyRule() resource.Resource {
 }
 
 type resourceCTEPolicyKeyRule struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEPolicyKeyRule) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -78,10 +79,10 @@ func (r *resourceCTEPolicyKeyRule) Schema(_ context.Context, _ resource.SchemaRe
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEPolicyKeyRule) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_policy_keyrules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_policy_keyrules.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkAddKeyRulePolicy
+	var plan CTEPolicyAddKeyRuleTFSDK
 	var payload KeyRuleJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -102,7 +103,7 @@ func (r *resourceCTEPolicyKeyRule) Create(ctx context.Context, req resource.Crea
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Key Rule Creation",
 			err.Error(),
@@ -113,11 +114,11 @@ func (r *resourceCTEPolicyKeyRule) Create(ctx context.Context, req resource.Crea
 	response, err := r.client.PostData(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/keyrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/keyrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Policy Key Rule on CipherTrust Manager: ",
 			"Could not create CTE Policy Key Rule, unexpected error: "+err.Error(),
@@ -127,7 +128,7 @@ func (r *resourceCTEPolicyKeyRule) Create(ctx context.Context, req resource.Crea
 
 	plan.KeyRuleID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_keyrules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_keyrules.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -141,7 +142,7 @@ func (r *resourceCTEPolicyKeyRule) Read(ctx context.Context, req resource.ReadRe
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicyKeyRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkAddKeyRulePolicy
+	var plan CTEPolicyAddKeyRuleTFSDK
 	var payload KeyRuleUpdateJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -165,7 +166,7 @@ func (r *resourceCTEPolicyKeyRule) Update(ctx context.Context, req resource.Upda
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Update]["+plan.KeyRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Update]["+plan.KeyRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Key Rule Update",
 			err.Error(),
@@ -176,11 +177,11 @@ func (r *resourceCTEPolicyKeyRule) Update(ctx context.Context, req resource.Upda
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.KeyRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/keyrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/keyrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Update]["+plan.KeyRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Update]["+plan.KeyRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy Key Rule on CipherTrust Manager: ",
 			"Could not update CTE Policy Key Rule, unexpected error: "+err.Error(),
@@ -198,7 +199,7 @@ func (r *resourceCTEPolicyKeyRule) Update(ctx context.Context, req resource.Upda
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEPolicyKeyRule) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkAddKeyRulePolicy
+	var state CTEPolicyAddKeyRuleTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -209,8 +210,8 @@ func (r *resourceCTEPolicyKeyRule) Delete(ctx context.Context, req resource.Dele
 	output, err := r.client.DeleteByID(
 		ctx,
 		state.KeyRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/keyrules")
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_keyrules.go -> Delete]["+state.KeyRuleID.ValueString()+"]["+output+"]")
+		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/keyrules")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_keyrules.go -> Delete]["+state.KeyRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CTE Policy",
@@ -225,7 +226,7 @@ func (d *resourceCTEPolicyKeyRule) Configure(_ context.Context, req resource.Con
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

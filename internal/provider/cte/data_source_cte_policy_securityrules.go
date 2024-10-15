@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -22,12 +23,12 @@ func NewDataSourceCTEPolicySecurityRule() datasource.DataSource {
 }
 
 type dataSourceCTEPolicySecurityRule struct {
-	client *Client
+	client *common.Client
 }
 
 type CTEPolicySecurityRuleDataSourceModel struct {
-	PolicyID types.String                           `tfsdk:"policy"`
-	Rules    []tfsdkCTEPolicySecurityRulesListModel `tfsdk:"rules"`
+	PolicyID types.String                      `tfsdk:"policy"`
+	Rules    []CTEPolicySecurityRulesListTFSDK `tfsdk:"rules"`
 }
 
 func (d *dataSourceCTEPolicySecurityRule) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -115,17 +116,16 @@ func (d *dataSourceCTEPolicySecurityRule) Schema(_ context.Context, _ datasource
 
 func (d *dataSourceCTEPolicySecurityRule) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_policy_securityrules.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_policy_securityrules.go -> Read]["+id+"]")
 	var state CTEPolicySecurityRuleDataSourceModel
 	req.Config.Get(ctx, &state)
-	tflog.Info(ctx, "AnuragJain =====> "+state.PolicyID.ValueString())
 
 	jsonStr, err := d.client.GetAll(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+state.PolicyID.ValueString()+"/securityrules")
+		common.URL_CTE_POLICY+"/"+state.PolicyID.ValueString()+"/securityrules")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_securityrules.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_policy_securityrules.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Policy Security Rules from CM",
 			err.Error(),
@@ -137,16 +137,7 @@ func (d *dataSourceCTEPolicySecurityRule) Read(ctx context.Context, req datasour
 
 	err = json.Unmarshal([]byte(jsonStr), &rules)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_securityrules.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE Policy Security Rules from CM",
-			err.Error(),
-		)
-		return
-	}
-
-	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_policy_securityrules.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_policy_securityrules.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE Policy Security Rules from CM",
 			err.Error(),
@@ -155,7 +146,7 @@ func (d *dataSourceCTEPolicySecurityRule) Read(ctx context.Context, req datasour
 	}
 
 	for _, rule := range rules {
-		securityRule := tfsdkCTEPolicySecurityRulesListModel{}
+		securityRule := CTEPolicySecurityRulesListTFSDK{}
 		securityRule.ID = types.StringValue(rule.ID)
 		securityRule.URI = types.StringValue(rule.URI)
 		securityRule.Account = types.StringValue(rule.Account)
@@ -178,7 +169,7 @@ func (d *dataSourceCTEPolicySecurityRule) Read(ctx context.Context, req datasour
 		state.Rules = append(state.Rules, securityRule)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_policy_securityrules.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_policy_securityrules.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -191,7 +182,7 @@ func (d *dataSourceCTEPolicySecurityRule) Configure(ctx context.Context, req dat
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -23,11 +24,11 @@ func NewDataSourceCTESignatureSets() datasource.DataSource {
 }
 
 type dataSourceCTESignatureSets struct {
-	client *Client
+	client *common.Client
 }
 
 type CTESignatureSetsDataSourceModel struct {
-	SignatureSets []tfsdkCTESignatureSetsListModel `tfsdk:"signature_sets"`
+	SignatureSets []CTESignatureSetsListTFSDK `tfsdk:"signature_sets"`
 }
 
 func (d *dataSourceCTESignatureSets) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -96,12 +97,12 @@ func (d *dataSourceCTESignatureSets) Schema(_ context.Context, _ datasource.Sche
 
 func (d *dataSourceCTESignatureSets) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[data_source_cte_signature_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cte_signature_sets.go -> Read]["+id+"]")
 	var state CTESignatureSetsDataSourceModel
 
-	jsonStr, err := d.client.GetAll(ctx, id, URL_CTE_SIGNATURE_SET)
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_CTE_SIGNATURE_SET)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE signature sets from CM",
 			err.Error(),
@@ -113,7 +114,7 @@ func (d *dataSourceCTESignatureSets) Read(ctx context.Context, req datasource.Re
 
 	err = json.Unmarshal([]byte(jsonStr), &signatureSets)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE signature sets from CM",
 			err.Error(),
@@ -122,7 +123,7 @@ func (d *dataSourceCTESignatureSets) Read(ctx context.Context, req datasource.Re
 	}
 
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read CTE signature sets from CM",
 			err.Error(),
@@ -131,7 +132,7 @@ func (d *dataSourceCTESignatureSets) Read(ctx context.Context, req datasource.Re
 	}
 
 	for _, signatureSet := range signatureSets {
-		signatureSetState := tfsdkCTESignatureSetsListModel{}
+		signatureSetState := CTESignatureSetsListTFSDK{}
 		signatureSetState.ID = types.StringValue(signatureSet.ID)
 		signatureSetState.URI = types.StringValue(signatureSet.URI)
 		signatureSetState.Account = types.StringValue(signatureSet.Account)
@@ -153,7 +154,7 @@ func (d *dataSourceCTESignatureSets) Read(ctx context.Context, req datasource.Re
 		state.SignatureSets = append(state.SignatureSets, signatureSetState)
 	}
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[data_source_cte_signature_sets.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cte_signature_sets.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -166,7 +167,7 @@ func (d *dataSourceCTESignatureSets) Configure(ctx context.Context, req datasour
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -21,7 +22,7 @@ func NewResourceCTEPolicyIDTKeyRule() resource.Resource {
 }
 
 type resourceCTEPolicyIDTKeyRule struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEPolicyIDTKeyRule) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -77,7 +78,7 @@ func (r *resourceCTEPolicyIDTKeyRule) Read(ctx context.Context, req resource.Rea
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicyIDTKeyRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkUpdateIDTKeyRulePolicy
+	var plan UpdateIDTKeyRulePolicyTFSDK
 	var payload IDTRuleJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -101,7 +102,7 @@ func (r *resourceCTEPolicyIDTKeyRule) Update(ctx context.Context, req resource.U
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_idtkeyrules.go -> Update]["+plan.IDTKeyRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_idtkeyrules.go -> Update]["+plan.IDTKeyRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy IDT Key Rule Update",
 			err.Error(),
@@ -112,11 +113,11 @@ func (r *resourceCTEPolicyIDTKeyRule) Update(ctx context.Context, req resource.U
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.IDTKeyRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/idtkeyrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/idtkeyrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_idtkeyrules.go -> Update]["+plan.IDTKeyRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_idtkeyrules.go -> Update]["+plan.IDTKeyRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy IDT Key Rule on CipherTrust Manager: ",
 			"Could not update CTE Policy IDT Key Rule, unexpected error: "+err.Error(),
@@ -141,7 +142,7 @@ func (d *resourceCTEPolicyIDTKeyRule) Configure(_ context.Context, req resource.
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

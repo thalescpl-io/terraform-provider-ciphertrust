@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -27,7 +28,7 @@ func NewResourceCTEClientGroup() resource.Resource {
 }
 
 type resourceCTEClientGroup struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEClientGroup) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -159,11 +160,11 @@ func (r *resourceCTEClientGroup) Schema(_ context.Context, _ resource.SchemaRequ
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEClientGroup) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_clientgroup.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_clientgroup.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkCTEClientGroupModel
-	var payload jsonCTEClientGroupModel
+	var plan CTEClientGroupTFSDK
+	var payload CTEClientGroupJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -171,31 +172,31 @@ func (r *resourceCTEClientGroup) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	payload.Name = trimString(plan.Name.ValueString())
-	payload.ClusterType = trimString(plan.ClusterType.ValueString())
+	payload.Name = common.TrimString(plan.Name.ValueString())
+	payload.ClusterType = common.TrimString(plan.ClusterType.ValueString())
 
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-		payload.Description = trimString(plan.Description.String())
+		payload.Description = common.TrimString(plan.Description.String())
 	}
 	if plan.CommunicationEnabled.ValueBool() != types.BoolNull().ValueBool() {
 		payload.CommunicationEnabled = plan.CommunicationEnabled.ValueBool()
 	}
 	if plan.LDTDesignatedPrimarySet.ValueString() != "" && plan.LDTDesignatedPrimarySet.ValueString() != types.StringNull().ValueString() {
-		payload.LDTDesignatedPrimarySet = trimString(plan.LDTDesignatedPrimarySet.String())
+		payload.LDTDesignatedPrimarySet = common.TrimString(plan.LDTDesignatedPrimarySet.String())
 	}
 	if plan.Password.ValueString() != "" && plan.Password.ValueString() != types.StringNull().ValueString() {
-		payload.Password = trimString(plan.Password.String())
+		payload.Password = common.TrimString(plan.Password.String())
 	}
 	if plan.PasswordCreationMethod.ValueString() != "" && plan.PasswordCreationMethod.ValueString() != types.StringNull().ValueString() {
-		payload.PasswordCreationMethod = trimString(plan.PasswordCreationMethod.String())
+		payload.PasswordCreationMethod = common.TrimString(plan.PasswordCreationMethod.String())
 	}
 	if plan.ProfileID.ValueString() != "" && plan.ProfileID.ValueString() != types.StringNull().ValueString() {
-		payload.ProfileID = trimString(plan.ProfileID.String())
+		payload.ProfileID = common.TrimString(plan.ProfileID.String())
 	}
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Client Group Creation",
 			err.Error(),
@@ -203,9 +204,9 @@ func (r *resourceCTEClientGroup) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, URL_CTE_CLIENT_GROUP, payloadJSON, "id")
+	response, err := r.client.PostData(ctx, id, common.URL_CTE_CLIENT_GROUP, payloadJSON, "id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Client Group on CipherTrust Manager: ",
 			"Could not create CTE Client Group, unexpected error: "+err.Error(),
@@ -215,7 +216,7 @@ func (r *resourceCTEClientGroup) Create(ctx context.Context, req resource.Create
 
 	plan.ID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_clientgroup.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_clientgroup.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -229,8 +230,8 @@ func (r *resourceCTEClientGroup) Read(ctx context.Context, req resource.ReadRequ
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkCTEClientGroupModel
-	var payload jsonCTEClientGroupModel
+	var plan CTEClientGroupTFSDK
+	var payload CTEClientGroupJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -247,25 +248,25 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 				payload.CommunicationEnabled = plan.CommunicationEnabled.ValueBool()
 			}
 			if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-				payload.Description = trimString(plan.Description.String())
+				payload.Description = common.TrimString(plan.Description.String())
 			}
 			if plan.EnableDomainSharing.ValueBool() != types.BoolNull().ValueBool() {
 				payload.EnableDomainSharing = plan.EnableDomainSharing.ValueBool()
 			}
 			if plan.EnabledCapabilities.ValueString() != "" && plan.EnabledCapabilities.ValueString() != types.StringNull().ValueString() {
-				payload.EnabledCapabilities = trimString(plan.EnabledCapabilities.String())
+				payload.EnabledCapabilities = common.TrimString(plan.EnabledCapabilities.String())
 			}
 			if plan.LDTDesignatedPrimarySet.ValueString() != "" && plan.LDTDesignatedPrimarySet.ValueString() != types.StringNull().ValueString() {
-				payload.LDTDesignatedPrimarySet = trimString(plan.LDTDesignatedPrimarySet.String())
+				payload.LDTDesignatedPrimarySet = common.TrimString(plan.LDTDesignatedPrimarySet.String())
 			}
 			if plan.Password.ValueString() != "" && plan.Password.ValueString() != types.StringNull().ValueString() {
-				payload.Password = trimString(plan.Password.String())
+				payload.Password = common.TrimString(plan.Password.String())
 			}
 			if plan.PasswordCreationMethod.ValueString() != "" && plan.PasswordCreationMethod.ValueString() != types.StringNull().ValueString() {
-				payload.PasswordCreationMethod = trimString(plan.PasswordCreationMethod.String())
+				payload.PasswordCreationMethod = common.TrimString(plan.PasswordCreationMethod.String())
 			}
 			if plan.ProfileID.ValueString() != "" && plan.ProfileID.ValueString() != types.StringNull().ValueString() {
-				payload.ProfileID = trimString(plan.ProfileID.String())
+				payload.ProfileID = common.TrimString(plan.ProfileID.String())
 			}
 			if plan.SharedDomainList != nil {
 				for _, domain := range plan.SharedDomainList {
@@ -278,7 +279,7 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 
 			payloadJSON, err := json.Marshal(payload)
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Update]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Update]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Invalid data input: CTE Client Group Update",
 					err.Error(),
@@ -286,9 +287,9 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 				return
 			}
 
-			response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), URL_CTE_CLIENT_GROUP, payloadJSON, "id")
+			response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_CLIENT_GROUP, payloadJSON, "id")
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Update]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Update]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -298,7 +299,7 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			plan.ID = types.StringValue(response)
 		} else if plan.OpType.ValueString() == "auth-binaries" {
 			if plan.AuthBinaries.ValueString() != "" && plan.AuthBinaries.ValueString() != types.StringNull().ValueString() {
-				payload.AuthBinaries = trimString(plan.AuthBinaries.String())
+				payload.AuthBinaries = common.TrimString(plan.AuthBinaries.String())
 			}
 			if plan.ReSign.ValueBool() != types.BoolNull().ValueBool() {
 				payload.ReSign = plan.ReSign.ValueBool()
@@ -306,7 +307,7 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 
 			payloadJSON, err := json.Marshal(payload)
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> auth-binaries]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> auth-binaries]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Invalid data input: CTE Client Group Auth Binaries",
 					err.Error(),
@@ -317,11 +318,11 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			response, err := r.client.UpdateDataFullURL(
 				ctx,
 				plan.ID.ValueString(),
-				URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/auth-binaries",
+				common.URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/auth-binaries",
 				payloadJSON,
 				"id")
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> auth-binaries]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> auth-binaries]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -331,15 +332,15 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			plan.ID = types.StringValue(response)
 		} else if plan.OpType.ValueString() == "update-password" {
 			if plan.Password.ValueString() != "" && plan.Password.ValueString() != types.StringNull().ValueString() {
-				payload.Password = trimString(plan.Password.String())
+				payload.Password = common.TrimString(plan.Password.String())
 			}
 			if plan.PasswordCreationMethod.ValueString() != "" && plan.PasswordCreationMethod.ValueString() != types.StringNull().ValueString() {
-				payload.PasswordCreationMethod = trimString(plan.PasswordCreationMethod.String())
+				payload.PasswordCreationMethod = common.TrimString(plan.PasswordCreationMethod.String())
 			}
 
 			payloadJSON, err := json.Marshal(payload)
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> update-password]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> update-password]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Invalid data input: CTE Client Group Update Password",
 					err.Error(),
@@ -350,11 +351,11 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			response, err := r.client.UpdateDataFullURL(
 				ctx,
 				plan.ID.ValueString(),
-				URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/resetpassword",
+				common.URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/resetpassword",
 				payloadJSON,
 				"id")
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> update-password]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> update-password]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -368,11 +369,11 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			response, err := r.client.UpdateDataFullURL(
 				ctx,
 				plan.ID.ValueString(),
-				URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/resetpassword",
+				common.URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/resetpassword",
 				payload,
 				"id")
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> update-password]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> update-password]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -384,9 +385,9 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			response, err := r.client.DeleteByURL(
 				ctx,
 				plan.ID.ValueString(),
-				URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/clients/"+plan.ClientID.ValueString())
+				common.URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/clients/"+plan.ClientID.ValueString())
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> remove-client]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> remove-client]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -407,7 +408,7 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 
 			payloadJSON, err := json.Marshal(payload)
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> add-client]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> add-client]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Invalid data input: CTE Client Group Add Clients",
 					err.Error(),
@@ -418,11 +419,11 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			response, err := r.client.UpdateDataFullURL(
 				ctx,
 				plan.ID.ValueString(),
-				URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/clients",
+				common.URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/clients",
 				payloadJSON,
 				"items")
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> add-client]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> add-client]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -437,7 +438,7 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 
 			payloadJSON, err := json.Marshal(payload)
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> ldt-pause]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> ldt-pause]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Invalid data input: CTE Client Group LDT pause",
 					err.Error(),
@@ -448,11 +449,11 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 			response, err := r.client.UpdateDataFullURL(
 				ctx,
 				plan.ID.ValueString(),
-				URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/ldtpause",
+				common.URL_CTE_CLIENT_GROUP+"/"+plan.ID.ValueString()+"/ldtpause",
 				payloadJSON,
 				"id")
 			if err != nil {
-				tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> ldt-pause]["+plan.ID.ValueString()+"]")
+				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> ldt-pause]["+plan.ID.ValueString()+"]")
 				resp.Diagnostics.AddError(
 					"Error updating CTE Client Group on CipherTrust Manager: ",
 					"Could not update CTE Client Group, unexpected error: "+err.Error(),
@@ -485,7 +486,7 @@ func (r *resourceCTEClientGroup) Update(ctx context.Context, req resource.Update
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEClientGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkCTEClientGroupModel
+	var state CTEClientGroupTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -493,8 +494,8 @@ func (r *resourceCTEClientGroup) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), URL_CTE_CLIENT_GROUP)
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_clientgroup.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
+	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_CLIENT_GROUP)
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_clientgroup.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CipherTrust CTE Client",
@@ -509,7 +510,7 @@ func (d *resourceCTEClientGroup) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",
