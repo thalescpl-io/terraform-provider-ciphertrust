@@ -14,6 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	cm "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cm"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
+	connections "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/connections"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -233,7 +236,7 @@ func (p *ciphertrustProvider) Configure(ctx context.Context, req provider.Config
 
 	if bootstrap == "no" {
 		// Create a new CipherTrust client using the configuration values
-		client, err := NewClient(ctx, id, &address, &auth_domain, &domain, &username, &password)
+		client, err := common.NewClient(ctx, id, &address, &auth_domain, &domain, &username, &password)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to Create CipherTrust API Client",
@@ -247,7 +250,7 @@ func (p *ciphertrustProvider) Configure(ctx context.Context, req provider.Config
 		resp.DataSourceData = client
 		resp.ResourceData = client
 	} else if bootstrap == "yes" {
-		client, err := NewCMClientBoot(ctx, id, &address)
+		client, err := common.NewCMClientBoot(ctx, id, &address)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to Create CipherTrust API Client",
@@ -272,9 +275,9 @@ func (p *ciphertrustProvider) Configure(ctx context.Context, req provider.Config
 // DataSources defines the data sources implemented in the provider.
 func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewDataSourceUsers,
-		NewDataSourceKeys,
-		NewDataSourceGroups,
+		cm.NewDataSourceUsers,
+		cm.NewDataSourceKeys,
+		cm.NewDataSourceGroups,
 		NewDataSourceCTEUserSets,
 		NewDataSourceCTEResourceSets,
 		NewDataSourceCTEProcessSets,
@@ -285,18 +288,18 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		NewDataSourceCTEPolicySecurityRule,
 		NewDataSourceCTEPolicySignatureRule,
 		NewDataSourceCTEProfiles,
-		NewDataSourceRegTokens,
+		cm.NewDataSourceRegTokens,
 		NewDataSourceCTEClients,
-		NewDataSourceCertificateAuthorities,
+		cm.NewDataSourceCertificateAuthorities,
 	}
 }
 
 // Resources defines the resources implemented in the provider.
 func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewResourceCMUser,
-		NewResourceCMKey,
-		NewResourceCMGroup,
+		cm.NewResourceCMUser,
+		cm.NewResourceCMKey,
+		cm.NewResourceCMGroup,
 		NewResourceCTEProcessSet,
 		NewResourceCTEResourceSet,
 		NewResourceCTEUserSet,
@@ -310,12 +313,12 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		NewResourceCTEPolicySecurityRule,
 		NewResourceCTEPolicySignatureRule,
 		NewResourceCTEProfile,
-		NewResourceCMRegToken,
-		NewResourceCMSSHKey,
-		NewResourceCMPwdChange,
+		cm.NewResourceCMRegToken,
+		cm.NewResourceCMSSHKey,
+		cm.NewResourceCMPwdChange,
 		NewResourceCTEClientGP,
 		NewResourceCTEClientGroup,
 		NewResourceCTECSIGroup,
-		NewResourceCCKMAWSConnection,
+		connections.NewResourceCCKMAWSConnection,
 	}
 }
