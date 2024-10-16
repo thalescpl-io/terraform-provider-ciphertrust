@@ -122,15 +122,6 @@ func (d *dataSourceCTEResourceSets) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_resource_sets.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE resource sets from CM",
-			err.Error(),
-		)
-		return
-	}
-
 	for _, resourceSet := range resourceSets {
 		resourceSetState := CTEResourceSetsListTFSDK{}
 		resourceSetState.ID = types.StringValue(resourceSet.ID)

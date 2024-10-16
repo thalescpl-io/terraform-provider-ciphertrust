@@ -122,15 +122,6 @@ func (d *dataSourceCTESignatureSets) Read(ctx context.Context, req datasource.Re
 		return
 	}
 
-	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cte_signature_sets.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Unable to read CTE signature sets from CM",
-			err.Error(),
-		)
-		return
-	}
-
 	for _, signatureSet := range signatureSets {
 		signatureSetState := CTESignatureSetsListTFSDK{}
 		signatureSetState.ID = types.StringValue(signatureSet.ID)
