@@ -853,3 +853,342 @@ type CTEPolicyAddKeyRuleTFSDK struct {
 	OrderNumber       types.Int64  `tfsdk:"order_number"`
 	KeyRule           KeyRuleTFSDK `tfsdk:"rule"`
 }
+
+type CTEPolicyAddLDTKeyRuleTFSDK struct {
+	CTEClientPolicyID types.String    `tfsdk:"policy_id"`
+	LDTKeyRuleID      types.String    `tfsdk:"rule_id"`
+	OrderNumber       types.Int64     `tfsdk:"order_number"`
+	LDTKeyRule        LDTKeyRuleTFSDK `tfsdk:"rule"`
+}
+
+type CTEPolicyAddSecurityRuleTFSDK struct {
+	CTEClientPolicyID types.String      `tfsdk:"policy_id"`
+	SecurityRuleID    types.String      `tfsdk:"rule_id"`
+	OrderNumber       types.Int64       `tfsdk:"order_number"`
+	SecurityRule      SecurityRuleTFSDK `tfsdk:"rule"`
+}
+
+type CTEPolicyAddSignatureRuleTFSDK struct {
+	CTEClientPolicyID types.String   `tfsdk:"policy_id"`
+	SignatureRuleID   types.String   `tfsdk:"rule_id"`
+	SignatureSetList  []types.String `tfsdk:"signature_set_id_list"`
+	SignatureSetID    types.String   `tfsdk:"signature_set_id"`
+}
+
+type CTEProcessTFSDK struct {
+	Directory     types.String `tfsdk:"directory"`
+	File          types.String `tfsdk:"file"`
+	ResourceSetId types.String `tfsdk:"resource_set_id"`
+	Signature     types.String `tfsdk:"signature"`
+}
+
+type CTEProcessSetTFSDK struct {
+	ID          types.String      `tfsdk:"id"`
+	Name        types.String      `tfsdk:"name"`
+	Description types.String      `tfsdk:"description"`
+	Processes   []CTEProcessTFSDK `tfsdk:"processes"`
+}
+
+type CTEProcessJSON struct {
+	Directory     string `json:"directory"`
+	File          string `json:"file"`
+	ResourceSetId string `json:"resource_set_id"`
+	Signature     string `json:"signature"`
+}
+
+type CTEProcessSetJSON struct {
+	ID          string           `json:"id"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	Processes   []CTEProcessJSON `json:"processes"`
+}
+
+type CTEProfileCacheSettingsTFSDK struct {
+	MaxFiles types.Int64 `tfsdk:"max_files"`
+	MaxSpace types.Int64 `tfsdk:"max_space"`
+}
+
+type CTEProfileDuplicateSettingsTFSDK struct {
+	SuppressInterval  types.Int64 `tfsdk:"suppress_interval"`
+	SuppressThreshold types.Int64 `tfsdk:"suppress_threshold"`
+}
+
+type CTEProfileFileSettingsTFSDK struct {
+	AllowPurge    types.Bool   `tfsdk:"allow_purge"`
+	FileThreshold types.String `tfsdk:"file_threshold"`
+	MaxFileSize   types.Int64  `tfsdk:"max_file_size"`
+	MaxOldFiles   types.Int64  `tfsdk:"max_old_files"`
+}
+
+type CTEProfileManagementServiceLoggerTFSDK struct {
+	Duplicates    types.String `tfsdk:"duplicates"`
+	FileEnabled   types.Bool   `tfsdk:"file_enabled"`
+	SyslogEnabled types.Bool   `tfsdk:"syslog_enabled"`
+	Threshold     types.String `tfsdk:"threshold"`
+	UploadEnabled types.Bool   `tfsdk:"upload_enabled"`
+}
+
+type CTEProfileQOSScheduleTFSDK struct {
+	EndTimeHour   types.Int64  `tfsdk:"end_time_hour"`
+	EndTimeMin    types.Int64  `tfsdk:"end_time_min"`
+	EndWeekday    types.String `tfsdk:"end_weekday"`
+	StartTimeHour types.Int64  `tfsdk:"start_time_hour"`
+	StartTimeMin  types.Int64  `tfsdk:"start_time_min"`
+	StartWeekday  types.String `tfsdk:"start_weekday"`
+}
+
+type CTEProfileServiceSettingTFSDK struct {
+	HostName types.String `tfsdk:"host_name"`
+	Priority types.Int64  `tfsdk:"priority"`
+}
+
+type CTEProfileSyslogSettingServerTFSDK struct {
+	CACert        types.String `tfsdk:"caCertificate"`
+	Certificate   types.String `tfsdk:"certificate"`
+	MessageFormat types.String `tfsdk:"message_format"`
+	Name          types.String `tfsdk:"name"`
+	Port          types.Int64  `tfsdk:"port"`
+	PrivateKey    types.String `tfsdk:"privateKey"`
+	Protocol      types.String `tfsdk:"protocol"`
+}
+
+type CTEProfileSyslogSettingsTFSDK struct {
+	Local     types.Bool                           `tfsdk:"local"`
+	Servers   []CTEProfileSyslogSettingServerTFSDK `tfsdk:"servers"`
+	Threshold types.String                         `tfsdk:"syslog_threshold"`
+}
+
+type CTEProfileUploadSettingsTFSDK struct {
+	ConnectionTimeout    types.Int64  `tfsdk:"connection_timeout"`
+	DropIfBusy           types.Bool   `tfsdk:"drop_if_busy"`
+	JobCompletionTimeout types.Int64  `tfsdk:"job_completion_timeout"`
+	MaxInterval          types.Int64  `tfsdk:"max_interval"`
+	MaxMessages          types.Int64  `tfsdk:"max_messages"`
+	MinInterval          types.Int64  `tfsdk:"min_interval"`
+	Threshold            types.String `tfsdk:"upload_threshold"`
+}
+
+type CTEProfileTFSDK struct {
+	ID                      types.String                           `tfsdk:"id"`
+	Name                    types.String                           `tfsdk:"name"`
+	CacheSettings           CTEProfileCacheSettingsTFSDK           `tfsdk:"cache_settings"`
+	ConciseLogging          types.Bool                             `tfsdk:"concise_logging"`
+	ConnectTimeout          types.Int64                            `tfsdk:"connect_timeout"`
+	Description             types.String                           `tfsdk:"description"`
+	DuplicateSettings       CTEProfileDuplicateSettingsTFSDK       `tfsdk:"duplicate_settings"`
+	FileSettings            CTEProfileFileSettingsTFSDK            `tfsdk:"file_settings"`
+	Labels                  types.Map                              `tfsdk:"labels"`
+	LDTQOSCapCPUAllocation  types.Bool                             `tfsdk:"ldt_qos_cap_cpu_allocation"`
+	LDTQOSCapCPUPercent     types.Int64                            `tfsdk:"ldt_qos_cpu_percent"`
+	LDTQOSRekeyOption       types.String                           `tfsdk:"ldt_qos_rekey_option"`
+	LDTQOSRekeyRate         types.Int64                            `tfsdk:"ldt_qos_rekey_rate"`
+	LDTQOSSchedule          types.String                           `tfsdk:"ldt_qos_schedule"`
+	LDTQOSStatusCheckRate   types.Int64                            `tfsdk:"ldt_qos_status_check_rate"`
+	ManagementServiceLogger CTEProfileManagementServiceLoggerTFSDK `tfsdk:"management_service_logger"`
+	MetadataScanInterval    types.Int64                            `tfsdk:"metadata_scan_interval"`
+	MFAExemptUserSetID      types.String                           `tfsdk:"mfa_exempt_user_set_id"`
+	OIDCConnectionID        types.String                           `tfsdk:"oidc_connection_id"`
+	PolicyEvaluationLogger  CTEProfileManagementServiceLoggerTFSDK `tfsdk:"policy_evaluation_logger"`
+	QOSSchedules            []CTEProfileQOSScheduleTFSDK           `tfsdk:"qos_schedules"`
+	RWPOperation            types.String                           `tfsdk:"rwp_operation"`
+	RWPProcessSet           types.String                           `tfsdk:"rwp_process_set"`
+	SecurityAdminLogger     CTEProfileManagementServiceLoggerTFSDK `tfsdk:"security_admin_logger"`
+	ServerResponseRate      types.Int64                            `tfsdk:"server_response_rate"`
+	ServerSettings          []CTEProfileServiceSettingTFSDK        `tfsdk:"server_settings"`
+	SyslogSettings          CTEProfileSyslogSettingsTFSDK          `tfsdk:"syslog_settings"`
+	SystemAdminLogger       CTEProfileManagementServiceLoggerTFSDK `tfsdk:"system_admin_logger"`
+	UploadSettings          CTEProfileUploadSettingsTFSDK          `tfsdk:"upload_settings"`
+}
+
+type CTEProfileCacheSettingsJSON struct {
+	MaxFiles int64 `json:"max_files"`
+	MaxSpace int64 `json:"max_space"`
+}
+
+type CTEProfileDuplicateSettingsJSON struct {
+	SuppressInterval  int64 `json:"suppress_interval"`
+	SuppressThreshold int64 `json:"suppress_threshold"`
+}
+
+type CTEProfileFileSettingsJSON struct {
+	AllowPurge    bool   `json:"allow_purge"`
+	FileThreshold string `json:"file_threshold"`
+	MaxFileSize   int64  `json:"max_file_size"`
+	MaxOldFiles   int64  `json:"max_old_files"`
+}
+
+type CTEProfileManagementServiceLoggerJSON struct {
+	Duplicates    string `json:"duplicates"`
+	FileEnabled   bool   `json:"file_enabled"`
+	SyslogEnabled bool   `json:"syslog_enabled"`
+	Threshold     string `json:"threshold"`
+	UploadEnabled bool   `json:"upload_enabled"`
+}
+
+type CTEProfileQOSScheduleJSON struct {
+	EndTimeHour   int64  `json:"end_time_hour"`
+	EndTimeMin    int64  `json:"end_time_min"`
+	EndWeekday    string `json:"end_weekday"`
+	StartTimeHour int64  `json:"start_time_hour"`
+	StartTimeMin  int64  `json:"start_time_min"`
+	StartWeekday  string `json:"start_weekday"`
+}
+
+type CTEProfileServiceSettingJSON struct {
+	HostName string `json:"hostName"`
+	Priority int64  `json:"priority"`
+}
+
+type CTEProfileSyslogSettingServerJSON struct {
+	CACert        string `json:"caCertificate"`
+	Certificate   string `json:"certificate"`
+	MessageFormat string `json:"message_format"`
+	Name          string `json:"name"`
+	Port          int64  `json:"port"`
+	PrivateKey    string `json:"privateKey"`
+	Protocol      string `json:"protocol"`
+}
+
+type CTEProfileSyslogSettingsJSON struct {
+	Local     bool                                `json:"local"`
+	Servers   []CTEProfileSyslogSettingServerJSON `json:"servers"`
+	Threshold string                              `json:"syslog_threshold"`
+}
+
+type CTEProfileUploadSettingsJSON struct {
+	ConnectionTimeout    int64  `json:"connection_timeout"`
+	DropIfBusy           bool   `json:"drop_if_busy"`
+	JobCompletionTimeout int64  `json:"job_completion_timeout"`
+	MaxInterval          int64  `json:"max_interval"`
+	MaxMessages          int64  `json:"max_messages"`
+	MinInterval          int64  `json:"min_interval"`
+	Threshold            string `json:"upload_threshold"`
+}
+
+type CTEProfileJSON struct {
+	Name                    string                                `json:"name"`
+	CacheSettings           CTEProfileCacheSettingsJSON           `json:"cache_settings"`
+	ConciseLogging          bool                                  `json:"concise_logging"`
+	ConnectTimeout          int64                                 `json:"connect_timeout"`
+	Description             string                                `json:"description"`
+	DuplicateSettings       CTEProfileDuplicateSettingsJSON       `json:"duplicate_settings"`
+	FileSettings            CTEProfileFileSettingsJSON            `json:"file_settings"`
+	Labels                  map[string]interface{}                `json:"labels"`
+	LDTQOSCapCPUAllocation  bool                                  `json:"ldt_qos_cap_cpu_allocation"`
+	LDTQOSCapCPUPercent     int64                                 `json:"ldt_qos_cpu_percent"`
+	LDTQOSRekeyOption       string                                `json:"ldt_qos_rekey_option"`
+	LDTQOSRekeyRate         int64                                 `json:"ldt_qos_rekey_rate"`
+	LDTQOSSchedule          string                                `json:"ldt_qos_schedule"`
+	LDTQOSStatusCheckRate   int64                                 `json:"ldt_qos_status_check_rate"`
+	ManagementServiceLogger CTEProfileManagementServiceLoggerJSON `json:"management_service_logger"`
+	MetadataScanInterval    int64                                 `json:"metadata_scan_interval"`
+	MFAExemptUserSetID      string                                `json:"mfa_exempt_user_set_id"`
+	OIDCConnectionID        string                                `json:"oidc_connection_id"`
+	PolicyEvaluationLogger  CTEProfileManagementServiceLoggerJSON `json:"policy_evaluation_logger"`
+	QOSSchedules            []CTEProfileQOSScheduleJSON           `json:"qos_schedules"`
+	RWPOperation            string                                `json:"rwp_operation"`
+	RWPProcessSet           string                                `json:"rwp_process_set"`
+	SecurityAdminLogger     CTEProfileManagementServiceLoggerJSON `json:"security_admin_logger"`
+	ServerResponseRate      int64                                 `json:"server_response_rate"`
+	ServerSettings          []CTEProfileServiceSettingJSON        `json:"server_settings"`
+	SyslogSettings          CTEProfileSyslogSettingsJSON          `json:"syslog_settings"`
+	SystemAdminLogger       CTEProfileManagementServiceLoggerJSON `json:"system_admin_logger"`
+	UploadSettings          CTEProfileUploadSettingsJSON          `json:"upload_settings"`
+}
+
+type ClassificationTagAttributesTFSDK struct {
+	DataType types.String `tfsdk:"data_type"`
+	Name     types.String `tfsdk:"name"`
+	Operator types.String `tfsdk:"operator"`
+	Value    types.String `tfsdk:"value"`
+}
+
+type ClassificationTagTFSDK struct {
+	Description types.String                       `tfsdk:"description"`
+	Name        types.String                       `tfsdk:"name"`
+	Attributes  []ClassificationTagAttributesTFSDK `tfsdk:"attributes"`
+}
+
+type CTEResourceTFSDK struct {
+	Directory         types.String `tfsdk:"directory"`
+	File              types.String `tfsdk:"file"`
+	HDFS              types.Bool   `tfsdk:"hdfs"`
+	IncludeSubfolders types.Bool   `tfsdk:"include_subfolders"`
+}
+
+type CTEResourceSetTFSDK struct {
+	ID                 types.String             `tfsdk:"id"`
+	Name               types.String             `tfsdk:"name"`
+	Description        types.String             `tfsdk:"description"`
+	Resources          []CTEResourceTFSDK       `tfsdk:"resources"`
+	Type               types.String             `tfsdk:"type"`
+	ClassificationTags []ClassificationTagTFSDK `tfsdk:"classification_tags"`
+}
+
+type ClassificationTagAttributesJSON struct {
+	DataType string `json:"data_type"`
+	Name     string `json:"name"`
+	Operator string `json:"operator"`
+	Value    string `json:"value"`
+}
+
+type ClassificationTagJSON struct {
+	Description string                            `json:"description"`
+	Name        string                            `json:"name"`
+	Attributes  []ClassificationTagAttributesJSON `json:"attributes"`
+}
+
+type CTEResourceJSON struct {
+	Directory         string `json:"directory"`
+	File              string `json:"file"`
+	HDFS              bool   `json:"hdfs"`
+	IncludeSubfolders bool   `json:"include_subfolders"`
+}
+
+type CTEResourceSetJSON struct {
+	ID                 string                  `json:"id"`
+	Name               string                  `json:"name"`
+	Description        string                  `json:"description"`
+	Resources          []CTEResourceJSON       `json:"resources"`
+	Type               string                  `json:"type"`
+	ClassificationTags []ClassificationTagJSON `json:"classification_tags"`
+}
+
+type CTESignatureSetTFSDK struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Description types.String   `tfsdk:"description"`
+	Type        types.String   `tfsdk:"type"`
+	Sources     []types.String `tfsdk:"source_list"`
+}
+
+type CTESignatureSetJSON struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Type        string   `json:"type"`
+	Sources     []string `json:"source_list"`
+}
+
+type CTEUserTFSDK struct {
+	GID      types.Int64  `tfsdk:"gid"`
+	GName    types.String `tfsdk:"gname"`
+	OSDomain types.String `tfsdk:"os_domain"`
+	UID      types.Int64  `tfsdk:"uid"`
+	UName    types.String `tfsdk:"uname"`
+}
+
+type CTEUserSetTFSDK struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Description types.String   `tfsdk:"description"`
+	Users       []CTEUserTFSDK `tfsdk:"users"`
+}
+
+type CTEUserJSON struct {
+	GID      int    `json:"gid"`
+	GName    string `json:"gname"`
+	OSDomain string `json:"os_domain"`
+	UID      int    `json:"uid"`
+	UName    string `json:"uname"`
+}

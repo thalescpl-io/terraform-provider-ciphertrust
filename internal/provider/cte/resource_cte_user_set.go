@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -25,7 +26,7 @@ func NewResourceCTEUserSet() resource.Resource {
 }
 
 type resourceCTEUserSet struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEUserSet) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -77,10 +78,10 @@ func (r *resourceCTEUserSet) Schema(_ context.Context, _ resource.SchemaRequest,
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cm_user_set.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_user_set.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkCTEUserSetModel
+	var plan CTEUserSetTFSDK
 	payload := map[string]interface{}{}
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -89,9 +90,9 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	payload["name"] = trimString(plan.Name.String())
+	payload["name"] = common.TrimString(plan.Name.String())
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-		payload["description"] = trimString(plan.Description.String())
+		payload["description"] = common.TrimString(plan.Description.String())
 	}
 	var usersJSONArr []CTEUserJSON
 	for _, user := range plan.Users {
@@ -118,9 +119,9 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 
 	payloadJSON, _ := json.Marshal(payload)
 
-	response, err := r.client.PostData(ctx, id, URL_CTE_USER_SET, payloadJSON, "id")
+	response, err := r.client.PostData(ctx, id, common.URL_CTE_USER_SET, payloadJSON, "id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE User Set on CipherTrust Manager: ",
 			"Could not create CTE User Set, unexpected error: "+err.Error(),
@@ -130,7 +131,7 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 
 	plan.ID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cm_user_set.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_user_set.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -144,7 +145,7 @@ func (r *resourceCTEUserSet) Read(ctx context.Context, req resource.ReadRequest,
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkCTEUserSetModel
+	var plan CTEUserSetTFSDK
 	payload := map[string]interface{}{}
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -154,7 +155,7 @@ func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-		payload["description"] = trimString(plan.Description.String())
+		payload["description"] = common.TrimString(plan.Description.String())
 	}
 	var usersJSONArr []CTEUserJSON
 	for _, user := range plan.Users {
@@ -181,9 +182,9 @@ func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequ
 
 	payloadJSON, _ := json.Marshal(payload)
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), URL_CTE_USER_SET, payloadJSON, "id")
+	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_USER_SET, payloadJSON, "id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Update]["+plan.ID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE User Set on CipherTrust Manager: ",
 			"Could not create CTE User Set, unexpected error: "+err.Error(),
@@ -201,7 +202,7 @@ func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequ
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEUserSet) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkCTEUserSetModel
+	var state CTEUserSetTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -209,8 +210,8 @@ func (r *resourceCTEUserSet) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), URL_CTE_USER_SET)
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cm_user_set.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
+	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_USER_SET)
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_user_set.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CTE User Set",
@@ -225,7 +226,7 @@ func (d *resourceCTEUserSet) Configure(_ context.Context, req resource.Configure
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

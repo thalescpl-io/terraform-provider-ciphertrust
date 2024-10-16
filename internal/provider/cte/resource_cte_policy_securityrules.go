@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -27,7 +28,7 @@ func NewResourceCTEPolicySecurityRule() resource.Resource {
 }
 
 type resourceCTEPolicySecurityRule struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEPolicySecurityRule) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -107,10 +108,10 @@ func (r *resourceCTEPolicySecurityRule) Schema(_ context.Context, _ resource.Sch
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEPolicySecurityRule) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_policy_securityrules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_policy_securityrules.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkAddSecurityRulePolicy
+	var plan CTEPolicyAddSecurityRuleTFSDK
 	var payload SecurityRuleJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -149,7 +150,7 @@ func (r *resourceCTEPolicySecurityRule) Create(ctx context.Context, req resource
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Security Rule Creation",
 			err.Error(),
@@ -160,11 +161,11 @@ func (r *resourceCTEPolicySecurityRule) Create(ctx context.Context, req resource
 	response, err := r.client.PostData(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/securityrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/securityrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Policy Security Rule on CipherTrust Manager: ",
 			"Could not create CTE Policy Security Rule, unexpected error: "+err.Error(),
@@ -174,7 +175,7 @@ func (r *resourceCTEPolicySecurityRule) Create(ctx context.Context, req resource
 
 	plan.SecurityRuleID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_securityrules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_securityrules.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -188,7 +189,7 @@ func (r *resourceCTEPolicySecurityRule) Read(ctx context.Context, req resource.R
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicySecurityRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkAddSecurityRulePolicy
+	var plan CTEPolicyAddSecurityRuleTFSDK
 	var payload SecurityRuleUpdateJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -230,7 +231,7 @@ func (r *resourceCTEPolicySecurityRule) Update(ctx context.Context, req resource
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Update]["+plan.SecurityRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Update]["+plan.SecurityRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Security Rule Update",
 			err.Error(),
@@ -241,11 +242,11 @@ func (r *resourceCTEPolicySecurityRule) Update(ctx context.Context, req resource
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.SecurityRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/securityrules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/securityrules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Update]["+plan.SecurityRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Update]["+plan.SecurityRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy Security Rule on CipherTrust Manager: ",
 			"Could not update CTE Policy Security Rule, unexpected error: "+err.Error(),
@@ -263,7 +264,7 @@ func (r *resourceCTEPolicySecurityRule) Update(ctx context.Context, req resource
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEPolicySecurityRule) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkAddSecurityRulePolicy
+	var state CTEPolicyAddSecurityRuleTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -274,8 +275,8 @@ func (r *resourceCTEPolicySecurityRule) Delete(ctx context.Context, req resource
 	output, err := r.client.DeleteByID(
 		ctx,
 		state.SecurityRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/securityrules")
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_securityrules.go -> Delete]["+state.SecurityRuleID.ValueString()+"]["+output+"]")
+		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/securityrules")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_securityrules.go -> Delete]["+state.SecurityRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CTE Policy Security Rule",
@@ -290,7 +291,7 @@ func (d *resourceCTEPolicySecurityRule) Configure(_ context.Context, req resourc
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

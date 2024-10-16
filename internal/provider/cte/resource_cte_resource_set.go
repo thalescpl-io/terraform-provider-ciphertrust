@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -25,7 +26,7 @@ func NewResourceCTEResourceSet() resource.Resource {
 }
 
 type resourceCTEResourceSet struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEResourceSet) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -109,11 +110,11 @@ func (r *resourceCTEResourceSet) Schema(_ context.Context, _ resource.SchemaRequ
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEResourceSet) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cm_resource_set.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_resource_set.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkCTEResourceSetModel
-	var payload CTEResourceSetModelJSON
+	var plan CTEResourceSetTFSDK
+	var payload CTEResourceSetJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -121,12 +122,12 @@ func (r *resourceCTEResourceSet) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	payload.Name = trimString(plan.Name.String())
+	payload.Name = common.TrimString(plan.Name.String())
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-		payload.Description = trimString(plan.Description.String())
+		payload.Description = common.TrimString(plan.Description.String())
 	}
 	if plan.Type.ValueString() != "" && plan.Type.ValueString() != types.StringNull().ValueString() {
-		payload.Type = trimString(plan.Type.String())
+		payload.Type = common.TrimString(plan.Type.String())
 	} else {
 		payload.Type = "Directory"
 	}
@@ -184,7 +185,7 @@ func (r *resourceCTEResourceSet) Create(ctx context.Context, req resource.Create
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Resource Set Creation",
 			err.Error(),
@@ -192,9 +193,9 @@ func (r *resourceCTEResourceSet) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, URL_CTE_RESOURCE_SET, payloadJSON, "id")
+	response, err := r.client.PostData(ctx, id, common.URL_CTE_RESOURCE_SET, payloadJSON, "id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Resource Set on CipherTrust Manager: ",
 			"Could not create CTE Resource Set, unexpected error: "+err.Error(),
@@ -204,7 +205,7 @@ func (r *resourceCTEResourceSet) Create(ctx context.Context, req resource.Create
 
 	plan.ID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cm_resource_set.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_resource_set.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -218,8 +219,8 @@ func (r *resourceCTEResourceSet) Read(ctx context.Context, req resource.ReadRequ
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEResourceSet) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkCTEResourceSetModel
-	var payload CTEResourceSetModelJSON
+	var plan CTEResourceSetTFSDK
+	var payload CTEResourceSetJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -227,7 +228,7 @@ func (r *resourceCTEResourceSet) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	payload.Description = trimString(plan.Description.String())
+	payload.Description = common.TrimString(plan.Description.String())
 
 	var tagsJSONArr []ClassificationTagJSON
 	for _, tag := range plan.ClassificationTags {
@@ -282,7 +283,7 @@ func (r *resourceCTEResourceSet) Update(ctx context.Context, req resource.Update
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Update]["+plan.ID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Resource Set Update",
 			err.Error(),
@@ -290,9 +291,9 @@ func (r *resourceCTEResourceSet) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), URL_CTE_RESOURCE_SET, payloadJSON, "id")
+	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_RESOURCE_SET, payloadJSON, "id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Update]["+plan.ID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_resource_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Resource Set on CipherTrust Manager: ",
 			"Could not create CTE Resource Set, unexpected error: "+err.Error(),
@@ -310,7 +311,7 @@ func (r *resourceCTEResourceSet) Update(ctx context.Context, req resource.Update
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEResourceSet) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkCTEResourceSetModel
+	var state CTEResourceSetTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -318,8 +319,8 @@ func (r *resourceCTEResourceSet) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), URL_CTE_RESOURCE_SET)
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cm_resource_set.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
+	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_RESOURCE_SET)
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_resource_set.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CTE Resource Set",
@@ -334,7 +335,7 @@ func (d *resourceCTEResourceSet) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",

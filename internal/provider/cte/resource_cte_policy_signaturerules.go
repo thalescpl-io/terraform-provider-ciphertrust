@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
@@ -25,7 +26,7 @@ func NewResourceCTEPolicySignatureRule() resource.Resource {
 }
 
 type resourceCTEPolicySignatureRule struct {
-	client *Client
+	client *common.Client
 }
 
 func (r *resourceCTEPolicySignatureRule) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -71,10 +72,10 @@ func (r *resourceCTEPolicySignatureRule) Schema(_ context.Context, _ resource.Sc
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, MSG_METHOD_START+"[resource_cte_policy_signaturerules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_policy_signaturerules.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan tfsdkAddSignatureRulePolicy
+	var plan CTEPolicyAddSignatureRuleTFSDK
 	var payload AddSignaturesToRuleJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -89,7 +90,7 @@ func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resourc
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Signature Rule Creation",
 			err.Error(),
@@ -100,11 +101,11 @@ func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resourc
 	response, err := r.client.PostData(
 		ctx,
 		id,
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/signaturerules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/signaturerules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Create]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error creating CTE Policy Signature Rule on CipherTrust Manager: ",
 			"Could not create CTE Policy Signature Rule, unexpected error: "+err.Error(),
@@ -114,7 +115,7 @@ func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resourc
 
 	plan.SignatureRuleID = types.StringValue(response)
 
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Create]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -128,7 +129,7 @@ func (r *resourceCTEPolicySignatureRule) Read(ctx context.Context, req resource.
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan tfsdkAddSignatureRulePolicy
+	var plan CTEPolicyAddSignatureRuleTFSDK
 	var payload SignatureRuleJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -143,7 +144,7 @@ func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resourc
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Update]["+plan.SignatureRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Update]["+plan.SignatureRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Invalid data input: CTE Policy Signature Rule Update",
 			err.Error(),
@@ -154,11 +155,11 @@ func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resourc
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.SignatureRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/signaturerules",
+		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/signaturerules",
 		payloadJSON,
 		"id")
 	if err != nil {
-		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Update]["+plan.SignatureRuleID.ValueString()+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Update]["+plan.SignatureRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy Signature Rule on CipherTrust Manager: ",
 			"Could not update CTE Policy Signature Rule, unexpected error: "+err.Error(),
@@ -176,7 +177,7 @@ func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resourc
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCTEPolicySignatureRule) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tfsdkAddSignatureRulePolicy
+	var state CTEPolicyAddSignatureRuleTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -187,8 +188,8 @@ func (r *resourceCTEPolicySignatureRule) Delete(ctx context.Context, req resourc
 	output, err := r.client.DeleteByID(
 		ctx,
 		state.SignatureRuleID.ValueString(),
-		URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/signaturerules")
-	tflog.Trace(ctx, MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Delete]["+state.SignatureRuleID.ValueString()+"]["+output+"]")
+		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/signaturerules")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Delete]["+state.SignatureRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting CTE Policy Signature Rule",
@@ -203,7 +204,7 @@ func (d *resourceCTEPolicySignatureRule) Configure(_ context.Context, req resour
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*common.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Error in fetching client from provider",
