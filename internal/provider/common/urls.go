@@ -21,4 +21,5 @@ const (
 	URL_LDT_GROUP_COMM_SVC = "api/v1/transparent-encryption/ldtgroupcommservice"
 	// CCKM Endpoints
 	URL_AWS_CONNECTION = "api/v1/connectionmgmt/services/aws/connections"
+	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
 )

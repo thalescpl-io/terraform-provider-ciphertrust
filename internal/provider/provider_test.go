@@ -12,9 +12,10 @@ const (
 	// such as updating the Makefile and running the testing through that tool.
 	providerConfig = `
 provider "ciphertrust" {
-	address = "https://192.168.2.248"
+	address = "https://52.86.120.81"
 	username = "admin"
-	password = "ChangeIt01!"
+	password = "KeySecure_1"
+	bootstrap = "no"
 }
 `
 )

@@ -90,6 +90,30 @@ func (c *Client) PostData(ctx context.Context, uuid string, endpoint string, dat
 	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> PostData]["+uuid+"]")
 	return ret, nil
 }
+func (c *Client) PostDataV2(ctx context.Context, uuid string, endpoint string, data []byte) (string, error) {
+	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> PostData]["+uuid+"]")
+	var payload io.Reader
+	if len(data) == 0 {
+		payload = nil
+	} else {
+		payload = bytes.NewBuffer(data)
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.CipherTrustURL, endpoint), payload)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> PostData]["+uuid+"]")
+		return "", err
+	}
+
+	body, err := c.doRequest(ctx, uuid, req, nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> PostData]["+uuid+"]")
+		return "", err
+	}
+	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> PostData]["+uuid+"]")
+
+	return string(body), nil
+}
 
 func (c *Client) UpdateData(ctx context.Context, uuid string, endpoint string, data []byte, id string) (string, error) {
 	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> UpdateData]["+uuid+"]")
