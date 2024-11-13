@@ -6,25 +6,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestResourceCTEUserSet(t *testing.T) {
+func TestResourceCTESignatureSet(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cte_user_set" "user_set" {
-  name = "testUserSet1"
-  users = [
-    {
-      uname="user1"
-      gid=0
-      uid=0
-    }
+resource "ciphertrust_cte_signature_set" "signature_set" {
+  name = "testSignSet"
+  source_list = [
+    "/usr/bin",
+    "/usr/sbin"
   ]
+  type = "Application"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ciphertrust_cte_user_set.user_set", "id"),
+					resource.TestCheckResourceAttrSet("ciphertrust_cte_signature_set.signature_set", "id"),
 				),
 			},
 			// ImportState testing
@@ -37,25 +35,16 @@ resource "ciphertrust_cte_user_set" "user_set" {
 			// Update and Read testing
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cte_user_set" "user_set" {
-  name = "testUserSet1"
+resource "ciphertrust_cte_signature_set" "signature_set" {
+  name = "testSignSet"
   description = "Updated via TF"
-  users = [
-    {
-      uname="user1"
-      gid=0
-      uid=0
-    },
-	{
-      uname="user2"
-      gid=0
-      uid=0
-    }
+  source_list = [
+    "/usr/bin"
   ]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ciphertrust_cte_user_set.user_set", "id"),
+					resource.TestCheckResourceAttrSet("ciphertrust_cte_signature_set.signature_set", "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

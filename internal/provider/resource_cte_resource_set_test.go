@@ -6,25 +6,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestResourceCTEUserSet(t *testing.T) {
+func TestResourceCTEResourceSet(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cte_user_set" "user_set" {
-  name = "testUserSet1"
-  users = [
+resource "ciphertrust_cte_resource_set" "resource_set" {
+  name = "testResourceSet"
+  resources = [
     {
-      uname="user1"
-      gid=0
-      uid=0
+      directory="/tmp"
+      file="*"
+	  hdfs=false
+	  include_subfolders=false
     }
   ]
+  type="Directory"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ciphertrust_cte_user_set.user_set", "id"),
+					resource.TestCheckResourceAttrSet("ciphertrust_cte_resource_set.resource_set", "id"),
 				),
 			},
 			// ImportState testing
@@ -37,25 +39,27 @@ resource "ciphertrust_cte_user_set" "user_set" {
 			// Update and Read testing
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cte_user_set" "user_set" {
-  name = "testUserSet1"
+resource "ciphertrust_cte_resource_set" "resource_set" {
+  name = "testResourceSet"
   description = "Updated via TF"
-  users = [
+  resources = [
     {
-      uname="user1"
-      gid=0
-      uid=0
+      directory="/tmp"
+      file="*"
+	  hdfs=false
+	  include_subfolders=false
     },
 	{
-      uname="user2"
-      gid=0
-      uid=0
+      directory="/home/testUser"
+      file="*"
+	  hdfs=false
+	  include_subfolders=false
     }
   ]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ciphertrust_cte_user_set.user_set", "id"),
+					resource.TestCheckResourceAttrSet("ciphertrust_cte_resource_set.resource_set", "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
