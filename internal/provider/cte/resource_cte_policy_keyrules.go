@@ -207,10 +207,12 @@ func (r *resourceCTEPolicyKeyRule) Delete(ctx context.Context, req resource.Dele
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(
-		ctx,
-		state.KeyRuleID.ValueString(),
-		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/keyrules")
+	// output, err := r.client.DeleteByID(
+	// 	ctx,
+	// 	state.KeyRuleID.ValueString(),
+	// 	common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/keyrules")
+	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEClientPolicyID.ValueString(), "keyrules", state.KeyRuleID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.CTEClientPolicyID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_keyrules.go -> Delete]["+state.KeyRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

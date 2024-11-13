@@ -100,30 +100,35 @@ type CTEClientTFSDK struct {
 type CTEClientJSON struct {
 	ID                     string                 `json:"id"`
 	Name                   string                 `json:"name"`
-	ClientLocked           bool                   `json:"client_locked"`
+	ClientLocked           bool                   `json:"client_locked,omitempty"`
 	ClientType             string                 `json:"client_type"`
 	CommunicationEnabled   bool                   `json:"communication_enabled"`
 	Description            string                 `json:"description"`
-	Password               string                 `json:"password"`
+	Password               string                 `json:"password,omitempty"`
 	PasswordCreationMethod string                 `json:"password_creation_method"`
 	ProfileIdentifier      string                 `json:"profile_identifier"`
 	RegistrationAllowed    bool                   `json:"registration_allowed"`
-	SystemLocked           bool                   `json:"system_locked"`
-	ClientMFAEnabled       bool                   `json:"client_mfa_enabled"`
+	SystemLocked           bool                   `json:"system_locked,omitempty"`
+	ClientMFAEnabled       bool                   `json:"client_mfa_enabled,omitempty"`
 	DelClient              bool                   `json:"del_client"`
 	DisableCapability      string                 `json:"disable_capability"`
-	DynamicParameters      string                 `json:"dynamic_parameters"`
+	DynamicParameters      string                 `json:"dynamic_parameters,omitempty"`
 	EnableDomainSharing    bool                   `json:"enable_domain_sharing"`
-	EnabledCapabilities    string                 `json:"enabled_capabilities"`
-	LGCSAccessOnly         bool                   `json:"lgcs_access_only"`
+	EnabledCapabilities    string                 `json:"enabled_capabilities,omitempty"`
+	LGCSAccessOnly         bool                   `json:"lgcs_access_only,omitempty"`
 	MaxNumCacheLog         int64                  `json:"max_num_cache_log"`
 	MaxSpaceCacheLog       int64                  `json:"max_space_cache_log"`
 	ProfileID              string                 `json:"profile_id"`
-	ProtectionMode         string                 `json:"protection_mode"`
+	ProtectionMode         string                 `json:"protection_mode,omitempty"`
 	SharedDomainList       []string               `json:"shared_domain_list"`
 	Labels                 map[string]interface{} `json:"labels"`
 }
 
+// CTE client delete payload struct
+type DelClientJSON struct {
+	DelClient      bool `json:"del_client"`
+	ForceDelClient bool `json:"force_del_client"`
+}
 // CTE Policy related structs
 type DataTxRuleJSON struct {
 	KeyID         string `json:"key_id"`

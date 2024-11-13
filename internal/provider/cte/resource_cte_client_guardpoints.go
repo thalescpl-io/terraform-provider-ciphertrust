@@ -317,10 +317,8 @@ func (r *resourceCTEClientGP) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(
-		ctx,
-		state.GPID.ValueString(),
-		common.URL_CTE_CLIENT+"/"+state.CTEClientID.ValueString()+"/guardpoints")
+	url := fmt.Sprintf("%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_CLIENT, state.GPID.ValueString(), "guardpoints")
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.GPID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_client_guardpoints.go -> Delete]["+state.GPID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
