@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestResourceCMSSHKey(t *testing.T) {
+func TestResourceCTEUserSet(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -28,15 +28,6 @@ resource "ciphertrust_cm_reg_token" "reg_token" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify number of items
-					//resource.TestCheckResourceAttr("ciphertrust_cm_reg_token.reg_token", "items.#", "1"),
-					// Verify first order item
-					//resource.TestCheckResourceAttr("hashicups_order.test", "items.0.quantity", "2"),
-					//resource.TestCheckResourceAttr("hashicups_order.test", "items.0.coffee.id", "1"),
-					// Verify first coffee item has Computed attributes filled.
-					//resource.TestCheckResourceAttr("hashicups_order.test", "items.0.coffee.description", ""),
-					// Verify dynamic values have any value set in the state.
-					//resource.TestCheckResourceAttrSet("ciphertrust_cm_reg_token.reg_token", "token"),
 					resource.TestCheckResourceAttrSet("ciphertrust_cm_reg_token.reg_token", "id"),
 				),
 			},
@@ -45,8 +36,6 @@ resource "ciphertrust_cm_reg_token" "reg_token" {
 			//	ResourceName:      "ciphertrust_cm_reg_token.reg_token",
 			//	ImportState:       true,
 			//	ImportStateVerify: true,
-			// The last_updated attribute does not exist in the HashiCups
-			// API, therefore there is no value for it during import.
 			//	ImportStateVerifyIgnore: []string{"last_updated"},
 			//},
 			// Update and Read testing
