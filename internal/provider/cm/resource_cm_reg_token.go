@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -42,6 +43,10 @@ func (r *resourceCMRegToken) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"token": schema.StringAttribute{
+				Computed:    true,
+				Description: "Set the token recieved from the API call to the state.",
 			},
 			"ca_id": schema.StringAttribute{
 				Optional:    true,
@@ -140,7 +145,7 @@ func (r *resourceCMRegToken) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, common.URL_REG_TOKEN, payloadJSON, "id")
+	response, err := r.client.PostDataV2(ctx, id, common.URL_REG_TOKEN, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_reg_token.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -150,7 +155,8 @@ func (r *resourceCMRegToken) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	plan.ID = types.StringValue(response)
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.Token = types.StringValue(gjson.Get(response, "token").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_reg_token.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -162,6 +168,12 @@ func (r *resourceCMRegToken) Create(ctx context.Context, req resource.CreateRequ
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCMRegToken) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CMRegTokenTFSDK
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.

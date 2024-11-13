@@ -367,6 +367,7 @@ type CMRegTokensListTFSDK struct {
 
 type CMRegTokenTFSDK struct {
 	ID                        types.String `tfsdk:"id"`
+	Token                     types.String `tfsdk:"token"`
 	CAID                      types.String `tfsdk:"ca_id"`
 	CertDuration              types.Int64  `tfsdk:"cert_duration"`
 	ClientManagementProfileID types.String `tfsdk:"client_management_profile_id"`
@@ -379,6 +380,7 @@ type CMRegTokenTFSDK struct {
 
 type CMRegTokenJSON struct {
 	ID                        string                 `json:"id"`
+	Token                     string                 `json:"token"`
 	CAID                      string                 `json:"ca_id"`
 	CertDuration              int64                  `json:"cert_duration"`
 	ClientManagementProfileID string                 `json:"client_management_profile_id"`

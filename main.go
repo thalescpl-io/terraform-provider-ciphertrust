@@ -31,7 +31,8 @@ func main() {
 		// TODO: Update this string with the published name of your provider.
 		// Also update the tfplugindocs generate command to either remove the
 		// -provider-name flag or set its value to the updated provider name.
-		Address: "github.com/thalescpl-io/terraform-provider-ciphertrust",
+		//Address: "github.com/thalescpl-io/terraform-provider-ciphertrust",
+		Address: "thalesgroup.com/oss/ciphertrust",
 		Debug:   debug,
 	}
 
