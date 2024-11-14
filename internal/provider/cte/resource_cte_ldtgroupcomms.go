@@ -260,7 +260,8 @@ func (r *resourceLDTGroupCommSvc) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_LDT_GROUP_COMM_SVC)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_LDT_GROUP_COMM_SVC, state.ID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -319,7 +319,8 @@ func (r *resourceCTEResourceSet) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_RESOURCE_SET)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_RESOURCE_SET, state.ID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_resource_set.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

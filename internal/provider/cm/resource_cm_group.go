@@ -208,7 +208,8 @@ func (r *resourceCMGroup) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.Name.ValueString(), common.URL_GROUP)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_GROUP, state.Name.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.Name.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_group.go -> Delete]["+state.Name.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
