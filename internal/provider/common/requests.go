@@ -11,9 +11,10 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func (c *Client) DeleteByID(ctx context.Context, uuid string, endpoint string) (string, error) {
+func (c *Client) DeleteByID(ctx context.Context, method string, uuid string, url string, Body []byte) (string, error) {
 	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> DeleteByID]["+uuid+"]")
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, uuid), nil)
+	reader := bytes.NewBuffer(Body)
+	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
 		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> GetAll]["+uuid+"]")
 		return "", err
@@ -67,6 +68,26 @@ func (c *Client) GetAll(ctx context.Context, uuid string, endpoint string) (stri
 	responseJson := gjson.Get(string(body), "resources").String()
 	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> GetAll]["+uuid+"]")
 	return responseJson, nil
+}
+
+func (c *Client) GetById(ctx context.Context, uuid string, id string, endpoint string) (string, error) {
+	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> GetById][Request ID: "+uuid+
+		"****** URL: "+fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id)+"]")
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id), nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> GetById]["+uuid+"]")
+		return "", err
+	}
+
+	body, err := c.doRequest(ctx, uuid, req, nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> GetById]["+uuid+"]")
+		return "", err
+	}
+
+	responseJson := gjson.Get(string(body), "resources").String()
+	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> GetById]["+uuid+"]")
+	return responseJson, err
 }
 
 func (c *Client) PostData(ctx context.Context, uuid string, endpoint string, data []byte, id string) (string, error) {

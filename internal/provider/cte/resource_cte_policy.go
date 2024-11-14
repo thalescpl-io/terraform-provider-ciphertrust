@@ -526,7 +526,8 @@ func (r *resourceCTEPolicy) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_POLICY)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.ID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -373,7 +373,8 @@ func (r *resourceCCKMAWSConnection) Delete(ctx context.Context, req resource.Del
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_AWS_CONNECTION)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_AWS_CONNECTION, state.ID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_aws_connection.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

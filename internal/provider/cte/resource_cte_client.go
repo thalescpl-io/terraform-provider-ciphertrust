@@ -7,18 +7,23 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	// "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
 var (
-	_ resource.Resource              = &resourceCTEClient{}
-	_ resource.ResourceWithConfigure = &resourceCTEClient{}
+	_                       resource.Resource              = &resourceCTEClient{}
+	_                       resource.ResourceWithConfigure = &resourceCTEClient{}
+	CtePasswordGenarationMethod                                = []string{"GENERATE", "MANUAL"}
+	CteClientType                                          = []string{"FS", "CTE-U"}
 )
 
 func NewResourceCTEClient() resource.Resource {
@@ -54,7 +59,11 @@ func (r *resourceCTEClient) Schema(_ context.Context, _ resource.SchemaRequest, 
 			},
 			"client_type": schema.StringAttribute{
 				Optional:    true,
+				Computed: true,
 				Description: "Type of CTE Client. The default value is FS. Valid values are CTE-U and FS.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(CteClientType...),
+				},
 			},
 			"communication_enabled": schema.BoolAttribute{
 				Optional:    true,
@@ -69,8 +78,11 @@ func (r *resourceCTEClient) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "Password for the client. Required when password_creation_method is MANUAL.",
 			},
 			"password_creation_method": schema.StringAttribute{
-				Optional:    true,
+				Required:    true,
 				Description: "Password creation method for the client. Valid values are MANUAL and GENERATE. The default value is GENERATE.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(CtePasswordGenarationMethod...),
+				},
 			},
 			"profile_identifier": schema.StringAttribute{
 				Optional:    true,
@@ -163,6 +175,9 @@ func (r *resourceCTEClient) Create(ctx context.Context, req resource.CreateReque
 	}
 	if plan.ClientType.ValueString() != "" && plan.ClientType.ValueString() != types.StringNull().ValueString() {
 		payload.ClientType = common.TrimString(plan.ClientType.String())
+	} else {
+		plan.ClientType = types.StringValue("FS")
+		payload.ClientType = common.TrimString(plan.ClientType.String())	
 	}
 	if plan.CommunicationEnabled.ValueBool() != types.BoolNull().ValueBool() {
 		payload.CommunicationEnabled = plan.CommunicationEnabled.ValueBool()
@@ -221,6 +236,26 @@ func (r *resourceCTEClient) Create(ctx context.Context, req resource.CreateReque
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEClient) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEClientTFSDK
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_CTE_CLIENT)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_client.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading CTE Client on CipherTrust Manager: ",
+			"Could not read CTE Client id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_client.go -> Read]["+id+"]")
+	return
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -236,10 +271,7 @@ func (r *resourceCTEClient) Update(ctx context.Context, req resource.UpdateReque
 
 	if plan.ClientLocked.ValueBool() != types.BoolNull().ValueBool() {
 		payload.ClientLocked = plan.ClientLocked.ValueBool()
-	}
-	if plan.ClientType.ValueString() != "" && plan.ClientType.ValueString() != types.StringNull().ValueString() {
-		payload.ClientType = common.TrimString(plan.ClientType.String())
-	}
+	}	
 	if plan.CommunicationEnabled.ValueBool() != types.BoolNull().ValueBool() {
 		payload.CommunicationEnabled = plan.CommunicationEnabled.ValueBool()
 	}
@@ -340,8 +372,22 @@ func (r *resourceCTEClient) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_CLIENT)
+	DelClient := DelClientJSON{
+		DelClient:      true,
+		ForceDelClient: true,
+	}
+	PayloadJSON, err := json.Marshal(DelClient)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_client.go -> Update][]")
+		resp.Diagnostics.AddError(
+			"Invalid data input: CTE Client Update %s "+state.ID.ValueString(),
+			err.Error(),
+		)
+		return
+	}
+	// Delete existing order using custom url
+	url := fmt.Sprintf("%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_CLIENT, state.ID.ValueString(), "delete")
+	output, err := r.client.DeleteByID(ctx, "PATCH", state.ID.ValueString(), url, PayloadJSON)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_client.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -357,7 +357,8 @@ func (r *resourceCTECSIGroup) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	// Delete existing CSI StorageGroup
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_CTE_CSIGROUP)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_CSIGROUP, state.ID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_csigroup.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

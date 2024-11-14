@@ -533,7 +533,8 @@ func (r *resourceAWSCustomKeyStore) Delete(ctx context.Context, req resource.Del
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(ctx, state.ID.ValueString(), common.URL_AWS_XKS)
+	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_AWS_XKS, state.ID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_custom_key_store.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -185,10 +185,12 @@ func (r *resourceCTEPolicySignatureRule) Delete(ctx context.Context, req resourc
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(
-		ctx,
-		state.SignatureRuleID.ValueString(),
-		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/signaturerules")
+	// output, err := r.client.DeleteByID(
+	// 	ctx,
+	// 	state.SignatureRuleID.ValueString(),
+	// 	common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/signaturerules")
+	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEClientPolicyID.ValueString(), "signaturerules", state.SignatureRuleID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.CTEClientPolicyID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Delete]["+state.SignatureRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(

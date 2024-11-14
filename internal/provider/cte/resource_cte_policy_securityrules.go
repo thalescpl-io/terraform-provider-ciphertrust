@@ -272,10 +272,8 @@ func (r *resourceCTEPolicySecurityRule) Delete(ctx context.Context, req resource
 	}
 
 	// Delete existing order
-	output, err := r.client.DeleteByID(
-		ctx,
-		state.SecurityRuleID.ValueString(),
-		common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/securityrules")
+	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEClientPolicyID.ValueString(), "securityrules", state.SecurityRuleID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.CTEClientPolicyID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_securityrules.go -> Delete]["+state.SecurityRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
