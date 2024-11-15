@@ -52,24 +52,24 @@ func (r *resourceCTEPolicyDataTXRule) Schema(_ context.Context, _ resource.Schem
 				Optional:    true,
 				Description: "Precedence order of the rule in the parent policy.",
 			},
-			"rule": schema.ListNestedAttribute{
+			"rule": schema.SingleNestedAttribute{
 				Optional: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"key_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
-						},
-						"key_type": schema.StringAttribute{
-							Optional:    true,
-							Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
-						},
-						"resource_set_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "ID of the resource set linked with the rule.",
-						},
+				//NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"key_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
+					},
+					"key_type": schema.StringAttribute{
+						Optional:    true,
+						Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
+					},
+					"resource_set_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "ID of the resource set linked with the rule.",
 					},
 				},
+				//},
 			},
 		},
 	}
