@@ -129,6 +129,7 @@ type DelClientJSON struct {
 	DelClient      bool `json:"del_client"`
 	ForceDelClient bool `json:"force_del_client"`
 }
+
 // CTE Policy related structs
 type DataTxRuleJSON struct {
 	KeyID         string `json:"key_id"`
@@ -267,7 +268,7 @@ type CTEPolicyTFSDK struct {
 	Name                types.String                  `tfsdk:"name"`
 	Description         types.String                  `tfsdk:"description"`
 	PolicyType          types.String                  `tfsdk:"policy_type"`
-	Metadata            CTEPolicyMetadataTFSDK        `tfsdk:"metadata"`
+	Metadata            *CTEPolicyMetadataTFSDK       `tfsdk:"metadata"`
 	NeverDeny           types.Bool                    `tfsdk:"never_deny"`
 	DataTransformRules  []DataTransformationRuleTFSDK `tfsdk:"data_transform_rules"`
 	IDTKeyRules         []IDTKeyRuleTFSDK             `tfsdk:"idt_key_rules"`

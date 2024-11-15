@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/google/uuid"
 
@@ -172,15 +173,13 @@ func (r *resourceCTEPolicy) Schema(_ context.Context, _ resource.SchemaRequest, 
 					},
 				},
 			},
-			"metadata": schema.MapNestedAttribute{
+			"metadata": schema.SingleNestedAttribute{
 				Optional:    true,
 				Description: "Restrict policy for modification",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"restrict_update": schema.BoolAttribute{
-							Optional:    true,
-							Description: "To restrict the policy for modification. If its value enabled means user not able to modify the guarded policy.",
-						},
+				Attributes: map[string]schema.Attribute{
+					"restrict_update": schema.BoolAttribute{
+						Optional:    true,
+						Description: "To restrict the policy for modification. If its value enabled means user not able to modify the guarded policy.",
 					},
 				},
 			},
@@ -341,10 +340,13 @@ func (r *resourceCTEPolicy) Create(ctx context.Context, req resource.CreateReque
 	payload.KeyRules = keyRules
 
 	var metadata CTEPolicyMetadataJSON
-	if plan.Metadata.RestrictUpdate.ValueBool() != types.BoolNull().ValueBool() {
-		metadata.RestrictUpdate = bool(plan.Metadata.RestrictUpdate.ValueBool())
+	if !reflect.DeepEqual((*CTEPolicyMetadataTFSDK)(nil), plan.Metadata) {
+		tflog.Debug(ctx, "Metadata should not be empty at this point")
+		if plan.Metadata.RestrictUpdate.ValueBool() != types.BoolNull().ValueBool() {
+			metadata.RestrictUpdate = bool(plan.Metadata.RestrictUpdate.ValueBool())
+		}
+		payload.Metadata = metadata
 	}
-	payload.Metadata = metadata
 
 	// Add Key Rules to the payload if set
 	var ldtKeyRules []LDTRuleJSON

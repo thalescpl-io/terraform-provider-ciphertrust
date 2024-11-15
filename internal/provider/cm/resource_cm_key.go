@@ -784,7 +784,7 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 	payload.Aliases = arrAlias
 	// Add hkdfCreateParameters to payload if set
 	var hkdfCreateParameters HKDFParametersJSON
-	if (HKDFParametersTFSDK{} != plan.HKDFCreateParameters) {
+	if !reflect.DeepEqual((*HKDFParametersTFSDK)(nil), plan.HKDFCreateParameters) {
 		tflog.Debug(ctx, "HKDFParameters should not be empty at this point")
 		if plan.HKDFCreateParameters.HashAlgorithm.ValueString() != "" && plan.HKDFCreateParameters.HashAlgorithm.ValueString() != types.StringNull().ValueString() {
 			hkdfCreateParameters.HashAlgorithm = plan.HKDFCreateParameters.HashAlgorithm.ValueString()
@@ -802,11 +802,11 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	// Add hkdfCreateParameters to payload if set
 	var metadata KeyMetadataJSON
-	if (!reflect.DeepEqual(KeyMetadataTFSDK{}, plan.Metadata)) {
+	if !reflect.DeepEqual((*KeyMetadataTFSDK)(nil), plan.Metadata) {
 		if plan.Metadata.OwnerId.ValueString() != "" && plan.Metadata.OwnerId.ValueString() != types.StringNull().ValueString() {
 			metadata.OwnerId = plan.Metadata.OwnerId.ValueString()
 		}
-		if (!reflect.DeepEqual(KeyMetadataPermissionsTFSDK{}, plan.Metadata.Permissions)) {
+		if !reflect.DeepEqual((*KeyMetadataPermissionsTFSDK)(nil), plan.Metadata.Permissions) {
 			var permission KeyMetadataPermissionsJSON
 			var decryptWithKey []string
 			var encryptWithKey []string
@@ -856,7 +856,7 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 			permission.UseKey = useKey
 			metadata.Permissions = &permission
 		}
-		if (!reflect.DeepEqual(KeyMetadataCTETFSDK{}, plan.Metadata.CTE)) {
+		if !reflect.DeepEqual((*KeyMetadataCTETFSDK)(nil), plan.Metadata.CTE) {
 			var cteParams KeyMetadataCTEJSON
 			if plan.Metadata.CTE.PersistentOnClient.ValueBool() != types.BoolNull().ValueBool() {
 				cteParams.PersistentOnClient = plan.Metadata.CTE.PersistentOnClient.ValueBool()
@@ -871,9 +871,10 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 		}
 		payload.Metadata = &metadata
 	}
+
 	// Add publicKeyParameters to payload if set
 	var publicKeyParameters PublicKeyParametersJSON
-	if (!reflect.DeepEqual(PublicKeyParametersTFSDK{}, plan.PublicKeyParameters)) {
+	if !reflect.DeepEqual((*PublicKeyParametersTFSDK)(nil), plan.PublicKeyParameters) {
 		if plan.PublicKeyParameters.ActivationDate.ValueString() != "" && plan.PublicKeyParameters.ActivationDate.ValueString() != types.StringNull().ValueString() {
 			publicKeyParameters.ActivationDate = plan.PublicKeyParameters.ActivationDate.ValueString()
 		}
@@ -917,7 +918,7 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	// Add wrapHKDF to payload if set
 	var wrapHKDF WrapHKDFJSON
-	if (WrapHKDFTFSDK{} != plan.HKDFWrap) {
+	if !reflect.DeepEqual((*WrapHKDFTFSDK)(nil), plan.HKDFWrap) {
 		if plan.HKDFWrap.HashAlgorithm.ValueString() != "" && plan.HKDFWrap.HashAlgorithm.ValueString() != types.StringNull().ValueString() {
 			wrapHKDF.HashAlgorithm = plan.HKDFWrap.HashAlgorithm.ValueString()
 		}
@@ -934,7 +935,7 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	// Add wrapPBE to payload if set
 	var wrapPBE WrapPBEJSON
-	if (WrapPBETFSDK{} != plan.PBEWrap) {
+	if !reflect.DeepEqual((*WrapPBETFSDK)(nil), plan.PBEWrap) {
 		if plan.PBEWrap.DKLen.ValueInt64() != types.Int64Null().ValueInt64() {
 			wrapPBE.DKLen = plan.PBEWrap.DKLen.ValueInt64()
 		}
@@ -963,7 +964,7 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	// Add wrapPBE to payload if set
 	var wrapRSAAES WrapRSAAESJSON
-	if (WrapRSAAESTFSDK{} != plan.RSAAESWrap) {
+	if !reflect.DeepEqual((*WrapRSAAESTFSDK)(nil), plan.RSAAESWrap) {
 		if plan.RSAAESWrap.AESKeySize.ValueInt64() != types.Int64Null().ValueInt64() {
 			wrapRSAAES.AESKeySize = plan.RSAAESWrap.AESKeySize.ValueInt64()
 		}
