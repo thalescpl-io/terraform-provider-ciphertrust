@@ -16,7 +16,7 @@ resource "ciphertrust_cte_process_set" "process_set" {
   name = "TestProcessSet"
   processes = [
     {
-      signature="TestSignSet"
+      signature=""
       directory="/home/testUser"
 	  file="*"
     }
@@ -45,11 +45,6 @@ resource "ciphertrust_cte_process_set" "process_set" {
       directory="/home/testUser"
       file="*"
     },
-    {
-      signature="TestSignSet",
-      directory="/home/kyloTest",
-      file="kylo.bin"
-    }
   ]
 }
 `,

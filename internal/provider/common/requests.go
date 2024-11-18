@@ -90,6 +90,25 @@ func (c *Client) GetById(ctx context.Context, uuid string, id string, endpoint s
 	return responseJson, err
 }
 
+func (c *Client) ReadDataByParam(ctx context.Context, uuid string, id string, endpoint string) (string, error) {
+	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> ReadDataByParam][Request ID: "+uuid+
+		"****** URL: "+fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id)+"]")
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id), nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> ReadDataByParam]["+uuid+"]")
+		return "", err
+	}
+
+	body, err := c.doRequest(ctx, uuid, req, nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> ReadDataByParam]["+uuid+"]")
+		return "", err
+	}
+
+	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> ReadDataByParam]["+uuid+"]")
+	return string(body), err
+}
+
 func (c *Client) PostData(ctx context.Context, uuid string, endpoint string, data []byte, id string) (string, error) {
 	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> PostData]["+uuid+"]")
 	reader := bytes.NewBuffer(data)
