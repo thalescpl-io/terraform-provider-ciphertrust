@@ -105,9 +105,9 @@ type KeyMetadataCTETFSDK struct {
 }
 
 type KeyMetadataTFSDK struct {
-	OwnerId     types.String                `tfsdk:"owner_id"`
-	Permissions KeyMetadataPermissionsTFSDK `tfsdk:"permissions"`
-	CTE         KeyMetadataCTETFSDK         `tfsdk:"cte"`
+	OwnerId     types.String                 `tfsdk:"owner_id"`
+	Permissions *KeyMetadataPermissionsTFSDK `tfsdk:"permissions"`
+	CTE         *KeyMetadataCTETFSDK         `tfsdk:"cte"`
 }
 
 type KeyAliasTFSDK struct {
@@ -437,4 +437,38 @@ type CMPwdChangeJSON struct {
 	Username    string `json:"username"`
 	Password    string `json:"password"`
 	NewPassword string `json:"new_password"`
+}
+
+type CMDomainTFSDK struct {
+	ID                  types.String   `tfsdk:"id"`
+	Name                types.String   `tfsdk:"name"`
+	Admins              []types.String `tfsdk:"admins"`
+	AllowUserManagement types.Bool     `tfsdk:"allow_user_management"`
+	HSMConnectionId     types.String   `tfsdk:"hsm_connection_id"`
+	HSMKEKLabel         types.String   `tfsdk:"hsm_kek_label"`
+	Meta                types.Map      `tfsdk:"meta"`
+	ParentCAId          types.String   `tfsdk:"parent_ca_id"`
+	URI                 types.String   `tfsdk:"uri"`
+	Account             types.String   `tfsdk:"account"`
+	Application         types.String   `tfsdk:"application"`
+	DevAccount          types.String   `tfsdk:"dev_account"`
+	CreatedAt           types.String   `tfsdk:"created_at"`
+	UpdatedAt           types.String   `tfsdk:"updated_at"`
+}
+
+type CMDomainJSON struct {
+	ID                  string                 `json:"id"`
+	Name                string                 `json:"name"`
+	Admins              []string               `json:"admins"`
+	AllowUserManagement bool                   `json:"allow_user_management"`
+	HSMConnectionId     string                 `json:"hsm_connection_id"`
+	HSMKEKLabel         string                 `json:"hsm_kek_label"`
+	Meta                map[string]interface{} `json:"meta"`
+	ParentCAId          string                 `json:"parent_ca_id"`
+	URI                 string                 `json:"uri"`
+	Account             string                 `json:"account"`
+	Application         string                 `json:"application"`
+	DevAccount          string                 `json:"devAccount"`
+	CreatedAt           string                 `json:"createdAt"`
+	UpdatedAt           string                 `json:"updatedAt"`
 }
