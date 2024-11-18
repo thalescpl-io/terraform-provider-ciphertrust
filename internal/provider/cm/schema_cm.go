@@ -105,9 +105,9 @@ type KeyMetadataCTETFSDK struct {
 }
 
 type KeyMetadataTFSDK struct {
-	OwnerId     types.String                `tfsdk:"owner_id"`
-	Permissions KeyMetadataPermissionsTFSDK `tfsdk:"permissions"`
-	CTE         KeyMetadataCTETFSDK         `tfsdk:"cte"`
+	OwnerId     types.String                 `tfsdk:"owner_id"`
+	Permissions *KeyMetadataPermissionsTFSDK `tfsdk:"permissions"`
+	CTE         *KeyMetadataCTETFSDK         `tfsdk:"cte"`
 }
 
 type KeyAliasTFSDK struct {
@@ -152,66 +152,66 @@ type WrapRSAAESTFSDK struct {
 }
 
 type CMKeyTFSDK struct {
-	ID                       types.String             `tfsdk:"id"`
-	ActivationDate           types.String             `tfsdk:"activation_date"`
-	Algorithm                types.String             `tfsdk:"algorithm"`
-	ArchiveDate              types.String             `tfsdk:"archive_date"`
-	AssignSelfAsOwner        types.Bool               `tfsdk:"assign_self_as_owner"`
-	CertType                 types.String             `tfsdk:"cert_type"`
-	CompromiseDate           types.String             `tfsdk:"compromise_date"`
-	CompromiseOccurrenceDate types.String             `tfsdk:"compromise_occurrence_date"`
-	Curveid                  types.String             `tfsdk:"curveid"`
-	DeactivationDate         types.String             `tfsdk:"deactivation_date"`
-	DefaultIV                types.String             `tfsdk:"default_iv"`
-	Description              types.String             `tfsdk:"description"`
-	DestroyDate              types.String             `tfsdk:"destroy_date"`
-	EmptyMaterial            types.Bool               `tfsdk:"empty_material"`
-	Encoding                 types.String             `tfsdk:"encoding"`
-	Format                   types.String             `tfsdk:"format"`
-	GenerateKeyId            types.Bool               `tfsdk:"generate_key_id"`
-	HKDFCreateParameters     HKDFParametersTFSDK      `tfsdk:"hkdf_create_parameters"`
-	IDSize                   types.Int64              `tfsdk:"id_size"`
-	KeyId                    types.String             `tfsdk:"key_id"`
-	MacSignBytes             types.String             `tfsdk:"mac_sign_bytes"`
-	MacSignKeyIdentifier     types.String             `tfsdk:"mac_sign_key_identifier"`
-	MacSignKeyIdentifierType types.String             `tfsdk:"mac_sign_key_identifier_type"`
-	Material                 types.String             `tfsdk:"material"`
-	MUID                     types.String             `tfsdk:"muid"`
-	ObjectType               types.String             `tfsdk:"object_type"`
-	Name                     types.String             `tfsdk:"name"`
-	Metadata                 KeyMetadataTFSDK         `tfsdk:"meta"`
-	Padded                   types.Bool               `tfsdk:"padded"`
-	Password                 types.String             `tfsdk:"password"`
-	ProcessStartDate         types.String             `tfsdk:"process_start_date"`
-	ProtectStopDate          types.String             `tfsdk:"protect_stop_date"`
-	RevocationReason         types.String             `tfsdk:"revocation_reason"`
-	RevocationMessage        types.String             `tfsdk:"revocation_message"`
-	RotationFrequencyDays    types.String             `tfsdk:"rotation_frequency_days"`
-	SecretDataEncoding       types.String             `tfsdk:"secret_data_encoding"`
-	SecretDataLink           types.String             `tfsdk:"secret_data_link"`
-	SigningAlgo              types.String             `tfsdk:"signing_algo"`
-	Size                     types.Int64              `tfsdk:"size"`
-	UnExportable             types.Bool               `tfsdk:"unexportable"`
-	UnDeletable              types.Bool               `tfsdk:"undeletable"`
-	State                    types.String             `tfsdk:"state"`
-	TemplateID               types.String             `tfsdk:"template_id"`
-	UsageMask                types.Int64              `tfsdk:"usage_mask"`
-	UUID                     types.String             `tfsdk:"uuid"`
-	WrapKeyIDType            types.String             `tfsdk:"wrap_key_id_type"`
-	WrapKeyName              types.String             `tfsdk:"wrap_key_name"`
-	WrapPublicKey            types.String             `tfsdk:"wrap_public_key"`
-	WrapPublicKeyPadding     types.String             `tfsdk:"wrap_public_key_padding"`
-	WrappingEncryptionAlgo   types.String             `tfsdk:"wrapping_encryption_algo"`
-	WrappingHashAlgo         types.String             `tfsdk:"wrapping_hash_algo"`
-	WrappingMethod           types.String             `tfsdk:"wrapping_method"`
-	XTS                      types.Bool               `tfsdk:"xts"`
-	Aliases                  []KeyAliasTFSDK          `tfsdk:"aliases"`
-	PublicKeyParameters      PublicKeyParametersTFSDK `tfsdk:"public_key_parameters"`
-	HKDFWrap                 WrapHKDFTFSDK            `tfsdk:"wrap_hkdf"`
-	PBEWrap                  WrapPBETFSDK             `tfsdk:"wrap_pbe"`
-	RSAAESWrap               WrapRSAAESTFSDK          `tfsdk:"wrap_rsaaes"`
-	Labels                   types.Map                `tfsdk:"labels"`
-	AllVersions              types.Bool               `tfsdk:"all_versions"`
+	ID                       types.String              `tfsdk:"id"`
+	ActivationDate           types.String              `tfsdk:"activation_date"`
+	Algorithm                types.String              `tfsdk:"algorithm"`
+	ArchiveDate              types.String              `tfsdk:"archive_date"`
+	AssignSelfAsOwner        types.Bool                `tfsdk:"assign_self_as_owner"`
+	CertType                 types.String              `tfsdk:"cert_type"`
+	CompromiseDate           types.String              `tfsdk:"compromise_date"`
+	CompromiseOccurrenceDate types.String              `tfsdk:"compromise_occurrence_date"`
+	Curveid                  types.String              `tfsdk:"curveid"`
+	DeactivationDate         types.String              `tfsdk:"deactivation_date"`
+	DefaultIV                types.String              `tfsdk:"default_iv"`
+	Description              types.String              `tfsdk:"description"`
+	DestroyDate              types.String              `tfsdk:"destroy_date"`
+	EmptyMaterial            types.Bool                `tfsdk:"empty_material"`
+	Encoding                 types.String              `tfsdk:"encoding"`
+	Format                   types.String              `tfsdk:"format"`
+	GenerateKeyId            types.Bool                `tfsdk:"generate_key_id"`
+	HKDFCreateParameters     *HKDFParametersTFSDK      `tfsdk:"hkdf_create_parameters"`
+	IDSize                   types.Int64               `tfsdk:"id_size"`
+	KeyId                    types.String              `tfsdk:"key_id"`
+	MacSignBytes             types.String              `tfsdk:"mac_sign_bytes"`
+	MacSignKeyIdentifier     types.String              `tfsdk:"mac_sign_key_identifier"`
+	MacSignKeyIdentifierType types.String              `tfsdk:"mac_sign_key_identifier_type"`
+	Material                 types.String              `tfsdk:"material"`
+	MUID                     types.String              `tfsdk:"muid"`
+	ObjectType               types.String              `tfsdk:"object_type"`
+	Name                     types.String              `tfsdk:"name"`
+	Metadata                 *KeyMetadataTFSDK         `tfsdk:"meta"`
+	Padded                   types.Bool                `tfsdk:"padded"`
+	Password                 types.String              `tfsdk:"password"`
+	ProcessStartDate         types.String              `tfsdk:"process_start_date"`
+	ProtectStopDate          types.String              `tfsdk:"protect_stop_date"`
+	RevocationReason         types.String              `tfsdk:"revocation_reason"`
+	RevocationMessage        types.String              `tfsdk:"revocation_message"`
+	RotationFrequencyDays    types.String              `tfsdk:"rotation_frequency_days"`
+	SecretDataEncoding       types.String              `tfsdk:"secret_data_encoding"`
+	SecretDataLink           types.String              `tfsdk:"secret_data_link"`
+	SigningAlgo              types.String              `tfsdk:"signing_algo"`
+	Size                     types.Int64               `tfsdk:"size"`
+	UnExportable             types.Bool                `tfsdk:"unexportable"`
+	UnDeletable              types.Bool                `tfsdk:"undeletable"`
+	State                    types.String              `tfsdk:"state"`
+	TemplateID               types.String              `tfsdk:"template_id"`
+	UsageMask                types.Int64               `tfsdk:"usage_mask"`
+	UUID                     types.String              `tfsdk:"uuid"`
+	WrapKeyIDType            types.String              `tfsdk:"wrap_key_id_type"`
+	WrapKeyName              types.String              `tfsdk:"wrap_key_name"`
+	WrapPublicKey            types.String              `tfsdk:"wrap_public_key"`
+	WrapPublicKeyPadding     types.String              `tfsdk:"wrap_public_key_padding"`
+	WrappingEncryptionAlgo   types.String              `tfsdk:"wrapping_encryption_algo"`
+	WrappingHashAlgo         types.String              `tfsdk:"wrapping_hash_algo"`
+	WrappingMethod           types.String              `tfsdk:"wrapping_method"`
+	XTS                      types.Bool                `tfsdk:"xts"`
+	Aliases                  []*KeyAliasTFSDK          `tfsdk:"aliases"`
+	PublicKeyParameters      *PublicKeyParametersTFSDK `tfsdk:"public_key_parameters"`
+	HKDFWrap                 *WrapHKDFTFSDK            `tfsdk:"wrap_hkdf"`
+	PBEWrap                  *WrapPBETFSDK             `tfsdk:"wrap_pbe"`
+	RSAAESWrap               *WrapRSAAESTFSDK          `tfsdk:"wrap_rsaaes"`
+	Labels                   types.Map                 `tfsdk:"labels"`
+	AllVersions              types.Bool                `tfsdk:"all_versions"`
 }
 
 type HKDFParametersJSON struct {
@@ -367,6 +367,7 @@ type CMRegTokensListTFSDK struct {
 
 type CMRegTokenTFSDK struct {
 	ID                        types.String `tfsdk:"id"`
+	Token                     types.String `tfsdk:"token"`
 	CAID                      types.String `tfsdk:"ca_id"`
 	CertDuration              types.Int64  `tfsdk:"cert_duration"`
 	ClientManagementProfileID types.String `tfsdk:"client_management_profile_id"`
@@ -379,6 +380,7 @@ type CMRegTokenTFSDK struct {
 
 type CMRegTokenJSON struct {
 	ID                        string                 `json:"id"`
+	Token                     string                 `json:"token"`
 	CAID                      string                 `json:"ca_id"`
 	CertDuration              int64                  `json:"cert_duration"`
 	ClientManagementProfileID string                 `json:"client_management_profile_id"`
@@ -435,4 +437,38 @@ type CMPwdChangeJSON struct {
 	Username    string `json:"username"`
 	Password    string `json:"password"`
 	NewPassword string `json:"new_password"`
+}
+
+type CMDomainTFSDK struct {
+	ID                  types.String   `tfsdk:"id"`
+	Name                types.String   `tfsdk:"name"`
+	Admins              []types.String `tfsdk:"admins"`
+	AllowUserManagement types.Bool     `tfsdk:"allow_user_management"`
+	HSMConnectionId     types.String   `tfsdk:"hsm_connection_id"`
+	HSMKEKLabel         types.String   `tfsdk:"hsm_kek_label"`
+	Meta                types.Map      `tfsdk:"meta"`
+	ParentCAId          types.String   `tfsdk:"parent_ca_id"`
+	URI                 types.String   `tfsdk:"uri"`
+	Account             types.String   `tfsdk:"account"`
+	Application         types.String   `tfsdk:"application"`
+	DevAccount          types.String   `tfsdk:"dev_account"`
+	CreatedAt           types.String   `tfsdk:"created_at"`
+	UpdatedAt           types.String   `tfsdk:"updated_at"`
+}
+
+type CMDomainJSON struct {
+	ID                  string                 `json:"id"`
+	Name                string                 `json:"name"`
+	Admins              []string               `json:"admins"`
+	AllowUserManagement bool                   `json:"allow_user_management"`
+	HSMConnectionId     string                 `json:"hsm_connection_id"`
+	HSMKEKLabel         string                 `json:"hsm_kek_label"`
+	Meta                map[string]interface{} `json:"meta"`
+	ParentCAId          string                 `json:"parent_ca_id"`
+	URI                 string                 `json:"uri"`
+	Account             string                 `json:"account"`
+	Application         string                 `json:"application"`
+	DevAccount          string                 `json:"devAccount"`
+	CreatedAt           string                 `json:"createdAt"`
+	UpdatedAt           string                 `json:"updatedAt"`
 }
