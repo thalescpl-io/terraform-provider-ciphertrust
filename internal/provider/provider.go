@@ -298,6 +298,7 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 // Resources defines the resources implemented in the provider.
 func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		cm.NewResourceCMScpConnection,
 		cm.NewResourceCMUser,
 		cm.NewResourceCMKey,
 		cm.NewResourceCMGroup,

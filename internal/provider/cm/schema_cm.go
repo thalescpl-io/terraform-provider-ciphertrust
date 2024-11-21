@@ -438,3 +438,37 @@ type CMPwdChangeJSON struct {
 	Password    string `json:"password"`
 	NewPassword string `json:"new_password"`
 }
+
+type CMScpConnectionTFDSK struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Products    []types.String `tfsdk:"products"`
+	Meta        types.Map      `tfsdk:"meta"`
+	Description types.String   `tfsdk:"description"`
+	Labels      types.Map      `tfsdk:"labels"`
+	Host        types.String   `tfsdk:"host"`
+	Port        types.Int64    `tfsdk:"port"`
+	Username    types.String   `tfsdk:"username"`
+	AuthMethod  types.String   `tfsdk:"auth_method"`
+	PathTo      types.String   `tfsdk:"path_to"`
+	Protocol    types.String   `tfsdk:"protocol"`
+	Password    types.String   `tfsdk:"password"`
+	PublicKey   types.String   `tfsdk:"public_key"`
+}
+
+type CMScpConnectionJSON struct {
+	ID          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Products    []string               `json:"products"`
+	Meta        interface{}            `json:"meta"`
+	Description string                 `json:"description"`
+	Labels      map[string]interface{} `json:"labels"`
+	Host        string                 `json:"host"`
+	Port        int64                  `json:"port"`
+	Username    string                 `json:"username"`
+	AuthMethod  string                 `json:"auth_method"`
+	PathTo      string                 `json:"path_to"`
+	Protocol    string                 `json:"protocol"`
+	Password    string                 `json:"password"`
+	PublicKey   string                 `json:"public_key"`
+}

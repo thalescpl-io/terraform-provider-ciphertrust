@@ -19,6 +19,7 @@ const (
 	URL_SSH_KEY            = "api/v1/system/ssh/keys"
 	URL_CHANGE_USER_PWD    = "api/v1/auth/changepw"
 	URL_LDT_GROUP_COMM_SVC = "api/v1/transparent-encryption/ldtgroupcommservice"
+	URL_SCP_CONNECTION     = "api/v1/connectionmgmt/services/scp/connections"
 	// CCKM Endpoints
 	URL_AWS_CONNECTION = "api/v1/connectionmgmt/services/aws/connections"
 	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
