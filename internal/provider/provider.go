@@ -292,13 +292,13 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		cm.NewDataSourceRegTokens,
 		cte.NewDataSourceCTEClients,
 		cm.NewDataSourceCertificateAuthorities,
+		cm.NewDataSourceScpConnection,
 	}
 }
 
 // Resources defines the resources implemented in the provider.
 func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		cm.NewResourceCMScpConnection,
 		cm.NewResourceCMUser,
 		cm.NewResourceCMKey,
 		cm.NewResourceCMGroup,
@@ -322,5 +322,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cte.NewResourceCTEClientGroup,
 		cte.NewResourceCTECSIGroup,
 		connections.NewResourceCCKMAWSConnection,
+		cm.NewResourceCMScpConnection,
 	}
 }
