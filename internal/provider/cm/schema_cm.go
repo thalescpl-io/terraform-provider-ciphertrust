@@ -443,9 +443,7 @@ type CMScpConnectionListModelTFDSK struct {
 	ID          types.String   `tfsdk:"id"`
 	Name        types.String   `tfsdk:"name"`
 	Products    []types.String `tfsdk:"products"`
-	Meta        types.Map      `tfsdk:"meta"`
 	Description types.String   `tfsdk:"description"`
-	Labels      types.Map      `tfsdk:"labels"`
 	Host        types.String   `tfsdk:"host"`
 	Port        types.Int64    `tfsdk:"port"`
 	Username    types.String   `tfsdk:"username"`
