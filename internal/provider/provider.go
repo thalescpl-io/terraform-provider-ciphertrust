@@ -16,8 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	cm "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cm"
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
-	connections "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/connections"
-	cte "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cte"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -276,22 +274,22 @@ func (p *ciphertrustProvider) Configure(ctx context.Context, req provider.Config
 // DataSources defines the data sources implemented in the provider.
 func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		cm.NewDataSourceUsers,
-		cm.NewDataSourceKeys,
-		cm.NewDataSourceGroups,
-		cte.NewDataSourceCTEUserSets,
-		cte.NewDataSourceCTEResourceSets,
-		cte.NewDataSourceCTEProcessSets,
-		cte.NewDataSourceCTEPolicyDataTXRule,
-		cte.NewDataSourceCTEPolicyIDTKeyRule,
-		cte.NewDataSourceCTEPolicyKeyRule,
-		cte.NewDataSourceCTEPolicyLDTKeyRule,
-		cte.NewDataSourceCTEPolicySecurityRule,
-		cte.NewDataSourceCTEPolicySignatureRule,
-		cte.NewDataSourceCTEProfiles,
-		cm.NewDataSourceRegTokens,
-		cte.NewDataSourceCTEClients,
-		cm.NewDataSourceCertificateAuthorities,
+		//cm.NewDataSourceUsers,
+		//cm.NewDataSourceKeys,
+		//cm.NewDataSourceGroups,
+		//cte.NewDataSourceCTEUserSets,
+		//cte.NewDataSourceCTEResourceSets,
+		//cte.NewDataSourceCTEProcessSets,
+		//cte.NewDataSourceCTEPolicyDataTXRule,
+		//cte.NewDataSourceCTEPolicyIDTKeyRule,
+		//cte.NewDataSourceCTEPolicyKeyRule,
+		//cte.NewDataSourceCTEPolicyLDTKeyRule,
+		//cte.NewDataSourceCTEPolicySecurityRule,
+		//cte.NewDataSourceCTEPolicySignatureRule,
+		//cte.NewDataSourceCTEProfiles,
+		//cm.NewDataSourceRegTokens,
+		//cte.NewDataSourceCTEClients,
+		//cm.NewDataSourceCertificateAuthorities,
 		cm.NewDataSourceScpConnection,
 	}
 }
@@ -299,29 +297,29 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 // Resources defines the resources implemented in the provider.
 func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		cm.NewResourceCMUser,
-		cm.NewResourceCMKey,
-		cm.NewResourceCMGroup,
-		cte.NewResourceCTEProcessSet,
-		cte.NewResourceCTEResourceSet,
-		cte.NewResourceCTEUserSet,
-		cte.NewResourceCTESignatureSet,
-		cte.NewResourceCTEPolicy,
-		cte.NewResourceCTEClient,
-		cte.NewResourceCTEPolicyDataTXRule,
-		cte.NewResourceCTEPolicyIDTKeyRule,
-		cte.NewResourceCTEPolicyKeyRule,
-		cte.NewResourceCTEPolicyLDTKeyRule,
-		cte.NewResourceCTEPolicySecurityRule,
-		cte.NewResourceCTEPolicySignatureRule,
-		cte.NewResourceCTEProfile,
-		cm.NewResourceCMRegToken,
-		cm.NewResourceCMSSHKey,
-		cm.NewResourceCMPwdChange,
-		cte.NewResourceCTEClientGP,
-		cte.NewResourceCTEClientGroup,
-		cte.NewResourceCTECSIGroup,
-		connections.NewResourceCCKMAWSConnection,
+		//cm.NewResourceCMUser,
+		//cm.NewResourceCMKey,
+		//cm.NewResourceCMGroup,
+		//cte.NewResourceCTEProcessSet,
+		//cte.NewResourceCTEResourceSet,
+		//cte.NewResourceCTEUserSet,
+		//cte.NewResourceCTESignatureSet,
+		//cte.NewResourceCTEPolicy,
+		//cte.NewResourceCTEClient,
+		//cte.NewResourceCTEPolicyDataTXRule,
+		//cte.NewResourceCTEPolicyIDTKeyRule,
+		//cte.NewResourceCTEPolicyKeyRule,
+		//cte.NewResourceCTEPolicyLDTKeyRule,
+		//cte.NewResourceCTEPolicySecurityRule,
+		//cte.NewResourceCTEPolicySignatureRule,
+		//cte.NewResourceCTEProfile,
+		//cm.NewResourceCMRegToken,
+		//cm.NewResourceCMSSHKey,
+		//cm.NewResourceCMPwdChange,
+		//cte.NewResourceCTEClientGP,
+		//cte.NewResourceCTEClientGroup,
+		//cte.NewResourceCTECSIGroup,
+		//connections.NewResourceCCKMAWSConnection,
 		cm.NewResourceCMScpConnection,
 	}
 }
