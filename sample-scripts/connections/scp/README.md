@@ -3,7 +3,7 @@
 page_title: "ciphertrust_cm_scp_connection Resource - terraform-provider-ciphertrust"
 subcategory: ""
 description: |-
-
+  
 ---
 
 # ciphertrust_cm_scp_connection (Resource)
@@ -55,30 +55,30 @@ To add meta, set the meta's value as follows.
 - `port` (Number) Port where SCP/SFTP service runs on host (usually 22).
 - `products` (List of String) Array of the CipherTrust products associated with the connection. Valid values are:
 
-  "cckm" for:
-  AWS
-  Azure
-  GCP
-  Luna connections
-  DSM
-  Salesforce
-  SAP Data Custodian
-  "ddc" for:
-  GCP
-  Hadoop connections
-  "cte" for:
-  Hadoop connections
-  SMB
-  OIDC
-  LDAP connections
-  "data discovery" for Hadoop connections.
-  "backup/restore" for SCP/SFTP connections.
-  "logger" for:
-  loki connections
-  elasticsearch connections
-  syslog connections
-  "hsm_anchored_domain" for:
-  Luna connections
+    "cckm" for:
+        AWS
+        Azure
+        GCP
+        Luna connections
+        DSM
+        Salesforce
+        SAP Data Custodian
+    "ddc" for:
+        GCP
+        Hadoop connections
+    "cte" for:
+        Hadoop connections
+        SMB
+        OIDC
+        LDAP connections
+    "data discovery" for Hadoop connections.
+    "backup/restore" for SCP/SFTP connections.
+    "logger" for:
+        loki connections
+        elasticsearch connections
+        syslog connections
+    "hsm_anchored_domain" for:
+        Luna connections
 - `protocol` (String) Use 'sftp' or 'scp'. 'sftp' is the default value
 
 ### Read-Only
