@@ -178,8 +178,8 @@ func (r *resourceCMNTP) Delete(ctx context.Context, req resource.DeleteRequest, 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_ntp.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting CipherTrust License",
-			"Could not delete license, unexpected error: "+err.Error(),
+			"Error Deleting CipherTrust NTP",
+			"Could not delete NTP, unexpected error: "+err.Error(),
 		)
 		return
 	}

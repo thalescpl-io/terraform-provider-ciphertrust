@@ -637,3 +637,66 @@ type CMNTPJSON struct {
 	Key     string `json:"key"`
 	KeyType string `json:"key_type"`
 }
+
+type CMClusterNodeCredsTFSDK struct {
+	Username    types.String `tfsdk:"host"`
+	Password    types.String `tfsdk:"original"`
+	Domain      types.String `tfsdk:"domain"`
+	AuthDomain  types.String `tfsdk:"auth_domain"`
+	NoSSLVerify types.Bool   `tfsdk:"no_ssl_verify"`
+}
+type CMClusterNodeTFSDK struct {
+	Host          types.String             `tfsdk:"host"`
+	Original      types.Bool               `tfsdk:"original"`
+	Port          types.Int64              `tfsdk:"port"`
+	PublicAddress types.String             `tfsdk:"public_address"`
+	Creds         *CMClusterNodeCredsTFSDK `tfsdk:"credentials"`
+}
+type CMClusterTFSDK struct {
+	ID                types.String         `tfsdk:"id"`
+	Nodes             []CMClusterNodeTFSDK `tfsdk:"nodes"`
+	NodeCount         types.Int64          `tfsdk:"node_count"`
+	NodeId            types.String         `tfsdk:"node_id"`
+	StatusCode        types.String         `tfsdk:"status_code"`
+	StatusDescription types.String         `tfsdk:"status_description"`
+}
+type CMClusterNodeJSON struct {
+	Host          string `json:"host"`
+	Original      bool   `json:"original"`
+	Port          int64  `json:"port"`
+	PublicAddress string `json:"public_address"`
+}
+type CMClusterJSON struct {
+	ID                string              `json:"id"`
+	Nodes             []CMClusterNodeJSON `json:"nodes"`
+	NodeCount         int64               `json:"node_count"`
+	NodeId            string              `json:"node_id"`
+	StatusCode        string              `json:"status_code"`
+	StatusDescription string              `json:"status_description"`
+}
+type NewCMClusterNodeJSON struct {
+	LocalNodeHost string `json:"localNodeHost"`
+	LocalNodePort int64  `json:"localNodePort"`
+	PublicAddress string `json:"publicAddress"`
+}
+type NewCSRJSON struct {
+	LocalNodeHost string `json:"localNodeHost"`
+	PublicAddress string `json:"publicAddress"`
+}
+type SignRequestJSON struct {
+	CSR                string `json:"csr"`
+	NewNodeHost        string `json:"newNodeHost"`
+	PublicAddress      string `json:"publicAddress"`
+	SharedHSMPartition bool   `json:"shared_hsm_partition"`
+}
+type JoinClusterJSON struct {
+	CAChain                string `json:"cachain"`
+	Cert                   string `json:"cert"`
+	LocalNodeHost          string `json:"localNodeHost"`
+	MemberNodeHost         string `json:"memberNodeHost"`
+	MKEKBlob               string `json:"mkek_blob"`
+	Blocking               bool   `json:"blocking"`
+	LocalNodePort          int64  `json:"localNodePort"`
+	LocalNodePublicAddress string `json:"localNodePublicAddress"`
+	MemberNodePort         int64  `json:"memberNodePort"`
+}

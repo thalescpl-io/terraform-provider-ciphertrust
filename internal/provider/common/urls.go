@@ -21,6 +21,11 @@ const (
 	URL_SSH_KEY            = "api/v1/system/ssh/keys"
 	URL_CHANGE_USER_PWD    = "api/v1/auth/changepw"
 	URL_LDT_GROUP_COMM_SVC = "api/v1/transparent-encryption/ldtgroupcommservice"
+	URL_NEW_CLUSTER        = "api/v1/cluster/new"
+	URL_CREATE_CSR         = "api/v1/cluster/csr"
+	URL_SIGN_CERT          = "api/v1/nodes"
+	URL_CLUSTER_JOIN       = "api/v1/cluster/join"
+	URL_CLUSTER_INFO       = "api/v1/cluster"
 	// CCKM Endpoints
 	URL_AWS_CONNECTION = "api/v1/connectionmgmt/services/aws/connections"
 	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
