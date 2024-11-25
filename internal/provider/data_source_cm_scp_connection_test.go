@@ -30,7 +30,7 @@ func TestCiphertrustSCPConnectionDataSource(t *testing.T) {
 		data "ciphertrust_cm_scp_connection_list" "scp_connection_details" {
 		depends_on = [ciphertrust_cm_scp_connection.scp_connection]
 		   filters = {
-   			 "name" = "TestSCPConnection1"
+   			 labels = "environment=test"
   			}
 		}`
 
