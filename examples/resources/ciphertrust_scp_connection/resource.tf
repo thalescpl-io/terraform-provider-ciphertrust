@@ -27,6 +27,8 @@ provider "ciphertrust" {
 
   # Password for authenticating with the CipherTrust appliance
   password = "KeySecure_1"
+
+  bootstrap = "no"
 }
 
 # Define an SCP connection resource with CipherTrust

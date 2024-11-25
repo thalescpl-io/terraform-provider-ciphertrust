@@ -84,3 +84,20 @@ To add meta, set the meta's value as follows.
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+
+## Run the Example
+
+```bash
+terraform init
+terraform apply
+```
+
+## Destroy Resources
+
+Resources must be destroyed before another sample script using the same cloud is run.
+
+```bash
+terraform destroy
+```
+Run this step even if the apply step fails.

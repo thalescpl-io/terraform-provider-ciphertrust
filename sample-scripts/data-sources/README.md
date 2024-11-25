@@ -55,3 +55,20 @@ This retrieves the SCP connection filtered by the specified labels from the Ciph
 Instead of labels, you can also use name,id or similar identifier to fetch the scp connection.
 
 If you didnt pass any filters, then terraform will fetch all the scp connections in the CipherTrust Manager. It work as a List api.
+
+
+## Run the Example
+
+```bash
+terraform init
+terraform apply
+```
+
+## Destroy Resources
+
+Resources must be destroyed before another sample script using the same cloud is run.
+
+```bash
+terraform destroy
+```
+Run this step even if the apply step fails.

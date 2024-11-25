@@ -26,6 +26,8 @@ provider "ciphertrust" {
 
   # Password to authenticate against the CipherTrust appliance
   password = "KeySecure_1"
+
+  bootstrap = "no"
 }
 
 # Data source for retrieving SCP connection details
