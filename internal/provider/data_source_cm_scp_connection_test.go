@@ -6,31 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-/*
-const (
-
-	// Correct provider configuration with bootstrap set to "no"
-	providerConfig1 = `
-
-	provider "ciphertrust" {
-	  address  = "https://54.159.102.166"
-	  username = "admin"
-	  password = "KeySecure_1"
-	  bootstrap = "no"
-	}
-
-`
-)
-
-// Initialize the provider in the test
-var (
-
-	testAccProtoV6ProviderFactories1 = map[string]func() (tfprotov6.ProviderServer, error){
-		"ciphertrust": providerserver.NewProtocol6WithError(New("ciphertrust")()),
-	}
-
-)
-*/
 func TestCiphertrustSCPConnectionDataSource(t *testing.T) {
 	// Config for the resource and data source
 	scpConnectionConfig := `
