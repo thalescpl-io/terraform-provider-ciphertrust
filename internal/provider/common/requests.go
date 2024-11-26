@@ -93,7 +93,14 @@ func (c *Client) GetById(ctx context.Context, uuid string, id string, endpoint s
 func (c *Client) ReadDataByParam(ctx context.Context, uuid string, id string, endpoint string) (string, error) {
 	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> ReadDataByParam][Request ID: "+uuid+
 		"****** URL: "+fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id)+"]")
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id), nil)
+	var url string
+	if id == "all" {
+		url = fmt.Sprintf("%s/%s", c.CipherTrustURL, endpoint)
+	} else {
+		url = fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, id)
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> ReadDataByParam]["+uuid+"]")
 		return "", err
