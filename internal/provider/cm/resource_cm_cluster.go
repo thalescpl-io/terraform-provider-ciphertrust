@@ -333,13 +333,13 @@ func (r *resourceCMCluster) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	// Delete existing license
-	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_DOMAIN, state.ID.ValueString())
-	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, nil)
+	url := fmt.Sprintf("%s/%s", r.client.CipherTrustURL, common.URL_CLUSTER_INFO)
+	output, err := r.client.DeleteByURL(ctx, state.NodeId.ValueString(), url)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cluster.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting CipherTrust NTP",
-			"Could not delete NTP, unexpected error: "+err.Error(),
+			"Error deleting cluster",
+			"Could not cluster, unexpected error: "+err.Error(),
 		)
 		return
 	}

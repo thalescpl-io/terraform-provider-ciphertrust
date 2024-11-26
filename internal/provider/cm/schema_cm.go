@@ -700,3 +700,20 @@ type JoinClusterJSON struct {
 	LocalNodePublicAddress string `json:"localNodePublicAddress"`
 	MemberNodePort         int64  `json:"memberNodePort"`
 }
+
+type CMTrialLicenseTFSDK struct {
+	ID            types.String `tfsdk:"id"`
+	Status        types.String `tfsdk:"status"`
+	Name          types.String `tfsdk:"name"`
+	Description   types.String `tfsdk:"description"`
+	ActivatedAt   types.String `tfsdk:"activated_at"`
+	DeactivatedAt types.String `tfsdk:"deactivated_at"`
+}
+type CMTrialLicenseJSON struct {
+	ID            string `json:"id"`
+	Status        string `json:"status"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	ActivatedAt   string `json:"activated_at"`
+	DeactivatedAt string `json:"deactivated_at"`
+}
