@@ -472,3 +472,25 @@ type CMDomainJSON struct {
 	CreatedAt           string                 `json:"createdAt"`
 	UpdatedAt           string                 `json:"updatedAt"`
 }
+
+type HSMSetupTFSDK struct {
+	ID            types.String `tfsdk:"id"`
+	Type          types.String `tfsdk:"type"`
+	ConnInfo      types.String `tfsdk:"conn_info"`
+	InitialConfig types.Map    `tfsdk:"initial_config"`
+	Reset         types.Bool   `tfsdk:"reset"`
+	Delay         types.Int64  `tfsdk:"delay"`
+	SubType       types.String `tfsdk:"sub_type"`
+	Config        types.Map    `tfsdk:"config"`
+}
+
+type HSMSetupJSON struct {
+	ID            string                 `json:"id"`
+	Type          string                 `json:"type"`
+	ConnInfo      string                 `json:"connInfo"`
+	InitialConfig map[string]interface{} `json:"initialConfig"`
+	Reset         bool                   `json:"reset"`
+	Delay         int64                  `json:"delay"`
+	SubType       string                 `json:"sub_type"`
+	Config        map[string]interface{} `json:"config"`
+}

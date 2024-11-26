@@ -321,5 +321,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cte.NewResourceCTEClientGroup,
 		cte.NewResourceCTECSIGroup,
 		connections.NewResourceCCKMAWSConnection,
+		cm.NewResourceHSMRootOfTrustServer,
 	}
 }
