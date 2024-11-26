@@ -3,8 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/connections"
-	"github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cte"
 	"os"
 
 	"github.com/google/uuid"
@@ -18,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	cm "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cm"
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
+	connections "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/connections"
+	cte "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cte"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
