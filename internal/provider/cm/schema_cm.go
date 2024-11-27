@@ -473,6 +473,251 @@ type CMDomainJSON struct {
 	UpdatedAt           string                 `json:"updatedAt"`
 }
 
+type CMInterfaceMetadataNAETFSDK struct {
+	MaskSystemGroups types.Bool `tfsdk:"mask_system_groups"`
+}
+type CMInterfaceMetadataTFSDK struct {
+	NAE *CMInterfaceMetadataNAETFSDK `tfsdk:"nae"`
+}
+type CMInterfacTrustedCAsTFSDK struct {
+	External []types.String `tfsdk:"external"`
+	Local    []types.String `tfsdk:"local"`
+}
+type CMInterfacCertificateTFSDK struct {
+	CertChain types.String `tfsdk:"certificate_chain"`
+	Generate  types.Bool   `tfsdk:"generate"`
+	Format    types.String `tfsdk:"format"`
+	Password  types.String `tfsdk:"password"`
+}
+type NamesParamsTFSDK struct {
+	C  types.String `tfsdk:"C"`
+	L  types.String `tfsdk:"L"`
+	O  types.String `tfsdk:"O"`
+	OU types.String `tfsdk:"OU"`
+	ST types.String `tfsdk:"ST"`
+}
+type CMInterfaceLocalAutogenAttrTFSDK struct {
+	CN          types.String       `tfsdk:"cn"`
+	DNSNames    []types.String     `tfsdk:"dns_names"`
+	Emails      []types.String     `tfsdk:"email_addresses"`
+	IPAddresses []types.String     `tfsdk:"ip_addresses"`
+	Names       []NamesParamsTFSDK `tfsdk:"names"`
+	UID         types.String       `tfsdk:"uid"`
+}
+type TLSCiphersTFSDK struct {
+	CipherSuite types.String `tfsdk:"cipher_suite"`
+	Enabled     types.Bool   `tfsdk:"enabled"`
+}
+type CMInterfaceTFSDK struct {
+	ID                      types.String                      `tfsdk:"id"`
+	Port                    types.Int64                       `tfsdk:"port"`
+	AllowUnregistered       types.Bool                        `tfsdk:"allow_unregistered"`
+	AutogenCAId             types.String                      `tfsdk:"auto_gen_ca_id"`
+	AutogenDaysBeforeExpiry types.Int64                       `tfsdk:"auto_gen_days_before_expiry"`
+	AutoRegistration        types.Bool                        `tfsdk:"auto_registration"`
+	CertUserField           types.String                      `tfsdk:"cert_user_field"`
+	CustomUIDSize           types.Int64                       `tfsdk:"custom_uid_size"`
+	CustomUIDv2             types.Bool                        `tfsdk:"custom_uid_v2"`
+	DefaultConnection       types.String                      `tfsdk:"default_connection"`
+	InterfaceType           types.String                      `tfsdk:"interface_type"`
+	KMIPEnableHardDelete    types.Int64                       `tfsdk:"kmip_enable_hard_delete"`
+	MaximumTLSVersion       types.String                      `tfsdk:"maximum_tls_version"`
+	Meta                    *CMInterfaceMetadataTFSDK         `tfsdk:"meta"`
+	MinimumTLSVersion       types.String                      `tfsdk:"minimum_tls_version"`
+	Mode                    types.String                      `tfsdk:"mode"`
+	Name                    types.String                      `tfsdk:"name"`
+	NetworkInterface        types.String                      `tfsdk:"network_interface"`
+	RegToken                types.String                      `tfsdk:"registration_token"`
+	TrustedCAs              *CMInterfacTrustedCAsTFSDK        `tfsdk:"trusted_cas"`
+	Certificate             *CMInterfacCertificateTFSDK       `tfsdk:"certificate"`
+	LocalAutogenAttributes  *CMInterfaceLocalAutogenAttrTFSDK `tfsdk:"local_auto_gen_attributes"`
+	TLSCiphers              []TLSCiphersTFSDK                 `tfsdk:"tls_ciphers"`
+	CreatedAt               types.String                      `tfsdk:"created_at"`
+	UpdatedAt               types.String                      `tfsdk:"updated_at"`
+}
+type CMInterfaceMetadataNAEJSON struct {
+	MaskSystemGroups bool `json:"mask_system_groups"`
+}
+type CMInterfaceMetadataJSON struct {
+	NAE CMInterfaceMetadataNAEJSON `json:"nae"`
+}
+type CMInterfacTrustedCAsJSON struct {
+	External []string `json:"external"`
+	Local    []string `json:"local"`
+}
+type CMInterfacCertificateJSON struct {
+	CertChain string `json:"certificate_chain"`
+	Generate  bool   `json:"generate"`
+	Format    string `json:"format"`
+	Password  string `json:"password"`
+}
+type NamesParamsJSON struct {
+	C  string `json:"C"`
+	L  string `json:"L"`
+	O  string `json:"O"`
+	OU string `json:"OU"`
+	ST string `json:"ST"`
+}
+type CMInterfaceLocalAutogenAttrJSON struct {
+	CN          string            `json:"cn"`
+	DNSNames    []string          `json:"dns_names"`
+	Emails      []string          `json:"email_addresses"`
+	IPAddresses []string          `json:"ip_addresses"`
+	Names       []NamesParamsJSON `json:"names"`
+	UID         string            `json:"uid"`
+}
+type TLSCiphersJSON struct {
+	CipherSuite string `json:"cipher_suite"`
+	Enabled     bool   `json:"enabled"`
+}
+type CMInterfaceJSON struct {
+	ID                      string                          `json:"id"`
+	Port                    int64                           `json:"port"`
+	AllowUnregistered       bool                            `json:"allow_unregistered"`
+	AutogenCAId             string                          `json:"auto_gen_ca_id"`
+	AutogenDaysBeforeExpiry int64                           `json:"auto_gen_days_before_expiry"`
+	AutoRegistration        bool                            `json:"auto_registration"`
+	CertUserField           string                          `json:"cert_user_field"`
+	CustomUIDSize           int64                           `json:"custom_uid_size"`
+	CustomUIDv2             bool                            `json:"custom_uid_v2"`
+	DefaultConnection       string                          `json:"default_connection"`
+	InterfaceType           string                          `json:"interface_type"`
+	KMIPEnableHardDelete    int64                           `json:"kmip_enable_hard_delete"`
+	MaximumTLSVersion       string                          `json:"maximum_tls_version"`
+	Meta                    CMInterfaceMetadataJSON         `json:"meta"`
+	MinimumTLSVersion       string                          `json:"minimum_tls_version"`
+	Mode                    string                          `json:"mode"`
+	Name                    string                          `json:"name"`
+	NetworkInterface        string                          `json:"network_interface"`
+	RegToken                string                          `json:"registration_token"`
+	TrustedCAs              CMInterfacTrustedCAsJSON        `json:"trusted_cas"`
+	Certificate             CMInterfacCertificateJSON       `json:"certificate"`
+	LocalAutogenAttributes  CMInterfaceLocalAutogenAttrJSON `json:"local_auto_gen_attributes"`
+	TLSCiphers              []TLSCiphersJSON                `json:"tls_ciphers"`
+	CreatedAt               string                          `json:"createdAt"`
+	UpdatedAt               string                          `json:"updatedAt"`
+}
+
+type CMLicenseTFSDK struct {
+	ID                    types.String `tfsdk:"id"`
+	License               types.String `tfsdk:"license"`
+	BindType              types.String `tfsdk:"bind_type"`
+	Hash                  types.String `tfsdk:"hash"`
+	Type                  types.String `tfsdk:"type"`
+	State                 types.String `tfsdk:"state"`
+	Start                 types.String `tfsdk:"start"`
+	Expiration            types.String `tfsdk:"expiration"`
+	Version               types.String `tfsdk:"version"`
+	LicenseCount          types.Int64  `tfsdk:"license_count"`
+	TrialSecondsRemaining types.String `tfsdk:"trial_seconds_remaining"`
+}
+type CMLicenseJSON struct {
+	ID                    string `json:"id"`
+	License               string `json:"license"`
+	BindType              string `json:"bind_type"`
+	Hash                  string `json:"hash"`
+	Type                  string `json:"type"`
+	State                 string `json:"state"`
+	Start                 string `json:"start"`
+	Expiration            string `json:"expiration"`
+	Version               string `json:"version"`
+	LicenseCount          int64  `json:"license_count"`
+	TrialSecondsRemaining string `json:"trial_seconds_remaining"`
+}
+
+type CMNTPTFSDK struct {
+	ID      types.String `tfsdk:"id"`
+	Host    types.String `tfsdk:"host"`
+	Key     types.String `tfsdk:"key"`
+	KeyType types.String `tfsdk:"key_type"`
+}
+type CMNTPJSON struct {
+	ID      string `json:"id"`
+	Host    string `json:"host"`
+	Key     string `json:"key"`
+	KeyType string `json:"key_type"`
+}
+
+type CMClusterNodeCredsTFSDK struct {
+	Username    types.String `tfsdk:"host"`
+	Password    types.String `tfsdk:"original"`
+	Domain      types.String `tfsdk:"domain"`
+	AuthDomain  types.String `tfsdk:"auth_domain"`
+	NoSSLVerify types.Bool   `tfsdk:"no_ssl_verify"`
+}
+type CMClusterNodeTFSDK struct {
+	Host          types.String             `tfsdk:"host"`
+	Original      types.Bool               `tfsdk:"original"`
+	Port          types.Int64              `tfsdk:"port"`
+	PublicAddress types.String             `tfsdk:"public_address"`
+	Creds         *CMClusterNodeCredsTFSDK `tfsdk:"credentials"`
+}
+type CMClusterTFSDK struct {
+	ID                types.String         `tfsdk:"id"`
+	Nodes             []CMClusterNodeTFSDK `tfsdk:"nodes"`
+	NodeCount         types.Int64          `tfsdk:"node_count"`
+	NodeId            types.String         `tfsdk:"node_id"`
+	StatusCode        types.String         `tfsdk:"status_code"`
+	StatusDescription types.String         `tfsdk:"status_description"`
+}
+type CMClusterNodeJSON struct {
+	Host          string `json:"host"`
+	Original      bool   `json:"original"`
+	Port          int64  `json:"port"`
+	PublicAddress string `json:"public_address"`
+}
+type CMClusterJSON struct {
+	ID                string              `json:"id"`
+	Nodes             []CMClusterNodeJSON `json:"nodes"`
+	NodeCount         int64               `json:"node_count"`
+	NodeId            string              `json:"node_id"`
+	StatusCode        string              `json:"status_code"`
+	StatusDescription string              `json:"status_description"`
+}
+type NewCMClusterNodeJSON struct {
+	LocalNodeHost string `json:"localNodeHost"`
+	LocalNodePort int64  `json:"localNodePort"`
+	PublicAddress string `json:"publicAddress"`
+}
+type NewCSRJSON struct {
+	LocalNodeHost string `json:"localNodeHost"`
+	PublicAddress string `json:"publicAddress"`
+}
+type SignRequestJSON struct {
+	CSR                string `json:"csr"`
+	NewNodeHost        string `json:"newNodeHost"`
+	PublicAddress      string `json:"publicAddress"`
+	SharedHSMPartition bool   `json:"shared_hsm_partition"`
+}
+type JoinClusterJSON struct {
+	CAChain                string `json:"cachain"`
+	Cert                   string `json:"cert"`
+	LocalNodeHost          string `json:"localNodeHost"`
+	MemberNodeHost         string `json:"memberNodeHost"`
+	MKEKBlob               string `json:"mkek_blob"`
+	Blocking               bool   `json:"blocking"`
+	LocalNodePort          int64  `json:"localNodePort"`
+	LocalNodePublicAddress string `json:"localNodePublicAddress"`
+	MemberNodePort         int64  `json:"memberNodePort"`
+}
+
+type CMTrialLicenseTFSDK struct {
+	ID            types.String `tfsdk:"id"`
+	Status        types.String `tfsdk:"status"`
+	Name          types.String `tfsdk:"name"`
+	Description   types.String `tfsdk:"description"`
+	ActivatedAt   types.String `tfsdk:"activated_at"`
+	DeactivatedAt types.String `tfsdk:"deactivated_at"`
+}
+type CMTrialLicenseJSON struct {
+	ID            string `json:"id"`
+	Status        string `json:"status"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	ActivatedAt   string `json:"activated_at"`
+	DeactivatedAt string `json:"deactivated_at"`
+}
+
 type HSMSetupTFSDK struct {
 	ID            types.String `tfsdk:"id"`
 	Type          types.String `tfsdk:"type"`
