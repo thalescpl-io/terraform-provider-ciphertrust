@@ -153,6 +153,7 @@ func (r *resourceHSMRootOfTrust) Create(ctx context.Context, req resource.Create
 func (r *resourceHSMRootOfTrust) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state HSMSetupTFSDK
 	id := uuid.New().String()
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_hsm_rot.go -> Read]["+id+"]")
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -174,12 +175,23 @@ func (r *resourceHSMRootOfTrust) Read(ctx context.Context, req resource.ReadRequ
 	return
 }
 
-func (r *resourceHSMRootOfTrust) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
-	//TODO implement me
-	panic("implement me")
+// Update updates the resource and sets the updated Terraform state on success.
+func (r *resourceHSMRootOfTrust) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_hsm_rot.go -> Update]")
+
+	// update not supported for this resource
+	resp.Diagnostics.AddError(
+		"Update Not Supported",
+		"This resource does not support updates. You must recreate the resource to apply any changes.",
+	)
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_hsm_rot.go -> Update]")
 }
 
+// Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceHSMRootOfTrust) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_hsm_rot.go -> Delete]")
+
 	var state HSMSetupTFSDK
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -205,7 +217,6 @@ func (r *resourceHSMRootOfTrust) Delete(ctx context.Context, req resource.Delete
 	// Delete existing order
 	url := fmt.Sprintf("%s/%s/%s", r.client.CipherTrustURL, common.URL_HSM_Server, state.ID.ValueString())
 	output, err := r.client.DeleteByID(ctx, "DELETE", state.ID.ValueString(), url, payloadBytes)
-	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_hsm_rot.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_hsm_rot.go -> Delete]["+state.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -214,6 +225,7 @@ func (r *resourceHSMRootOfTrust) Delete(ctx context.Context, req resource.Delete
 		)
 		return
 	}
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_hsm_rot.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 }
 
 func (d *resourceHSMRootOfTrust) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
