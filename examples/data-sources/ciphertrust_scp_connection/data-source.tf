@@ -19,13 +19,13 @@ terraform {
 provider "ciphertrust" {
   # The address of the CipherTrust appliance
   # Replace with the actual address of your CipherTrust instance
-  address = "https://52.86.120.81"
+  address = "https://52.87.160.91"
 
   # Username to authenticate against the CipherTrust appliance
   username = "admin"
 
   # Password to authenticate against the CipherTrust appliance
-  password = "KeySecure_1"
+  password = "SamplePassword@1"
 
   bootstrap = "no"
 }

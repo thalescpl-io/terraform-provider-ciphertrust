@@ -7,9 +7,9 @@ terraform {
   }
 }
 provider "ciphertrust" {
-  address = "https://52.86.120.81"
+  address = "https://52.87.160.91"
   username = "admin"
-  password = "KeySecure_1"
+  password = "SamplePassword@1"
   bootstrap = "no"
 }
 
