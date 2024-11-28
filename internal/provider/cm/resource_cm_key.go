@@ -263,6 +263,63 @@ func (r *resourceCMKey) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						Optional:    true,
 						Description: "Optional owner information for the key, required for non-admin. Value should be the user's user_id",
 					},
+					"permissions": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: "Key permissions",
+						Attributes: map[string]schema.Attribute{
+							"decrypt_with_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"encrypt_with_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"export_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"mac_verify_with_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"mac_with_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"read_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"sign_verify_with_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"sign_with_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+							"use_key": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+							},
+						},
+					},
+					"cte": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: "CTE specific attributes",
+						Attributes: map[string]schema.Attribute{
+							"persistent_on_client": schema.BoolAttribute{
+								Optional: true,
+							},
+							"encryption_mode": schema.StringAttribute{
+								Optional: true,
+							},
+							"cte_versioned": schema.BoolAttribute{
+								Optional: true,
+							},
+						},
+					},
 				},
 			},
 			"padded": schema.BoolAttribute{
