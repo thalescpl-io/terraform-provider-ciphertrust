@@ -20,7 +20,10 @@ This resource is applicable to CipherTrust Manager only.
 # HSM root of trust setup of type luna
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "1234"
@@ -37,7 +40,10 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
 # HSM root of trust setup of type luna using the STC protocol
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "1234"
@@ -54,7 +60,7 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
 
 ### Required
 
-- `conn_info` (String) Connection information for initial HSM to setup in JSON document format. The expected content of this parameter depends on the specific HSM type used.
+- `conn_info` (Map of String) Connection information for initial HSM to setup in key-value format. The expected content of this parameter depends on the specific HSM type used.
 
    - For Luna Network HSM (including TCT) and Luna PCIe, the required attributes are:
 
@@ -65,9 +71,12 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
         The password of the initial partition to use. This will be the Crypto Officer role password or challenge secret. Luna documentation describes in detail how to set up a password for an application to access a partition.  
         If you plan to use multiple Luna HSMs operating in high-availability (HA) mode, all HSMs must have the same password.
 
-   Luna Network/PCIe HSM (including TCT) example:  
-   `"{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"`
+   Luna Network/PCIe HSM (including TCT) example:
 
+           { 
+             partition_name     = "kylo-partition"
+             partition_password = "sOmeP@ssword"
+           }
 
 - `type` (String) Type of HSM server to setup, supported types are "luna", "lunapci", and "lunatct".
 
@@ -76,7 +85,7 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
 - `delay` (Number) Delay in seconds before reset, defaults to 5 seconds
 
 
-- `initial_config` (Map of String) A free form JSON opaque blob. The expected content of this parameter depends on the specific HSM type used.
+- `initial_config` (Map of String) A map of key-value pairs representing the initial configuration for the HSM setup. The expected content of this parameter depends on the specific HSM type used.
 
    - For Luna Network HSM (including TCT) the required attributes are:
      - "host"

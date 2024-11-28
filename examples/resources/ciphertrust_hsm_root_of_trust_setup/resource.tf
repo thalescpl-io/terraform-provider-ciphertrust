@@ -6,7 +6,10 @@
 # HSM root of trust setup of type luna
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "1234"
@@ -21,7 +24,10 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
 # HSM root of trust setup of type Luna Network HSM using the STC protocol
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "1234"

@@ -721,7 +721,7 @@ type CMTrialLicenseJSON struct {
 type HSMSetupTFSDK struct {
 	ID            types.String `tfsdk:"id"`
 	Type          types.String `tfsdk:"type"`
-	ConnInfo      types.String `tfsdk:"conn_info"`
+	ConnInfo      types.Map    `tfsdk:"conn_info"`
 	InitialConfig types.Map    `tfsdk:"initial_config"`
 	Reset         types.Bool   `tfsdk:"reset"`
 	Delay         types.Int64  `tfsdk:"delay"`

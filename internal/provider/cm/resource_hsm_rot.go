@@ -49,14 +49,15 @@ func (r *resourceHSMRootOfTrust) Schema(_ context.Context, _ resource.SchemaRequ
 				Required:    true,
 				Description: "Type of HSM server to setup, supported types are \"luna\", \"lunapci\", and \"lunatct\".",
 			},
-			"conn_info": schema.StringAttribute{
+			"conn_info": schema.MapAttribute{
+				ElementType: types.StringType,
 				Required:    true,
-				Description: "Connection information for initial HSM to setup in JSON document format. The expected content of this parameter depends on the specific HSM type used.\n\nFor Luna Network HSM (including TCT) and Luna PCIe, the required attributes are:\n\n- \"partition_name\"  \n  The name of the HSM partition to use.\n\n- \"partition_password\"  \n  The password of the initial partition to use. This will be the Crypto Officer role password or challenge secret. Luna documentation describes in detail how to set up a password for an application to access a partition.  \n  If you plan to use multiple Luna HSMs operating in high-availability (HA) mode, all HSMs must have the same password.\n\nLuna Network/PCIe HSM (including TCT) example:  \n`\"{\\\"partition_name\\\": \\\"kylo-partition\\\", \\\"partition_password\\\": \\\"sOmeP@ssword\\\"}\"`\n",
+				Description: "Connection information for initial HSM to setup in key-value format. The expected content of this parameter depends on the specific HSM type used.\n\nFor Luna Network HSM (including TCT) and Luna PCIe, the required attributes are:\n\n- \"partition_name\"  \n  The name of the HSM partition to use.\n\n- \"partition_password\"  \n  The password of the initial partition to use. This will be the Crypto Officer role password or challenge secret. Luna documentation describes in detail how to set up a password for an application to access a partition.  \n  If you plan to use multiple Luna HSMs operating in high-availability (HA) mode, all HSMs must have the same password.\n\nLuna Network/PCIe HSM (including TCT) example:  \n\n{\n \"partition_name\": \"kylo-partition\",\n \"partition_password\": \"sOmeP@ssword\"\n}",
 			},
 			"initial_config": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: "A free form JSON opaque blob. The expected content of this parameter depends on the specific HSM type used.\n\nFor Luna Network HSM (including TCT) the required attributes are:\n- \"host\"\n  IP or hostname\n- \"serial\"\n  Serial number of the partition to use\n- \"server-cert\"\n  Server certificate in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n  For externally signed server certs (not supported on TCT), append all certificates in the signing chain.\n- \"client-cert\"\n  Client certificate in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n- \"client-cert-key\"\n  Client private key in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n\nFor Luna Network HSM using the STC protocol, the required attributes are:\n- \"host\"\n  IP or hostname\n- \"serial\"\n  Serial number of the partition to use\n- \"server-cert\"\n  Server certificate in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n- \"stc-par-identity\"\n  STC partition identity encoded as a base64 string without line breaks (base64 -w0 1234567890123.pid)\nNote that this instance's STC client identity (see /system/hsm/clients/stcidentity) must be registered externally prior to invoking this API.\n\nLuna PCIe HSM (including TCT) does not require any attribute. initialConfig shall be omitted.\n\nLuna Network HSM (including TCT) example:\n\n    {\n      \"host\": \"172.20.32.11\",\n      \"serial\": \"1234\",\n      \"server-cert\": \"-----BEGIN CERTIFICATE-----\\n...\\n-----END CERTIFICATE-----\",\n      \"client-cert\": \"-----BEGIN CERTIFICATE-----\\n...\\n-----END CERTIFICATE-----\",\n      \"client-cert-key\": \"-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----\"\n    }\n\nNote: JSON does not allow line-breaks, it needs to be replaced with \\n. Use \"sed -z 's/\\n/\\\\n/g' cert-file.pem\" command to format the certificate.\n",
+				Description: "A map of key-value pairs representing the initial configuration for the HSM setup. The expected content of this parameter depends on the specific HSM type used.\n\nFor Luna Network HSM (including TCT) the required attributes are:\n- \"host\"\n  IP or hostname\n- \"serial\"\n  Serial number of the partition to use\n- \"server-cert\"\n  Server certificate in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n  For externally signed server certs (not supported on TCT), append all certificates in the signing chain.\n- \"client-cert\"\n  Client certificate in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n- \"client-cert-key\"\n  Client private key in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n\nFor Luna Network HSM using the STC protocol, the required attributes are:\n- \"host\"\n  IP or hostname\n- \"serial\"\n  Serial number of the partition to use\n- \"server-cert\"\n  Server certificate in PEM format. Line breaks in PEM string must be replaced with \"\\n\".\n- \"stc-par-identity\"\n  STC partition identity encoded as a base64 string without line breaks (base64 -w0 1234567890123.pid)\nNote that this instance's STC client identity (see /system/hsm/clients/stcidentity) must be registered externally prior to invoking this API.\n\nLuna PCIe HSM (including TCT) does not require any attribute. initialConfig shall be omitted.\n\nLuna Network HSM (including TCT) example:\n\n    {\n      \"host\": \"172.20.32.11\",\n      \"serial\": \"1234\",\n      \"server-cert\": \"-----BEGIN CERTIFICATE-----\\n...\\n-----END CERTIFICATE-----\",\n      \"client-cert\": \"-----BEGIN CERTIFICATE-----\\n...\\n-----END CERTIFICATE-----\",\n      \"client-cert-key\": \"-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----\"\n    }\n\nNote: JSON does not allow line-breaks, it needs to be replaced with \\n. Use \"sed -z 's/\\n/\\\\n/g' cert-file.pem\" command to format the certificate.\n",
 			},
 			"reset": schema.BoolAttribute{
 				Optional:    true,
@@ -97,15 +98,29 @@ func (r *resourceHSMRootOfTrust) Create(ctx context.Context, req resource.Create
 	if plan.Type.ValueString() != "" && plan.Type.ValueString() != types.StringNull().ValueString() {
 		payload.Type = plan.Type.ValueString()
 	}
-	if plan.ConnInfo.ValueString() != "" && plan.ConnInfo.ValueString() != types.StringNull().ValueString() {
-		payload.ConnInfo = plan.ConnInfo.ValueString()
-	}
 	if plan.Delay.ValueInt64() != types.Int64Null().ValueInt64() {
 		payload.Delay = plan.Delay.ValueInt64()
 	}
 	if plan.Reset.ValueBool() != types.BoolNull().ValueBool() {
 		payload.Reset = plan.Reset.ValueBool()
 	}
+
+	// Extract conn_info map and convert it into JSON string
+	connInfoMap := make(map[string]interface{})
+	for k, v := range plan.ConnInfo.Elements() {
+		connInfoMap[k] = v.(types.String).ValueString()
+	}
+
+	connInfoJSON, err := json.Marshal(connInfoMap)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_hsm_rot.go -> Create]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Invalid conn_info input",
+			"Could not convert conn_info to JSON: "+err.Error(),
+		)
+		return
+	}
+	payload.ConnInfo = string(connInfoJSON)
 
 	initialConfigPayload := make(map[string]interface{})
 	for k, v := range plan.InitialConfig.Elements() {

@@ -11,7 +11,10 @@ provider "ciphertrust" {}
 
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "hsm-partition-sn"

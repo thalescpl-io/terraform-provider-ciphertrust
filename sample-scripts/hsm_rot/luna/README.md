@@ -27,7 +27,10 @@ Edit the hsm setup resource in main.tf with actual values for type "luna"
 ```bash
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "hsm-partition-sn"
@@ -44,7 +47,10 @@ Edit the hsm setup resource in main.tf with actual values for type "luna" using 
 ```bash
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
-  conn_info    = "{\"partition_name\": \"kylo-partition\", \"partition_password\": \"sOmeP@ssword\"}"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
+  }
   initial_config = {
     host           = "172.20.32.11"
     serial         = "1234"
@@ -64,7 +70,10 @@ terraform apply
 ```
 
 ## Destroy Resources
+Resources must be destroyed before another sample script using the same cloud is run.
 
 ```bash
 terraform destroy
 ```
+
+Run this step even if the apply step fails.
