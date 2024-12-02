@@ -46,7 +46,7 @@ func (c *Client) DeleteByURL(ctx context.Context, uuid string, endpoint string) 
 	}
 
 	responseJson := gjson.Get(string(body), "resources").String()
-	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> GetAll]["+uuid+"]")
+	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> DeleteByurl]["+uuid+"]")
 	return responseJson, nil
 }
 
@@ -84,10 +84,8 @@ func (c *Client) GetById(ctx context.Context, uuid string, id string, endpoint s
 		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> GetById]["+uuid+"]")
 		return "", err
 	}
-
-	responseJson := gjson.Get(string(body), "resources").String()
 	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> GetById]["+uuid+"]")
-	return responseJson, err
+	return string(body), err
 }
 
 func (c *Client) PostData(ctx context.Context, uuid string, endpoint string, data []byte, id string) (string, error) {

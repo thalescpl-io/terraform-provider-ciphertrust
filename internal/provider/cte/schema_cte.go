@@ -1,6 +1,8 @@
 package cte
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 type CTEClientsListTFSDK struct {
 	ID                     types.String   `tfsdk:"id"`
@@ -780,7 +782,6 @@ type CTEClientGroupTFSDK struct {
 	ClientList              []types.String `tfsdk:"client_list"`
 	InheritAttributes       types.Bool     `tfsdk:"inherit_attributes"`
 	ClientID                types.String   `tfsdk:"client_id"`
-	OpType                  types.String   `tfsdk:"op_type"`
 	Paused                  types.Bool     `tfsdk:"paused"`
 }
 
@@ -791,7 +792,7 @@ type CTEClientGroupJSON struct {
 	CommunicationEnabled    bool     `json:"communication_enabled"`
 	Description             string   `json:"description"`
 	LDTDesignatedPrimarySet string   `json:"ldt_designated_primary_set"`
-	Password                string   `json:"password"`
+	Password                string   `json:"password,omitempty"`
 	PasswordCreationMethod  string   `json:"password_creation_method"`
 	ProfileID               string   `json:"profile_id"`
 	ClientLocked            bool     `json:"client_locked"`
@@ -838,11 +839,10 @@ type CTECSIGroupJSON struct {
 }
 
 type LDTGroupCommSvcTFSDK struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	Description types.String   `tfsdk:"description"`
-	OpType      types.String   `tfsdk:"op_type"`
-	ClientList  []types.String `tfsdk:"client_list"`
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	ClientList []types.String `tfsdk:"client_list"`
 }
 
 type LDTGroupCommSvcJSON struct {

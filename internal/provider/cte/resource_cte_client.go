@@ -20,10 +20,10 @@ import (
 )
 
 var (
-	_                       resource.Resource              = &resourceCTEClient{}
-	_                       resource.ResourceWithConfigure = &resourceCTEClient{}
+	_                           resource.Resource              = &resourceCTEClient{}
+	_                           resource.ResourceWithConfigure = &resourceCTEClient{}
 	CtePasswordGenarationMethod                                = []string{"GENERATE", "MANUAL"}
-	CteClientType                                          = []string{"FS", "CTE-U"}
+	CteClientType                                              = []string{"FS", "CTE-U"}
 )
 
 func NewResourceCTEClient() resource.Resource {
@@ -59,7 +59,7 @@ func (r *resourceCTEClient) Schema(_ context.Context, _ resource.SchemaRequest, 
 			},
 			"client_type": schema.StringAttribute{
 				Optional:    true,
-				Computed: true,
+				Computed:    true,
 				Description: "Type of CTE Client. The default value is FS. Valid values are CTE-U and FS.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(CteClientType...),
@@ -177,7 +177,7 @@ func (r *resourceCTEClient) Create(ctx context.Context, req resource.CreateReque
 		payload.ClientType = common.TrimString(plan.ClientType.String())
 	} else {
 		plan.ClientType = types.StringValue("FS")
-		payload.ClientType = common.TrimString(plan.ClientType.String())	
+		payload.ClientType = common.TrimString(plan.ClientType.String())
 	}
 	if plan.CommunicationEnabled.ValueBool() != types.BoolNull().ValueBool() {
 		payload.CommunicationEnabled = plan.CommunicationEnabled.ValueBool()
@@ -271,7 +271,7 @@ func (r *resourceCTEClient) Update(ctx context.Context, req resource.UpdateReque
 
 	if plan.ClientLocked.ValueBool() != types.BoolNull().ValueBool() {
 		payload.ClientLocked = plan.ClientLocked.ValueBool()
-	}	
+	}
 	if plan.CommunicationEnabled.ValueBool() != types.BoolNull().ValueBool() {
 		payload.CommunicationEnabled = plan.CommunicationEnabled.ValueBool()
 	}
