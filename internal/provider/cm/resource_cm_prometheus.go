@@ -109,7 +109,31 @@ func (r *resourceCMPrometheus) Update(ctx context.Context, req resource.UpdateRe
 }
 
 func (r *resourceCMPrometheus) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_prometheus.go -> Enable/Disable - Delete]")
 
+	var payload CMPrometheusMetricsConfigJSON
+	payload.Enabled = false
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable - Delete")
+		resp.Diagnostics.AddError(
+			"Invalid data input for disabling Prometheus",
+			err.Error(),
+		)
+		return
+	}
+
+	_, err = r.client.PostDataV2(ctx, "", common.URL_PROMETHEUS_DISABLE, payloadJSON)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable - Delete")
+		resp.Diagnostics.AddError(
+			"Invalid data input for disabling Prometheus",
+			"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_prometheus.go -> Enable/Disable - Delete")
 }
 
 func (d *resourceCMPrometheus) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
