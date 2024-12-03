@@ -32,7 +32,7 @@ provider "ciphertrust" {
 }
 
 # Define an SCP connection resource with CipherTrust
-resource "ciphertrust_scp_connection" "_scp_connection" {
+resource "ciphertrust_scp_connection" "scp_connection" {
   # Name of the SCP connection (unique identifier)
   name = "scp-connection"
 
@@ -85,11 +85,11 @@ resource "ciphertrust_scp_connection" "_scp_connection" {
 # Output the unique ID of the created SCP connection
 output "scp_connection_id" {
   # The value will be the ID of the SCP connection resource
-  value = ciphertrust_scp_connection._scp_connection.id
+  value = ciphertrust_scp_connection.scp_connection.id
 }
 
 # Output the name of the created SCP connection
 output "scp_connection_name" {
   # The value will be the name of the SCP connection resource
-  value = ciphertrust_scp_connection._scp_connection.name
+  value = ciphertrust_scp_connection.scp_connection.name
 }

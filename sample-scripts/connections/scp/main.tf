@@ -13,7 +13,7 @@ provider "ciphertrust" {
   bootstrap = "no"
 }
 
-resource "ciphertrust_scp_connection" "_scp_connection" {
+resource "ciphertrust_scp_connection" "scp_connection" {
   name = "scp-test-connection"
   products = [
     "backup/restore"
@@ -37,9 +37,9 @@ resource "ciphertrust_scp_connection" "_scp_connection" {
 }
 
 output "scp_connection_id" {
-  value = ciphertrust_scp_connection._scp_connection.id
+  value = ciphertrust_scp_connection.scp_connection.id
 }
 
 output "scp_connection_name" {
-  value = ciphertrust_scp_connection._scp_connection.name
+  value = ciphertrust_scp_connection.scp_connection.name
 }
