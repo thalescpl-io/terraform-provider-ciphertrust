@@ -717,3 +717,13 @@ type CMTrialLicenseJSON struct {
 	ActivatedAt   string `json:"activated_at"`
 	DeactivatedAt string `json:"deactivated_at"`
 }
+
+type CMPrometheusMetricsConfigTFSDK struct {
+	Token   types.String `tfsdk:"token"`
+	Enabled types.Bool   `tfsdk:"enabled"`
+}
+
+type CMPrometheusMetricsConfigJSON struct {
+	Token   string `json:"id"`
+	Enabled bool   `json:"enabled"`
+}

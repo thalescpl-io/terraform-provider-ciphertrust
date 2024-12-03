@@ -27,6 +27,8 @@ const (
 	URL_CLUSTER_JOIN       = "api/v1/cluster/join"
 	URL_CLUSTER_INFO       = "api/v1/cluster"
 	URL_TRIAL_LICENSE      = "api/v1/licensing/trials"
+	URL_PROMETHEUS_ENABLE  = "api//v1/system/metrics/prometheus/enable"
+	URL_PROMETHEUS_DISABLE = "api//v1/system/metrics/prometheus/disable"
 	// CCKM Endpoints
 	URL_AWS_CONNECTION = "api/v1/connectionmgmt/services/aws/connections"
 	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
