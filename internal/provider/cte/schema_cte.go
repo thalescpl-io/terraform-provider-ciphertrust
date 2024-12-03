@@ -783,6 +783,7 @@ type CTEClientGroupTFSDK struct {
 	InheritAttributes       types.Bool     `tfsdk:"inherit_attributes"`
 	ClientID                types.String   `tfsdk:"client_id"`
 	Paused                  types.Bool     `tfsdk:"paused"`
+	OpType                  types.String
 }
 
 type CTEClientGroupJSON struct {
@@ -839,10 +840,10 @@ type CTECSIGroupJSON struct {
 }
 
 type LDTGroupCommSvcTFSDK struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	ClientList []types.String `tfsdk:"client_list"`
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Description types.String   `tfsdk:"description"`
+	ClientList  []types.String `tfsdk:"client_list"`
 }
 
 type LDTGroupCommSvcJSON struct {

@@ -293,6 +293,7 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		cte.NewDataSourceCTEClients,
 		cm.NewDataSourceCertificateAuthorities,
 		connections.NewDataSourceScpConnection,
+		cm.NewDataSourcePrometheus,
 	}
 }
 

@@ -88,8 +88,6 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 	}
 	plan.Token = types.StringValue(gjson.Get(response, "token").String())
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
-
 	tflog.Debug(ctx, "[resource_cm_prometheus.go -> Enable/Disable Output]["+response+"]")
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_prometheus.go -> Enable/Disable]["+status+"]")
@@ -101,29 +99,6 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *resourceCMPrometheus) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	id := uuid.New().String()
-	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_prometheus.go -> Read]["+id+"]")
-
-	var plan CMPrometheusMetricsConfigTFSDK
-	response, err := r.client.GetAll(ctx, id, common.URL_PROMETHEUS_STATUS)
-	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Read]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Failed to fetch Prometheus status",
-			"Error occurred while querying the Prometheus status API: "+err.Error(),
-		)
-		return
-	}
-	plan.Token = types.StringValue(gjson.Get(response, "token").String())
-	plan.Enabled = types.BoolValue(gjson.Get(response, "enabled").Bool())
-
-	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_prometheus.go -> Read]["+id+"]")
-	diags := resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	return
 }
 
 func (r *resourceCMPrometheus) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
