@@ -12,7 +12,7 @@ func TestResourceCTEPolicy(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cte_policy" "cte_policy" {
+resource "ciphertrust_cte_resource_set" "resource_set" {
   name = "TestResourceSet"
   resources = [
     {
@@ -84,6 +84,7 @@ resource "ciphertrust_cte_policy" "cte_policy" {
 				Config: providerConfig + `
 resource "ciphertrust_cte_policy" "cte_policy" {
   name = "TestPolicy"
+  policy_type = "Standard"
   description="updated via TF"
 }
 `,
