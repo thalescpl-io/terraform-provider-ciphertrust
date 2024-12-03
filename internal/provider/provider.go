@@ -292,6 +292,7 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		cm.NewDataSourceRegTokens,
 		cte.NewDataSourceCTEClients,
 		cm.NewDataSourceCertificateAuthorities,
+		connections.NewDataSourceScpConnection,
 	}
 }
 
@@ -320,7 +321,10 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cte.NewResourceCTEClientGP,
 		cte.NewResourceCTEClientGroup,
 		cte.NewResourceCTECSIGroup,
+		cte.NewResourceLDTGroupCommSvc,
 		connections.NewResourceCCKMAWSConnection,
+		cm.NewResourceHSMRootOfTrustServer,
+		connections.NewResourceCMScpConnection,
 		cm.NewResourceCMCluster,
 		cm.NewResourceCMInterface,
 		cm.NewResourceCMLicense,

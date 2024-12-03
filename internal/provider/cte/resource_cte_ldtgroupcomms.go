@@ -6,15 +6,17 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	// "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	// "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 )
 
@@ -58,16 +60,6 @@ func (r *resourceLDTGroupCommSvc) Schema(_ context.Context, _ resource.SchemaReq
 				ElementType: types.StringType,
 				Description: "List of identifiers of clients to be associated with the LDT group communication service. This identifier can be the Name, ID (a UUIDv4), URI, or slug of the client.",
 			},
-			"op_type": schema.StringAttribute{
-				Optional:    true,
-				Description: "Operation specifying weather to remove or add the provided client list to the GroupComm Service being updated.",
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{
-						"update",
-						"add_client_list",
-						"delete_client_list"}...),
-				},
-			},
 		},
 	}
 }
@@ -78,7 +70,7 @@ func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.Creat
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan LDTGroupCommSvcTFSDK
+	var plan, state LDTGroupCommSvcTFSDK
 	var payload LDTGroupCommSvcJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -114,6 +106,10 @@ func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.Creat
 	}
 
 	plan.ID = types.StringValue(response)
+	LdtGroupAddRemoveClient(r, ctx, &plan, &state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -125,120 +121,52 @@ func (r *resourceLDTGroupCommSvc) Create(ctx context.Context, req resource.Creat
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceLDTGroupCommSvc) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state LDTGroupCommSvcTFSDK
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_LDT_GROUP_COMM_SVC)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading LDT comm group on CipherTrust Manager: ",
+			"Could not read LDT comm group id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_ldtgroupcomms.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan LDTGroupCommSvcTFSDK
-	var payload LDTGroupCommSvcJSON
+	var plan, state LDTGroupCommSvcTFSDK
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	diags = req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	if plan.OpType.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-		if plan.OpType.ValueString() == "update" {
-			if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
-				payload.Description = common.TrimString(plan.Description.String())
-				payloadJSON, err := json.Marshal(payload)
-				if err != nil {
-					tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
-					resp.Diagnostics.AddError(
-						"Invalid data input: LDT Group Communication Service Update",
-						err.Error(),
-					)
-					return
-				}
-				response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_PROCESS_SET, payloadJSON, "id")
-				if err != nil {
-					tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
-					resp.Diagnostics.AddError(
-						"Error creating LDT Group Communication Service on CipherTrust Manager: ",
-						"Could not create LDT Group Communication Service, unexpected error: "+err.Error(),
-					)
-					return
-				}
-				plan.ID = types.StringValue(response)
-			}
-		} else {
-			if len(plan.ClientList) == 0 {
-				resp.Diagnostics.AddError(
-					"Client List Required",
-					"The 'client_list' attribute must be provided during update.",
-				)
-				return
-			} else {
-				if plan.OpType.ValueString() == "add_client_list" {
-					var clientsArr []string
-					for _, client := range plan.ClientList {
-						clientsArr = append(clientsArr, client.ValueString())
-					}
-					payload.ClientList = clientsArr
-					payloadJSON, err := json.Marshal(payload)
-					if err != nil {
-						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
-						resp.Diagnostics.AddError(
-							"Invalid data input: LDT Group Communication Service Update",
-							err.Error(),
-						)
-						return
-					}
-					response, err := r.client.PostData(
-						ctx,
-						plan.ID.ValueString(),
-						common.URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients",
-						payloadJSON,
-						"id")
-					if err != nil {
-						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
-						resp.Diagnostics.AddError(
-							"Error adding clients list to the LDT Group Communication Service on CipherTrust Manager: ",
-							"Could not add clients list to the LDT Group Communication Service, unexpected error: "+err.Error(),
-						)
-						return
-					}
-					plan.ID = types.StringValue(response)
-				}
-				if plan.OpType.ValueString() == "delete_client_list" {
-					var clientsArr []string
-					for _, client := range plan.ClientList {
-						clientsArr = append(clientsArr, client.ValueString())
-					}
-					payload.ClientList = clientsArr
-					payloadJSON, err := json.Marshal(payload)
-					if err != nil {
-						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
-						resp.Diagnostics.AddError(
-							"Invalid data input: LDT Group Communication Service Update",
-							err.Error(),
-						)
-						return
-					}
-					response, err := r.client.UpdateData(
-						ctx,
-						plan.ID.ValueString(),
-						common.URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients/delete",
-						payloadJSON,
-						"id")
-					if err != nil {
-						tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
-						resp.Diagnostics.AddError(
-							"Error deleting clients list from the LDT Group Communication Service on CipherTrust Manager: ",
-							"Could not delete clients list from the LDT Group Communication Service, unexpected error: "+err.Error(),
-						)
-						return
-					}
-					plan.ID = types.StringValue(response)
-				}
-			}
-		}
-	} else {
-		resp.Diagnostics.AddError(
-			"op_type is a required",
-			"The 'op_type' attribute must be provided during update.",
-		)
+	LdtGroupUpdate(r, ctx, &plan, &state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	LdtGroupAddRemoveClient(r, ctx, &plan, &state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -250,13 +178,166 @@ func (r *resourceLDTGroupCommSvc) Update(ctx context.Context, req resource.Updat
 
 }
 
+func LdtGroupUpdate(r *resourceLDTGroupCommSvc, ctx context.Context, plan *LDTGroupCommSvcTFSDK, state *LDTGroupCommSvcTFSDK, diag *diag.Diagnostics) {
+	var payload CTEClientGroupJSON
+
+	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
+		payload.Description = common.TrimString(plan.Description.String())
+	}
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Update]["+plan.ID.ValueString()+"]")
+		diag.AddError(
+			"[resource_cte_clientgroup.go -> ClientGroupUpdate]\nInvalid data input: CTE Client Group Update",
+			err.Error(),
+		)
+		return
+	}
+
+	_, err = r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_LDT_GROUP_COMM_SVC, payloadJSON, "id")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> Update]["+plan.ID.ValueString()+"]")
+		diag.AddError(
+			"[resource_cte_clientgroup.go -> ClientGroupUpdate]\nError updating CTE Client Group on CipherTrust Manager: ",
+			"Could not update CTE Client Group, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+}
+
+func LdtGroupAddRemoveClient(r *resourceLDTGroupCommSvc, ctx context.Context, plan *LDTGroupCommSvcTFSDK, state *LDTGroupCommSvcTFSDK, diag *diag.Diagnostics) {
+	var payload CTEClientGroupJSON
+	id := uuid.New().String()
+
+	stateSet := make(map[string]bool)
+	for _, s := range state.ClientList {
+		stateSet[s.String()] = true
+	}
+
+	planSet := make(map[string]bool)
+	for _, s := range plan.ClientList {
+		planSet[s.String()] = true
+	}
+
+	// Find added elements
+	addedList := []string{}
+	for k := range planSet {
+		if !stateSet[k] {
+			addedList = append(addedList, common.TrimString(k))
+		}
+	}
+	// Find removed elements
+	removedList := []string{}
+	for k := range stateSet {
+		if !planSet[k] {
+			removedList = append(removedList, common.TrimString(k))
+		}
+	}
+
+	if len(removedList) > 0 {
+		payload.ClientList = removedList
+		payloadJSON, err := json.Marshal(payload)
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> delete-client]["+plan.ID.ValueString()+"]")
+			diag.AddError(
+				"[resource_cte_clientgroup.go -> ClientGroupAddClient]\nInvalid data input: CTE Client Group Add Clients",
+				err.Error(),
+			)
+			return
+		}
+		_, err = r.client.UpdateData(
+			ctx,
+			plan.ID.ValueString()+"/clients/delete/",
+			common.URL_LDT_GROUP_COMM_SVC,
+			payloadJSON,
+			"id")
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+plan.ID.ValueString()+"]")
+			diag.AddError(
+				"Error deleting clients list from the LDT Group Communication Service on CipherTrust Manager: ",
+				"Could not delete clients list from the LDT Group Communication Service, unexpected error: "+err.Error()+fmt.Sprintf("%s", removedList),
+			)
+			return
+		}
+	}
+	if len(addedList) > 0 {
+		payload.ClientList = addedList
+		payloadJSON, err := json.Marshal(payload)
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> add-client]["+plan.ID.ValueString()+"]")
+			diag.AddError(
+				"[resource_cte_clientgroup.go -> ClientGroupAddClient]\nInvalid data input: CTE Client Group Add Clients",
+				err.Error(),
+			)
+			return
+		}
+		_, err = r.client.PostDataV2(
+			ctx,
+			id,
+			common.URL_LDT_GROUP_COMM_SVC+"/"+plan.ID.ValueString()+"/clients",
+			payloadJSON,
+		)
+
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> add-client]["+plan.ID.ValueString()+"]")
+			diag.AddError(
+				"[resource_cte_clientgroup.go -> ClientGroupAddCLient]\nError attaching client list to LDT Group Communication Service on CipherTrust Manager: ",
+				"Could not attach client list to LDT Group Communication Service, unexpected error: "+err.Error()+fmt.Sprintf("%s", addedList),
+			)
+			return
+		}
+	}
+}
+
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceLDTGroupCommSvc) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state LDTGroupCommSvcTFSDK
+	var payload CTEClientGroupJSON
+
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	diags = req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	removedList := []string{}
+	for _, k := range state.ClientList {
+		removedList = append(removedList, common.TrimString(k.String()))
+
+	}
+	payload.ClientList = removedList
+
+	//Deleting Client List before deleting LDT comm group
+	if len(removedList) > 0 {
+		payloadJSON, err := json.Marshal(payload)
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_clientgroup.go -> delete-client]["+state.ID.ValueString()+"]")
+			diags.AddError(
+				"[resource_cte_clientgroup.go -> ClientGroupDeleteClient]\nInvalid data input: CTE Client Group Add Clients",
+				err.Error(),
+			)
+			return
+		}
+		_, err = r.client.UpdateData(
+			ctx,
+			state.ID.ValueString()+"/clients/delete/",
+			common.URL_LDT_GROUP_COMM_SVC,
+			payloadJSON,
+			"id")
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_ldtgroupcomms.go -> Update]["+state.ID.ValueString()+"]")
+			diags.AddError(
+				"Error deleting clients list from the LDT Group Communication Service on CipherTrust Manager: ",
+				"Could not delete clients list before deleting LDT Group Communication Service, unexpected error: "+err.Error()+fmt.Sprintf("%s", removedList),
+			)
+			return
+		}
 	}
 
 	// Delete existing order
