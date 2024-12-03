@@ -1,4 +1,4 @@
-package cm
+package connections
 
 import (
 	"context"
@@ -33,7 +33,7 @@ type ScpConnectionDataSourceModel struct {
 }
 
 func (d *dataSourceScpConnection) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_cm_scp_connection_list"
+	resp.TypeName = req.ProviderTypeName + "_scp_connection_list"
 }
 
 func (d *dataSourceScpConnection) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -101,7 +101,7 @@ func (d *dataSourceScpConnection) Schema(_ context.Context, _ datasource.SchemaR
 
 func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cm_scp_connection.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_scp_connection.go -> Read]["+id+"]")
 	var state ScpConnectionDataSourceModel
 	req.Config.Get(ctx, &state)
 	var kvs []string
@@ -112,7 +112,7 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 
 	jsonStr, err := d.client.GetAll(ctx, id, common.URL_SCP_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=10")
 	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cm_scp_connection.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_scp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read scp connection from CM",
 			err.Error(),
@@ -124,7 +124,7 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 
 	err = json.Unmarshal([]byte(jsonStr), &scpConnections)
 	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cm_scp_connection.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_scp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Unable to read scp connection from CM",
 			err.Error(),
@@ -200,7 +200,7 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 		state.Scp = append(state.Scp, scpConn)
 	}
 
-	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cm_scp_connection.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_scp_connection.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

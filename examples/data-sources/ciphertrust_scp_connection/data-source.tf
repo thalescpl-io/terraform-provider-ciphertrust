@@ -31,7 +31,7 @@ provider "ciphertrust" {
 }
 
 # Data source for retrieving SCP connection details
-data "ciphertrust_cm_scp_connection_list" "example_scp_connection" {
+data "ciphertrust_scp_connection_list" "example_scp_connection" {
   # Filters to narrow down the SCP connections
   filters = {
     # The unique ID of the SCP connection to fetch
@@ -47,5 +47,5 @@ data "ciphertrust_cm_scp_connection_list" "example_scp_connection" {
 # Output the details of the SCP connection
 output "scp_connection_details" {
   # The value of the SCP connection details returned by the data source
-  value = data.ciphertrust_cm_scp_connection_list.example_scp_connection
+  value = data.ciphertrust_scp_connection_list.example_scp_connection
 }

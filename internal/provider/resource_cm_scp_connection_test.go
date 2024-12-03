@@ -13,7 +13,7 @@ func TestResourceCMSCPConnection(t *testing.T) {
 			// creating a SCP connection
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cm_scp_connection" "scp_connection" {
+resource "ciphertrust_scp_connection" "scp_connection" {
   name        = "TestSCPConnection"
   host        = "test-host"
   username    = "test-user"
@@ -31,17 +31,17 @@ resource "ciphertrust_cm_scp_connection" "scp_connection" {
 `,
 				// verifying the resources for id, authmethod, protocol and port
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ciphertrust_cm_scp_connection.scp_connection", "id"),
-					resource.TestCheckResourceAttr("ciphertrust_cm_scp_connection.scp_connection", "auth_method", "key"),
-					resource.TestCheckResourceAttr("ciphertrust_cm_scp_connection.scp_connection", "protocol", "scp"),
-					resource.TestCheckResourceAttr("ciphertrust_cm_scp_connection.scp_connection", "port", "22"),
+					resource.TestCheckResourceAttrSet("ciphertrust_scp_connection.scp_connection", "id"),
+					resource.TestCheckResourceAttr("ciphertrust_scp_connection.scp_connection", "auth_method", "key"),
+					resource.TestCheckResourceAttr("ciphertrust_scp_connection.scp_connection", "protocol", "scp"),
+					resource.TestCheckResourceAttr("ciphertrust_scp_connection.scp_connection", "port", "22"),
 				),
 			},
 
 			// Step 2: Update the resource
 			{
 				Config: providerConfig + `
-resource "ciphertrust_cm_scp_connection" "scp_connection" {
+resource "ciphertrust_scp_connection" "scp_connection" {
   name        = "TestSCPConnection"
   host        = "test-host"
   username    = "updated-user"
@@ -59,9 +59,9 @@ resource "ciphertrust_cm_scp_connection" "scp_connection" {
 				`,
 				// verifying the updated field username,port and protocol
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ciphertrust_cm_scp_connection.scp_connection", "protocol", "sftp"),
-					resource.TestCheckResourceAttr("ciphertrust_cm_scp_connection.scp_connection", "port", "2022"),
-					resource.TestCheckResourceAttr("ciphertrust_cm_scp_connection.scp_connection", "username", "updated-user"),
+					resource.TestCheckResourceAttr("ciphertrust_scp_connection.scp_connection", "protocol", "sftp"),
+					resource.TestCheckResourceAttr("ciphertrust_scp_connection.scp_connection", "port", "2022"),
+					resource.TestCheckResourceAttr("ciphertrust_scp_connection.scp_connection", "username", "updated-user"),
 				),
 			},
 		},

@@ -10,7 +10,7 @@ func TestCiphertrustSCPConnectionDataSource(t *testing.T) {
 	// Config for the resource and data source
 	scpConnectionConfig := `
 		// Resource configuration for the SCP connection
-		resource "ciphertrust_cm_scp_connection" "scp_connection" {
+		resource "ciphertrust_scp_connection" "scp_connection" {
 		  name        = "TestSCPConnection1"
 		  host        = "test-host"
 		  username    = "test-user"
@@ -27,15 +27,15 @@ func TestCiphertrustSCPConnectionDataSource(t *testing.T) {
 		}
 		
 		// Data source to retrieve the SCP connection
-		data "ciphertrust_cm_scp_connection_list" "scp_connection_details" {
-		depends_on = [ciphertrust_cm_scp_connection.scp_connection]
+		data "ciphertrust_scp_connection_list" "scp_connection_details" {
+		depends_on = [ciphertrust_scp_connection.scp_connection]
 		   filters = {
    			 labels = "environment=test"
   			}
 		}`
 
 	//Name of the data source to check
-	datasourceName := "data.ciphertrust_cm_scp_connection_list.scp_connection_details"
+	datasourceName := "data.ciphertrust_scp_connection_list.scp_connection_details"
 
 	// Running the test case
 	resource.Test(t, resource.TestCase{
@@ -46,7 +46,7 @@ func TestCiphertrustSCPConnectionDataSource(t *testing.T) {
 				Config: providerConfig + scpConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
 					// Ensure the resource was created first
-					resource.TestCheckResourceAttrSet("ciphertrust_cm_scp_connection.scp_connection", "id"),
+					resource.TestCheckResourceAttrSet("ciphertrust_scp_connection.scp_connection", "id"),
 
 					resource.TestCheckResourceAttr(datasourceName, "scp.0.name", "TestSCPConnection1"),
 					resource.TestCheckResourceAttr(datasourceName, "scp.0.host", "test-host"),

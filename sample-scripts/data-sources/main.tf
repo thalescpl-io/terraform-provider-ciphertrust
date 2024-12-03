@@ -14,12 +14,12 @@ provider "ciphertrust" {
   bootstrap = "no"
 }
 
-data "ciphertrust_cm_scp_connection_list" "example_scp_connection" {
+data "ciphertrust_scp_connection_list" "example_scp_connection" {
   filters = {
     labels = "s=S"
   }
 }
 
 output "scp_connection_details" {
-  value = data.ciphertrust_cm_scp_connection_list.example_scp_connection
+  value = data.ciphertrust_scp_connection_list.example_scp_connection
 }
