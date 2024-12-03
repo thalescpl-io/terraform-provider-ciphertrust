@@ -27,6 +27,7 @@ const (
 	URL_CLUSTER_JOIN       = "api/v1/cluster/join"
 	URL_CLUSTER_INFO       = "api/v1/cluster"
 	URL_TRIAL_LICENSE      = "api/v1/licensing/trials"
+	URL_SCP_CONNECTION     = "api/v1/connectionmgmt/services/scp/connections"
 	// CCKM Endpoints
 	URL_AWS_CONNECTION = "api/v1/connectionmgmt/services/aws/connections"
 	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
