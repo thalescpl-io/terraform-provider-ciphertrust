@@ -287,7 +287,7 @@ type WrapRSAAESJSON struct {
 }
 
 type CMKeyJSON struct {
-	ID                       string                   `json:"id"`
+	//ID                       string                   `json:"id"`
 	ActivationDate           string                   `json:"activationDate,omitempty"`
 	Algorithm                string                   `json:"algorithm,omitempty"`
 	ArchiveDate              string                   `json:"archiveDate,omitempty"`
@@ -490,11 +490,11 @@ type CMInterfacCertificateTFSDK struct {
 	Password  types.String `tfsdk:"password"`
 }
 type NamesParamsTFSDK struct {
-	C  types.String `tfsdk:"C"`
-	L  types.String `tfsdk:"L"`
-	O  types.String `tfsdk:"O"`
-	OU types.String `tfsdk:"OU"`
-	ST types.String `tfsdk:"ST"`
+	C  types.String `tfsdk:"c"`
+	L  types.String `tfsdk:"l"`
+	O  types.String `tfsdk:"o"`
+	OU types.String `tfsdk:"ou"`
+	ST types.String `tfsdk:"st"`
 }
 type CMInterfaceLocalAutogenAttrTFSDK struct {
 	CN          types.String       `tfsdk:"cn"`

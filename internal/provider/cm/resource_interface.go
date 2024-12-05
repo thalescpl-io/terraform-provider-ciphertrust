@@ -227,19 +227,19 @@ func (r *resourceCMInterface) Schema(_ context.Context, _ resource.SchemaRequest
 						Description: "Name fields are \"O=organization, OU=organizational unit, L=location, ST=state/province, C=country\"",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"C": schema.StringAttribute{
+								"c": schema.StringAttribute{
 									Optional: true,
 								},
-								"L": schema.StringAttribute{
+								"l": schema.StringAttribute{
 									Optional: true,
 								},
-								"O": schema.StringAttribute{
+								"o": schema.StringAttribute{
 									Optional: true,
 								},
-								"OU": schema.StringAttribute{
+								"ou": schema.StringAttribute{
 									Optional: true,
 								},
-								"ST": schema.StringAttribute{
+								"st": schema.StringAttribute{
 									Optional: true,
 								},
 							},
