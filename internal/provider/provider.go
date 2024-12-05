@@ -327,5 +327,10 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cm.NewResourceHSMRootOfTrustServer,
 		connections.NewResourceCMScpConnection,
 		cm.NewResourceCMPrometheus,
+		cm.NewResourceCMCluster,
+		cm.NewResourceCMInterface,
+		cm.NewResourceCMLicense,
+		cm.NewResourceCMNTP,
+		cm.NewResourceCMTrialLicense,
 	}
 }

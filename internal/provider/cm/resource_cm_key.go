@@ -718,9 +718,9 @@ func (r *resourceCMKey) Create(ctx context.Context, req resource.CreateRequest, 
 	if plan.GenerateKeyId.ValueBool() != types.BoolNull().ValueBool() {
 		payload.GenerateKeyId = plan.GenerateKeyId.ValueBool()
 	}
-	if plan.ID.ValueString() != "" && plan.ID.ValueString() != types.StringNull().ValueString() {
-		payload.ID = plan.ID.ValueString()
-	}
+	// if plan.ID.ValueString() != "" && plan.ID.ValueString() != types.StringNull().ValueString() {
+	// 	payload.ID = plan.ID.ValueString()
+	// }
 	if plan.IDSize.ValueInt64() != types.Int64Null().ValueInt64() {
 		payload.IDSize = plan.IDSize.ValueInt64()
 	}
@@ -1119,11 +1119,11 @@ func (r *resourceCMKey) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 	// Add meta to payload if set
 	var metadata KeyMetadataJSON
-	if (!reflect.DeepEqual(KeyMetadataTFSDK{}, plan.Metadata)) {
+	if !reflect.DeepEqual((*KeyMetadataTFSDK)(nil), plan.Metadata) {
 		if plan.Metadata.OwnerId.ValueString() != "" && plan.Metadata.OwnerId.ValueString() != types.StringNull().ValueString() {
 			metadata.OwnerId = plan.Metadata.OwnerId.ValueString()
 		}
-		if (!reflect.DeepEqual(KeyMetadataPermissionsTFSDK{}, plan.Metadata.Permissions)) {
+		if !reflect.DeepEqual((*KeyMetadataPermissionsTFSDK)(nil), plan.Metadata.Permissions) {
 			var permission KeyMetadataPermissionsJSON
 			var decryptWithKey []string
 			var encryptWithKey []string
@@ -1173,7 +1173,7 @@ func (r *resourceCMKey) Update(ctx context.Context, req resource.UpdateRequest, 
 			permission.UseKey = useKey
 			metadata.Permissions = &permission
 		}
-		if (!reflect.DeepEqual(KeyMetadataCTETFSDK{}, plan.Metadata.CTE)) {
+		if !reflect.DeepEqual((*KeyMetadataCTETFSDK)(nil), plan.Metadata.CTE) {
 			var cteParams KeyMetadataCTEJSON
 			if plan.Metadata.CTE.PersistentOnClient.ValueBool() != types.BoolNull().ValueBool() {
 				cteParams.PersistentOnClient = plan.Metadata.CTE.PersistentOnClient.ValueBool()
@@ -1241,7 +1241,7 @@ func (r *resourceCMKey) Update(ctx context.Context, req resource.UpdateRequest, 
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_key.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating key on CipherTrust Manager: ",
-			"Could not upodate key, unexpected error: "+err.Error(),
+			"Could not update key, unexpected error: "+err.Error()+string(payloadJSON),
 		)
 		return
 	}
