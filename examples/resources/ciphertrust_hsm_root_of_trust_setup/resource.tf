@@ -1,6 +1,6 @@
 # Terraform Configuration for CipherTrust Provider
 
-# This configuration demonstrates the creation of an HSM Root of trust setup of type luna
+# This configuration demonstrates the creation of an HSM Root of trust setup of type luna,lunatct
 # with the CipherTrust provider.
 
 # HSM root of trust setup of type luna
@@ -37,10 +37,6 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   reset = true
   delay = 5
 }
-
-
-# This configuration demonstrates the creation of an HSM Root of trust setup of type lunatct
-# with the CipherTrust provider.
 
 # HSM root of trust setup of type lunatct
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
