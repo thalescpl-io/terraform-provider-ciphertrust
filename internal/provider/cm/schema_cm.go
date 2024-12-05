@@ -739,3 +739,13 @@ type HSMSetupJSON struct {
 	SubType       string                 `json:"sub_type"`
 	Config        map[string]interface{} `json:"config"`
 }
+
+type CMPrometheusMetricsConfigTFSDK struct {
+	Token   types.String `tfsdk:"token"`
+	Enabled types.Bool   `tfsdk:"enabled"`
+}
+
+type CMPrometheusMetricsConfigJSON struct {
+	Token   string `json:"id"`
+	Enabled bool   `json:"enabled"`
+}
