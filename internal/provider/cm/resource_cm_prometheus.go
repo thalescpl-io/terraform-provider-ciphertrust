@@ -102,7 +102,10 @@ func (r *resourceCMPrometheus) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *resourceCMPrometheus) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
+	resp.Diagnostics.AddError(
+		"Update: Unsupported Operation",
+		"The Update operation is not supported for this resource.",
+	)
 }
 
 func (r *resourceCMPrometheus) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
