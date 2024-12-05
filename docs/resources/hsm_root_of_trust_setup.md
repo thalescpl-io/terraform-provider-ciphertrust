@@ -54,6 +54,7 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   delay = 5
 }
 ```
+
 ```terraform
 # HSM root of trust setup of type lunatct
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {

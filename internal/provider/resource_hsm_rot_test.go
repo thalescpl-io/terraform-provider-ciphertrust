@@ -45,7 +45,7 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
 
 func TestResourceHSMRootOfTrustSetupLunatct(t *testing.T) {
 	// Remove skip after actual HSM data is used in test
-	//t.Skip("Skipped!! dummy data in resource parameters")
+	t.Skip("Skipped!! dummy data in resource parameters")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
