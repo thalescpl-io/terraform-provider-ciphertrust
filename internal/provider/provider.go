@@ -326,9 +326,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		connections.NewResourceCCKMAWSConnection,
 		cm.NewResourceHSMRootOfTrustServer,
 		connections.NewResourceCMScpConnection,
-<<<<<<<<< Temporary merge branch 1
-		cm.NewResourceCMPrometheus,
-=========
 		cm.NewResourceCMCluster,
 		cm.NewResourceCMInterface,
 		cm.NewResourceCMLicense,
