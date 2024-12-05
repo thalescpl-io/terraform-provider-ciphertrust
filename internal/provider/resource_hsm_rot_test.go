@@ -102,7 +102,7 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
     client-cert-key = "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
   }
   reset = true
-  delay = 100
+  delay = 50
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
