@@ -839,10 +839,10 @@ type CTECSIGroupJSON struct {
 }
 
 type LDTGroupCommSvcTFSDK struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	ClientList []types.String `tfsdk:"client_list"`
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Description types.String   `tfsdk:"description"`
+	ClientList  []types.String `tfsdk:"client_list"`
 }
 
 type LDTGroupCommSvcJSON struct {
