@@ -1,6 +1,6 @@
 # Terraform Configuration for CipherTrust Provider
 
-# These configurations demonstrates the creation of an HSM Root of trust setup of type "luna", "lunapci"
+# These configurations demonstrate the creation of an HSM Root of trust setup for types "luna", "lunapci"
 # with the CipherTrust provider.
 
 # An example of HSM root of trust setup of type luna
