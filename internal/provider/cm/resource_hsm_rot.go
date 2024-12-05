@@ -47,7 +47,7 @@ func (r *resourceHSMRootOfTrust) Schema(_ context.Context, _ resource.SchemaRequ
 			},
 			"type": schema.StringAttribute{
 				Required:    true,
-				Description: "Type of HSM server to setup, supported types are \"luna\", \"lunapci\", and \"lunatct\".",
+				Description: "Type of HSM server to setup, supported types are \"luna\", \"lunapci\", and \"lunatct\". \"luna\" refers to the Luna Network HSM version 5, 6, or 7, \"lunapci\" refers to the embedded Luna PCIe HSM, and \"lunatct\" refers to the Luna T-Series HSMs.",
 			},
 			"conn_info": schema.MapAttribute{
 				ElementType: types.StringType,
