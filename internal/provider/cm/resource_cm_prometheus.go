@@ -99,6 +99,7 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *resourceCMPrometheus) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// Read operation is not supported for Prometheus resource
 }
 
 func (r *resourceCMPrometheus) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
