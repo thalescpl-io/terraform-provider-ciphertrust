@@ -1,9 +1,9 @@
 # Terraform Configuration for CipherTrust Provider
 
-# This configuration demonstrates the creation of an HSM Root of trust setup of type luna
+# These configurations demonstrate the creation of an HSM Root of trust setup for types "luna", "lunapci"
 # with the CipherTrust provider.
 
-# HSM root of trust setup of type luna
+# An example of HSM root of trust setup of type luna
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
   conn_info = {
@@ -21,7 +21,7 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   delay = 5
 }
 
-# HSM root of trust setup of type Luna Network HSM using the STC protocol
+# An example of HSM root of trust setup of type Luna Network HSM using the STC protocol
 resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
   type         = "luna"
   conn_info = {
@@ -33,6 +33,17 @@ resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
     serial         = "1234"
     server-cert    = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
     stc-par-identity= "VGhpcyBpcyB0aGUgZXhhbXB...sZSBvZiBzdGMtcGFyLWlkZW50aXR5"
+  }
+  reset = true
+  delay = 5
+}
+
+# An example of HSM root of trust setup of type lunapci
+resource "ciphertrust_hsm_root_of_trust_setup" "cm_hsm_rot_setup" {
+  type         = "lunapci"
+  conn_info = {
+    partition_name     = "kylo-partition"
+    partition_password = "sOmeP@ssword"
   }
   reset = true
   delay = 5
