@@ -124,6 +124,9 @@ func (r *resourceCMPrometheus) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *resourceCMPrometheus) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// The Update operation is not natively supported by the CipherTrust API.
+	// However, it is implemented here to enhance user convenience, allowing seamless enablement
+	// and disablement of Prometheus functionality without requiring the deletion of the Terraform state file.
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_prometheus.go -> Enable/Disable - Update]")
 
 	var plan CMPrometheusMetricsConfigTFSDK
