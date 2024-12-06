@@ -47,7 +47,7 @@ func (r *resourceCMPrometheus) Schema(_ context.Context, _ resource.SchemaReques
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_prometheus.go -> Enable/Disable]")
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_prometheus.go -> Enable/Disable] - Create")
 
 	// Retrieve values from plan
 	var plan CMPrometheusMetricsConfigTFSDK
@@ -69,7 +69,7 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable]["+status+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable - Create]["+status+"]")
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Invalid data input for Prometheus : %s", status),
 			err.Error(),
@@ -79,7 +79,7 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 
 	response, err := r.client.PostDataV2(ctx, id, url, payloadJSON)
 	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable]["+status+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable - Create]["+status+"]")
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Error occured during prometheus %s", status),
 			"unexpected error: "+err.Error(),
@@ -88,9 +88,9 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 	}
 	plan.Token = types.StringValue(gjson.Get(response, "token").String())
 
-	tflog.Debug(ctx, "[resource_cm_prometheus.go -> Enable/Disable Output]["+response+"]")
+	tflog.Debug(ctx, "[resource_cm_prometheus.go -> Enable/Disable Create Output]["+response+"]")
 
-	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_prometheus.go -> Enable/Disable]["+status+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_prometheus.go -> Enable/Disable - Create]["+status+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -99,14 +99,75 @@ func (r *resourceCMPrometheus) Create(ctx context.Context, req resource.CreateRe
 }
 
 func (r *resourceCMPrometheus) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Read operation is not supported for Prometheus resource
+	id := uuid.New().String()
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_cm_prometheus.go -> Read]["+id+"]")
+
+	response, err := r.client.ReadDataByParam(ctx, id, "all", common.URL_PROMETHEUS_STATUS)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_cm_prometheus.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError("Read Error", "Error fetching Prometheus status: "+err.Error())
+		return
+	}
+
+	state := &CMPrometheusMetricsConfigTFSDK{
+		Enabled: types.BoolValue(gjson.Get(response, "enabled").Bool()),
+		Token:   types.StringValue(gjson.Get(response, "token").String()),
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_cm_prometheus.go -> Read]["+id+"]")
+
+	diags := resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *resourceCMPrometheus) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError(
-		"Update: Unsupported Operation",
-		"The Update operation is not supported for this resource.",
-	)
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_cm_prometheus.go -> Enable/Disable - Update]")
+
+	var plan CMPrometheusMetricsConfigTFSDK
+	var payload CMPrometheusMetricsConfigJSON
+
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	url := common.URL_PROMETHEUS_DISABLE
+	if plan.Enabled.ValueBool() {
+		payload.Enabled = plan.Enabled.ValueBool()
+		url = common.URL_PROMETHEUS_ENABLE
+	}
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable - Update")
+		resp.Diagnostics.AddError(
+			"Invalid data input for disabling Prometheus",
+			err.Error(),
+		)
+		return
+	}
+
+	response, err := r.client.PostDataV2(ctx, "", url, payloadJSON)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_prometheus.go -> Enable/Disable - Update")
+		resp.Diagnostics.AddError(
+			"Invalid data input for updating Prometheus state",
+			"unexpected error: "+err.Error(),
+		)
+		return
+	}
+	plan.Token = types.StringValue(gjson.Get(response, "token").String())
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_prometheus.go -> Enable/Disable - Update")
+
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *resourceCMPrometheus) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
