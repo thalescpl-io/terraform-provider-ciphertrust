@@ -139,7 +139,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
-				Description: "Unique connection name.",
+				Description: "Description about the connection.",
 			},
 			"labels": schema.MapAttribute{
 				ElementType: types.StringType,
@@ -149,7 +149,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			"meta": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: "A path where the file to be copied via SCP/SFTP. Example '/home/ubuntu/datafolder/'",
+				Description: "Optional end-user or service data stored with the connection.",
 			},
 			"password": schema.StringAttribute{
 				Optional:    true,
@@ -178,7 +178,7 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan CMScpConnectionTFDSK
+	var plan CMScpConnectionTFSDK
 	var payload CMScpConnectionJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -278,7 +278,7 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state CMScpConnectionTFDSK
+	var state CMScpConnectionTFSDK
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Read]["+id+"]")
 
@@ -305,7 +305,7 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Update]["+id+"]")
-	var plan CMScpConnectionTFDSK
+	var plan CMScpConnectionTFSDK
 	var payload CMScpConnectionJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -395,7 +395,7 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *resourceCMScpConnection) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state CMScpConnectionTFDSK
+	var state CMScpConnectionTFSDK
 	diags := req.State.Get(ctx, &state)
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Delete]["+state.ID.ValueString()+"]")
 	resp.Diagnostics.Append(diags...)

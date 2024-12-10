@@ -29,7 +29,7 @@ type dataSourceScpConnection struct {
 
 type ScpConnectionDataSourceModel struct {
 	Filters types.Map              `tfsdk:"filters"`
-	Scp     []CMScpConnectionTFDSK `tfsdk:"scp"`
+	Scp     []CMScpConnectionTFSDK `tfsdk:"scp"`
 }
 
 func (d *dataSourceScpConnection) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -133,7 +133,7 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	for _, scp := range scpConnections {
-		scpConn := CMScpConnectionTFDSK{
+		scpConn := CMScpConnectionTFSDK{
 			ID:   types.StringValue(scp.ID),
 			Name: types.StringValue(scp.Name),
 			Products: func() []types.String {

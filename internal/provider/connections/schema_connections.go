@@ -54,20 +54,7 @@ type AWSConnectionModelJSON struct {
 	SecretAccessKey         string                 `json:"secret_access_key"`
 }
 
-type CMScpConnectionListModelTFDSK struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	Products    []types.String `tfsdk:"products"`
-	Description types.String   `tfsdk:"description"`
-	Host        types.String   `tfsdk:"host"`
-	Port        types.Int64    `tfsdk:"port"`
-	Username    types.String   `tfsdk:"username"`
-	AuthMethod  types.String   `tfsdk:"auth_method"`
-	PathTo      types.String   `tfsdk:"path_to"`
-	Protocol    types.String   `tfsdk:"protocol"`
-}
-
-type CMScpConnectionTFDSK struct {
+type CMScpConnectionTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	Name        types.String   `tfsdk:"name"`
 	Products    []types.String `tfsdk:"products"`
