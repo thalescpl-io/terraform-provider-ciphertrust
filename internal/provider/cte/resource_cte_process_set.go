@@ -59,6 +59,10 @@ func (r *resourceCTEProcessSet) Schema(_ context.Context, _ resource.SchemaReque
 						"file": schema.StringAttribute{
 							Optional: true,
 						},
+						"labels": schema.MapAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+						},
 						"resource_set_id": schema.StringAttribute{
 							Optional: true,
 						},
@@ -106,6 +110,13 @@ func (r *resourceCTEProcessSet) Create(ctx context.Context, req resource.CreateR
 		if process.Signature.ValueString() != "" && process.Signature.ValueString() != types.StringNull().ValueString() {
 			processJSON.Signature = string(process.Signature.ValueString())
 		}
+
+		labelsPayload := make(map[string]interface{})
+		for k, v := range process.Labels.Elements() {
+			labelsPayload[k] = v.(types.String).ValueString()
+		}
+		processJSON.Labels = labelsPayload
+
 		processes = append(processes, processJSON)
 	}
 	payload.Processes = processes

@@ -884,6 +884,7 @@ type CTEPolicyAddSignatureRuleTFSDK struct {
 type CTEProcessTFSDK struct {
 	Directory     types.String `tfsdk:"directory"`
 	File          types.String `tfsdk:"file"`
+	Labels        types.Map    `tfsdk:"labels"`
 	ResourceSetId types.String `tfsdk:"resource_set_id"`
 	Signature     types.String `tfsdk:"signature"`
 }
@@ -896,10 +897,11 @@ type CTEProcessSetTFSDK struct {
 }
 
 type CTEProcessJSON struct {
-	Directory     string `json:"directory"`
-	File          string `json:"file"`
-	ResourceSetId string `json:"resource_set_id"`
-	Signature     string `json:"signature"`
+	Directory     string                 `json:"directory"`
+	File          string                 `json:"file"`
+	Labels        map[string]interface{} `json:"labels"`
+	ResourceSetId string                 `json:"resource_set_id"`
+	Signature     string                 `json:"signature"`
 }
 
 type CTEProcessSetJSON struct {
@@ -1126,6 +1128,7 @@ type CTEResourceSetTFSDK struct {
 	ID                 types.String             `tfsdk:"id"`
 	Name               types.String             `tfsdk:"name"`
 	Description        types.String             `tfsdk:"description"`
+	Labels             types.Map                `tfsdk:"labels"`
 	Resources          []CTEResourceTFSDK       `tfsdk:"resources"`
 	Type               types.String             `tfsdk:"type"`
 	ClassificationTags []ClassificationTagTFSDK `tfsdk:"classification_tags"`
@@ -1155,6 +1158,7 @@ type CTEResourceSetJSON struct {
 	ID                 string                  `json:"id"`
 	Name               string                  `json:"name"`
 	Description        string                  `json:"description"`
+	Labels             map[string]interface{}  `json:"labels"`
 	Resources          []CTEResourceJSON       `json:"resources"`
 	Type               string                  `json:"type"`
 	ClassificationTags []ClassificationTagJSON `json:"classification_tags"`
@@ -1164,16 +1168,18 @@ type CTESignatureSetTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	Name        types.String   `tfsdk:"name"`
 	Description types.String   `tfsdk:"description"`
+	Labels      types.Map      `tfsdk:"labels"`
 	Type        types.String   `tfsdk:"type"`
 	Sources     []types.String `tfsdk:"source_list"`
 }
 
 type CTESignatureSetJSON struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Type        string   `json:"type"`
-	Sources     []string `json:"source_list"`
+	ID          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Labels      map[string]interface{} `json:"labels"`
+	Type        string                 `json:"type"`
+	Sources     []string               `json:"source_list"`
 }
 
 type CTEUserTFSDK struct {
@@ -1188,6 +1194,7 @@ type CTEUserSetTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	Name        types.String   `tfsdk:"name"`
 	Description types.String   `tfsdk:"description"`
+	Labels      types.Map      `tfsdk:"labels"`
 	Users       []CTEUserTFSDK `tfsdk:"users"`
 }
 

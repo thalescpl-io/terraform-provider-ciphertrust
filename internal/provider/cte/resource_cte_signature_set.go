@@ -49,6 +49,10 @@ func (r *resourceCTESignatureSet) Schema(_ context.Context, _ resource.SchemaReq
 			"description": schema.StringAttribute{
 				Optional: true,
 			},
+			"labels": schema.MapAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"type": schema.StringAttribute{
 				Optional: true,
 			},
@@ -87,6 +91,12 @@ func (r *resourceCTESignatureSet) Create(ctx context.Context, req resource.Creat
 			payload.Sources = append(payload.Sources, source.ValueString())
 		}
 	}
+
+	labelsPayload := make(map[string]interface{})
+	for k, v := range plan.Labels.Elements() {
+		labelsPayload[k] = v.(types.String).ValueString()
+	}
+	payload.Labels = labelsPayload
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
