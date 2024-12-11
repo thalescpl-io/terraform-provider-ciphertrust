@@ -31,30 +31,27 @@ provider "ciphertrust" {
   bootstrap = "no"
 }
 
-# Add a resource of type CTE Process Set with the name process_set
-resource "ciphertrust_cte_process_set" "process_set" {
-    name = "process_set"
-    description = "Process set test"
-    processes = [
-      {
-        directory = "/opt/temp1"
-        file = "*"
-        signature = "demo"
-        labels = {
-            key1 = "value1"
-        }
-      }
+# Add a resource of type CTE Signature Set with the name signature_set
+resource "ciphertrust_cte_signature_set" "signature_set" {
+    name = "signature_set_tf"
+    description = "SignaturSet Terraform"
+    labels = {
+      key1 = "value1"
+      key2 = "value2"
+    }
+    source_list = [
+      "/opt/temp1"
     ]
 }
 
-# Output the unique ID of the created CTE Process Set
-output "process_set_id" {
-    # The value will be the ID of the CTE Process Set resource
-    value = ciphertrust_cte_process_set.process_set.id
+# Output the unique ID of the created CTE Signature Set
+output "signature_set_id" {
+    # The value will be the ID of the CTE Signature Set resource
+    value = ciphertrust_cte_signature_set.signature_set.id
 }
 
-# Output the name of the created CTE Process Set
-output "process_set_name" {
-    # The value will be the name of the CTE Process Set resource
-    value = ciphertrust_cte_process_set.process_set.name
+# Output the name of the created CTE Signature Set
+output "signature_set_name" {
+    # The value will be the name of the CTE Signature Set resource
+    value = ciphertrust_cte_signature_set.signature_set.name
 }
