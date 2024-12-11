@@ -168,6 +168,17 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 				Description: "Use 'sftp' or 'scp'. 'sftp' is the default value",
 			},
+			//common response parameters (optional)
+			"uri":                   schema.StringAttribute{Computed: true, Optional: true},
+			"account":               schema.StringAttribute{Computed: true, Optional: true},
+			"created_at":            schema.StringAttribute{Computed: true, Optional: true},
+			"updated_at":            schema.StringAttribute{Computed: true, Optional: true},
+			"service":               schema.StringAttribute{Computed: true, Optional: true},
+			"category":              schema.StringAttribute{Computed: true, Optional: true},
+			"resource_url":          schema.StringAttribute{Computed: true, Optional: true},
+			"last_connection_ok":    schema.BoolAttribute{Computed: true, Optional: true},
+			"last_connection_error": schema.StringAttribute{Computed: true, Optional: true},
+			"last_connection_at":    schema.StringAttribute{Computed: true, Optional: true},
 		},
 	}
 }
@@ -264,6 +275,16 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 		return
 	}
 	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Category = types.StringValue(gjson.Get(response, "category").String())
+	plan.Service = types.StringValue(gjson.Get(response, "service").String())
+	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
 
@@ -377,7 +398,7 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_SCP_CONNECTION, payloadJSON, "id")
+	response, err := r.client.UpdateDataV2(ctx, plan.ID.ValueString(), common.URL_SCP_CONNECTION, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_scp_connection.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -386,7 +407,20 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	}
-	plan.ID = types.StringValue(response)
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Category = types.StringValue(gjson.Get(response, "category").String())
+	plan.Service = types.StringValue(gjson.Get(response, "service").String())
+	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+
+	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
+
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

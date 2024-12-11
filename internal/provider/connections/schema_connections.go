@@ -55,6 +55,7 @@ type AWSConnectionModelJSON struct {
 }
 
 type CMScpConnectionTFSDK struct {
+	CMCreateConnectionResponseCommonTFSDK
 	ID          types.String   `tfsdk:"id"`
 	Name        types.String   `tfsdk:"name"`
 	Products    []types.String `tfsdk:"products"`
@@ -72,6 +73,7 @@ type CMScpConnectionTFSDK struct {
 }
 
 type CMScpConnectionJSON struct {
+	CMCreateConnectionResponseCommon
 	ID          string                 `json:"id"`
 	Name        string                 `json:"name"`
 	Products    []string               `json:"products"`
@@ -86,4 +88,30 @@ type CMScpConnectionJSON struct {
 	Protocol    string                 `json:"protocol"`
 	Password    string                 `json:"password"`
 	PublicKey   string                 `json:"public_key"`
+}
+
+type CMCreateConnectionResponseCommonTFSDK struct {
+	URI                 types.String `tfsdk:"uri"`
+	Account             types.String `tfsdk:"account"`
+	CreatedAt           types.String `tfsdk:"created_at"`
+	UpdatedAt           types.String `tfsdk:"updated_at"`
+	Service             types.String `tfsdk:"service"`
+	Category            types.String `tfsdk:"category"`
+	ResourceURL         types.String `tfsdk:"resource_url"`
+	LastConnectionOK    types.Bool   `tfsdk:"last_connection_ok"`
+	LastConnectionError types.String `tfsdk:"last_connection_error"`
+	LastConnectionAt    types.String `tfsdk:"last_connection_at"`
+}
+
+type CMCreateConnectionResponseCommon struct {
+	URI                 string `json:"uri"`
+	Account             string `json:"account"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
+	Service             string `json:"service"`
+	Category            string `json:"category"`
+	ResourceURL         string `json:"resource_url"`
+	LastConnectionOK    bool   `json:"last_connection_ok"`
+	LastConnectionError string `json:"last_connection_error"`
+	LastConnectionAt    string `json:"last_connection_at"`
 }
