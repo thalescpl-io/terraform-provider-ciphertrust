@@ -49,6 +49,10 @@ func (r *resourceCTEUserSet) Schema(_ context.Context, _ resource.SchemaRequest,
 			"description": schema.StringAttribute{
 				Optional: true,
 			},
+			"labels": schema.MapAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"users": schema.ListNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
@@ -116,6 +120,12 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 		usersJSONArr = append(usersJSONArr, userJSON)
 	}
 	payload["users"] = usersJSONArr
+
+	labelsPayload := make(map[string]interface{})
+	for k, v := range plan.Labels.Elements() {
+		labelsPayload[k] = v.(types.String).ValueString()
+	}
+	payload["labels"] = labelsPayload
 
 	payloadJSON, _ := json.Marshal(payload)
 
