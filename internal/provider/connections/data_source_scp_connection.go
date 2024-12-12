@@ -29,7 +29,7 @@ type dataSourceScpConnection struct {
 
 type ScpConnectionDataSourceModel struct {
 	Filters types.Map              `tfsdk:"filters"`
-	Scp     []CMScpConnectionTFDSK `tfsdk:"scp"`
+	Scp     []CMScpConnectionTFSDK `tfsdk:"scp"`
 }
 
 func (d *dataSourceScpConnection) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -92,6 +92,17 @@ func (d *dataSourceScpConnection) Schema(_ context.Context, _ datasource.SchemaR
 						"public_key": schema.StringAttribute{
 							Computed: true,
 						},
+						//common response parameters (optional)
+						"uri":                   schema.StringAttribute{Computed: true},
+						"account":               schema.StringAttribute{Computed: true},
+						"created_at":            schema.StringAttribute{Computed: true},
+						"updated_at":            schema.StringAttribute{Computed: true},
+						"service":               schema.StringAttribute{Computed: true},
+						"category":              schema.StringAttribute{Computed: true},
+						"resource_url":          schema.StringAttribute{Computed: true},
+						"last_connection_ok":    schema.BoolAttribute{Computed: true},
+						"last_connection_error": schema.StringAttribute{Computed: true},
+						"last_connection_at":    schema.StringAttribute{Computed: true},
 					},
 				},
 			},
@@ -133,7 +144,19 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	for _, scp := range scpConnections {
-		scpConn := CMScpConnectionTFDSK{
+		scpConn := CMScpConnectionTFSDK{
+			CMCreateConnectionResponseCommonTFSDK: CMCreateConnectionResponseCommonTFSDK{
+				URI:                 types.StringValue(scp.URI),
+				Account:             types.StringValue(scp.Account),
+				CreatedAt:           types.StringValue(scp.CreatedAt),
+				UpdatedAt:           types.StringValue(scp.UpdatedAt),
+				Service:             types.StringValue(scp.Service),
+				Category:            types.StringValue(scp.Category),
+				ResourceURL:         types.StringValue(scp.ResourceURL),
+				LastConnectionOK:    types.BoolValue(scp.LastConnectionOK),
+				LastConnectionError: types.StringValue(scp.LastConnectionError),
+				LastConnectionAt:    types.StringValue(scp.LastConnectionAt),
+			},
 			ID:   types.StringValue(scp.ID),
 			Name: types.StringValue(scp.Name),
 			Products: func() []types.String {
