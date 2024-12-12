@@ -187,6 +187,31 @@ func (c *Client) UpdateData(ctx context.Context, uuid string, endpoint string, d
 	return ret, nil
 }
 
+func (c *Client) UpdateDataV2(ctx context.Context, uuid string, endpoint string, data []byte) (string, error) {
+	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> UpdateData]["+uuid+"]")
+	var payload io.Reader
+	if len(data) == 0 {
+		payload = nil
+	} else {
+		payload = bytes.NewBuffer(data)
+	}
+
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/%s/%s", c.CipherTrustURL, endpoint, uuid), payload)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> UpdateData]["+uuid+"]")
+		return "", err
+	}
+
+	body, err := c.doRequest(ctx, uuid, req, nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> UpdateData]["+uuid+"]")
+		return "", err
+	}
+
+	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> UpdateData]["+uuid+"]")
+	return string(body), nil
+}
+
 func (c *Client) UpdateDataFullURL(ctx context.Context, uuid string, endpoint string, data []byte, id string) (string, error) {
 	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> UpdateData]["+uuid+"]")
 	var payload io.Reader

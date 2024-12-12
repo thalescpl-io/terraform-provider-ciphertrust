@@ -141,7 +141,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
-				Description: "Unique connection name.",
+				Description: "Description about the connection.",
 			},
 			"labels": schema.MapAttribute{
 				ElementType: types.StringType,
@@ -151,7 +151,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			"meta": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: "A path where the file to be copied via SCP/SFTP. Example '/home/ubuntu/datafolder/'",
+				Description: "Optional end-user or service data stored with the connection.",
 			},
 			"password": schema.StringAttribute{
 				Optional:    true,
@@ -170,6 +170,17 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 				Description: "Use 'sftp' or 'scp'. 'sftp' is the default value",
 			},
+			//common response parameters (optional)
+			"uri":                   schema.StringAttribute{Computed: true, Optional: true},
+			"account":               schema.StringAttribute{Computed: true, Optional: true},
+			"created_at":            schema.StringAttribute{Computed: true, Optional: true},
+			"updated_at":            schema.StringAttribute{Computed: true, Optional: true},
+			"service":               schema.StringAttribute{Computed: true, Optional: true},
+			"category":              schema.StringAttribute{Computed: true, Optional: true},
+			"resource_url":          schema.StringAttribute{Computed: true, Optional: true},
+			"last_connection_ok":    schema.BoolAttribute{Computed: true, Optional: true},
+			"last_connection_error": schema.StringAttribute{Computed: true, Optional: true},
+			"last_connection_at":    schema.StringAttribute{Computed: true, Optional: true},
 		},
 	}
 }
@@ -180,7 +191,7 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan CMScpConnectionTFDSK
+	var plan CMScpConnectionTFSDK
 	var payload CMScpConnectionJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -266,6 +277,16 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 		return
 	}
 	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Category = types.StringValue(gjson.Get(response, "category").String())
+	plan.Service = types.StringValue(gjson.Get(response, "service").String())
+	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
 
@@ -280,7 +301,7 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state CMScpConnectionTFDSK
+	var state CMScpConnectionTFSDK
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Read]["+id+"]")
 
@@ -307,7 +328,7 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Update]["+id+"]")
-	var plan CMScpConnectionTFDSK
+	var plan CMScpConnectionTFSDK
 	var payload CMScpConnectionJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -379,7 +400,7 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_SCP_CONNECTION, payloadJSON, "id")
+	response, err := r.client.UpdateDataV2(ctx, plan.ID.ValueString(), common.URL_SCP_CONNECTION, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_scp_connection.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -388,7 +409,20 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	}
-	plan.ID = types.StringValue(response)
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Category = types.StringValue(gjson.Get(response, "category").String())
+	plan.Service = types.StringValue(gjson.Get(response, "service").String())
+	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+
+	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
+
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -397,7 +431,7 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *resourceCMScpConnection) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state CMScpConnectionTFDSK
+	var state CMScpConnectionTFSDK
 	diags := req.State.Get(ctx, &state)
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_scp_connection.go -> Delete]["+state.ID.ValueString()+"]")
 	resp.Diagnostics.Append(diags...)
