@@ -2,6 +2,7 @@ package connections
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -27,10 +28,12 @@ type dataSourceGCPConnection struct {
 }
 
 type GCPConnectionDataSourceModel struct {
+	Filters types.Map            `tfsdk:"filters"`
+	Gcp     []GCPConnectionTFSDK `tfsdk:"gcp"`
 }
 
 func (d *dataSourceGCPConnection) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_scp_connection_list"
+	resp.TypeName = req.ProviderTypeName + "_gcp_connection_list"
 }
 
 func (d *dataSourceGCPConnection) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -47,36 +50,21 @@ func (d *dataSourceGCPConnection) Schema(_ context.Context, _ datasource.SchemaR
 						"id": schema.StringAttribute{
 							Computed: true,
 						},
-						"auth_method": schema.StringAttribute{
+						"key_file": schema.StringAttribute{
 							Computed: true,
 						},
-						"host": schema.StringAttribute{
+						"cloud_name": schema.StringAttribute{
 							Computed: true,
 						},
 						"name": schema.StringAttribute{
 							Computed: true,
 						},
-						"path_to": schema.StringAttribute{
-							Computed: true,
-						},
-						"username": schema.StringAttribute{
-							Computed: true,
-						},
 						"description": schema.StringAttribute{
-							Computed: true,
-						},
-						"port": schema.Int64Attribute{
 							Computed: true,
 						},
 						"products": schema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
-						},
-						"protocol": schema.StringAttribute{
-							Computed: true,
-						},
-						"password": schema.StringAttribute{
-							Computed: true,
 						},
 						"labels": schema.MapAttribute{
 							ElementType: types.StringType,
@@ -86,9 +74,17 @@ func (d *dataSourceGCPConnection) Schema(_ context.Context, _ datasource.SchemaR
 							ElementType: types.StringType,
 							Computed:    true,
 						},
-						"public_key": schema.StringAttribute{
-							Computed: true,
-						},
+						//common response parameters (optional)
+						"uri":                   schema.StringAttribute{Computed: true},
+						"account":               schema.StringAttribute{Computed: true},
+						"created_at":            schema.StringAttribute{Computed: true},
+						"updated_at":            schema.StringAttribute{Computed: true},
+						"service":               schema.StringAttribute{Computed: true},
+						"category":              schema.StringAttribute{Computed: true},
+						"resource_url":          schema.StringAttribute{Computed: true},
+						"last_connection_ok":    schema.BoolAttribute{Computed: true},
+						"last_connection_error": schema.StringAttribute{Computed: true},
+						"last_connection_at":    schema.StringAttribute{Computed: true},
 					},
 				},
 			},
@@ -98,8 +94,8 @@ func (d *dataSourceGCPConnection) Schema(_ context.Context, _ datasource.SchemaR
 
 func (d *dataSourceGCPConnection) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	id := uuid.New().String()
-	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_scp_connection.go -> Read]["+id+"]")
-	var state ScpConnectionDataSourceModel
+	tflog.Trace(ctx, common.MSG_METHOD_START+"[data_source_gcp_connection.go -> Read]["+id+"]")
+	var state GCPConnectionDataSourceModel
 	req.Config.Get(ctx, &state)
 	var kvs []string
 	for k, v := range state.Filters.Elements() {
@@ -107,53 +103,59 @@ func (d *dataSourceGCPConnection) Read(ctx context.Context, req datasource.ReadR
 		kvs = append(kvs, kv)
 	}
 
-	jsonStr, err := d.client.GetAll(ctx, id, common.URL_SCP_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=10")
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_GCP_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=10")
 	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_scp_connection.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_gcp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
-			"Unable to read scp connection from CM",
+			"Unable to read gcp connection from CM",
 			err.Error(),
 		)
 		return
 	}
 
-	scpConnections := []CMScpConnectionJSON{}
-
-	err = json.Unmarshal([]byte(jsonStr), &scpConnections)
+	gcpConnections := []GCPConnectionJSON{}
+	err = json.Unmarshal([]byte(jsonStr), &gcpConnections)
 	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_scp_connection.go -> Read]["+id+"]")
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_gcp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
-			"Unable to read scp connection from CM",
+			"Unable to read gcp connection from CM",
 			err.Error(),
 		)
 		return
 	}
 
-	for _, scp := range scpConnections {
-		scpConn := CMScpConnectionTFDSK{
-			ID:   types.StringValue(scp.ID),
-			Name: types.StringValue(scp.Name),
+	for _, gcp := range gcpConnections {
+		gcpConn := GCPConnectionTFSDK{
+			CMCreateConnectionResponseCommonTFSDK: CMCreateConnectionResponseCommonTFSDK{
+				URI:                 types.StringValue(gcp.URI),
+				Account:             types.StringValue(gcp.Account),
+				CreatedAt:           types.StringValue(gcp.CreatedAt),
+				UpdatedAt:           types.StringValue(gcp.UpdatedAt),
+				Service:             types.StringValue(gcp.Service),
+				Category:            types.StringValue(gcp.Category),
+				ResourceURL:         types.StringValue(gcp.ResourceURL),
+				LastConnectionOK:    types.BoolValue(gcp.LastConnectionOK),
+				LastConnectionError: types.StringValue(gcp.LastConnectionError),
+				LastConnectionAt:    types.StringValue(gcp.LastConnectionAt),
+			},
+			ID:   types.StringValue(gcp.ID),
+			Name: types.StringValue(gcp.Name),
 			Products: func() []types.String {
 				var products []types.String
-				for _, product := range scp.Products {
+				for _, product := range gcp.Products {
 					products = append(products, types.StringValue(product))
 				}
 				return products
 			}(),
-			Description: types.StringValue(scp.Description),
-			Host:        types.StringValue(scp.Host),
-			Port:        types.Int64Value(scp.Port),
-			Username:    types.StringValue(scp.Username),
-			AuthMethod:  types.StringValue(scp.AuthMethod),
-			PathTo:      types.StringValue(scp.PathTo),
-			Protocol:    types.StringValue(scp.Protocol),
-			PublicKey:   types.StringValue(scp.PublicKey),
+			Description: types.StringValue(gcp.Description),
+			CloudName:   types.StringValue(gcp.CloudName),
+			KeyFile:     types.StringValue(gcp.KeyFile),
 		}
 
-		if scp.Labels != nil {
+		if gcp.Labels != nil {
 			// Create the map to store attr.Value
 			labelsMap := make(map[string]attr.Value)
-			for key, value := range scp.Labels {
+			for key, value := range gcp.Labels {
 				// Ensure value is a string and handle if it's not
 				if strVal, ok := value.(string); ok {
 					labelsMap[key] = types.StringValue(strVal) // types.String is an attr.Value
@@ -163,17 +165,17 @@ func (d *dataSourceGCPConnection) Read(ctx context.Context, req datasource.ReadR
 				}
 			}
 			// Set labels as a MapValue
-			scpConn.Labels, _ = types.MapValue(types.StringType, labelsMap)
+			gcpConn.Labels, _ = types.MapValue(types.StringType, labelsMap)
 		} else {
 			// If Labels are missing, assign an empty map
 			labelsMap := make(map[string]attr.Value)
-			scpConn.Labels, _ = types.MapValue(types.StringType, labelsMap)
+			gcpConn.Labels, _ = types.MapValue(types.StringType, labelsMap)
 		}
 
-		if scp.Meta != nil {
+		if gcp.Meta != nil {
 			// Create the map to store attr.Value for Meta
 			metaMap := make(map[string]attr.Value)
-			for key, value := range scp.Meta.(map[string]interface{}) {
+			for key, value := range gcp.Meta.(map[string]interface{}) {
 				// Convert each value in meta to the corresponding attr.Value
 				switch v := value.(type) {
 				case string:
@@ -187,17 +189,17 @@ func (d *dataSourceGCPConnection) Read(ctx context.Context, req datasource.ReadR
 					metaMap[key] = types.StringValue(fmt.Sprintf("%v", v))
 				}
 			}
-			scpConn.Meta, _ = types.MapValue(types.StringType, metaMap)
+			gcpConn.Meta, _ = types.MapValue(types.StringType, metaMap)
 		} else {
 			// If Meta is missing, assign an empty map
 			metaMap := make(map[string]attr.Value)
-			scpConn.Meta, _ = types.MapValue(types.StringType, metaMap)
+			gcpConn.Meta, _ = types.MapValue(types.StringType, metaMap)
 		}
 
-		state.Scp = append(state.Scp, scpConn)
+		state.Gcp = append(state.Gcp, gcpConn)
 	}
 
-	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_scp_connection.go -> Read]["+id+"]")
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[data_source_gcp_connection.go -> Read]["+id+"]")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
