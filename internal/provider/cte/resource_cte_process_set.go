@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/tidwall/gjson"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -36,38 +37,77 @@ func (r *resourceCTEProcessSet) Metadata(_ context.Context, req resource.Metadat
 // Schema defines the schema for the resource.
 func (r *resourceCTEProcessSet) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "A process set is a collection of processes (executables) that you want to grant or deny access to GuardPoints. This provides a way to manage processes independent of the policy. Policies can be applied to process sets, not to individual processes. Optionally, file signing can be configured to check the authenticity and integrity of executables and applications before they are allowed to access GuardPoint data. A signature set must already exist before you can configure file signing in a policy for a process set.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "The unique identifier of the resource",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"uri": schema.StringAttribute{
+				Description: "A human readable unique identifier of the resource",
+				Computed:    true,
+			},
+			"account": schema.StringAttribute{
+				Description: "The account which owns this resource.",
+				Computed:    true,
+			},
+			"dev_account ": schema.StringAttribute{
+				Description: "The developer account which owns this resource's application.",
+				Computed:    true,
+			},
+			"application": schema.StringAttribute{
+				Description: "The application this resource belongs to.",
+				Computed:    true,
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Date/time the application was created",
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Date/time the application was updated",
+				Computed:    true,
+			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the ProcessSet",
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Description: "Description of the process set.",
+				Optional:    true,
+			},
+			"labels": schema.MapAttribute{
+				Description: "Labels are key/value pairs used to group resources. They are based on Kubernetes Labels, see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/.\nWhen labels are provided they are merged with the resource's existing labels.\nTo remove a label, set the label's value to null.\n\"labels\": {\n\t\"critical\": null\n}\nTo remove all labels, set labels to null.\n\"labels\": null",
+				ElementType: types.StringType,
+				Optional:    true,
 			},
 			"processes": schema.ListNestedAttribute{
-				Optional: true,
+				Description: "List of processes to be added to the process set.",
+				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"directory": schema.StringAttribute{
-							Optional: true,
+							Description: "Directory of the process to be added to the process set.",
+							Optional:    true,
 						},
 						"file": schema.StringAttribute{
-							Optional: true,
+							Description: "File name of the process to be added to the process set.",
+							Optional:    true,
 						},
 						"labels": schema.MapAttribute{
+							Description: "Labels are key/value pairs used to group resources. They are based on Kubernetes Labels, see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/. To add a label, set the label's value as follows.\n\"labels\": {\n\t\"key1\": \"value1\",\n\t\"key2\": \"value2\"\n}",
 							ElementType: types.StringType,
 							Optional:    true,
 						},
 						"resource_set_id": schema.StringAttribute{
-							Optional: true,
+							Description: "ID or name of the resource set to link to the process set. It is used for ransomware clients as a resources exempt.",
+							Optional:    true,
 						},
 						"signature": schema.StringAttribute{
-							Optional: true,
+							Description: "ID or name of the signature set to link to the process set.",
+							Optional:    true,
 						},
 					},
 				},
@@ -131,7 +171,7 @@ func (r *resourceCTEProcessSet) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, common.URL_CTE_PROCESS_SET, payloadJSON, "id")
+	response, err := r.client.PostDataV2(ctx, id, common.URL_CTE_PROCESS_SET, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_process_set.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -141,7 +181,13 @@ func (r *resourceCTEProcessSet) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	plan.ID = types.StringValue(response)
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	plan.Application = types.StringValue(gjson.Get(response, "application").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_process_set.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -153,6 +199,35 @@ func (r *resourceCTEProcessSet) Create(ctx context.Context, req resource.CreateR
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEProcessSet) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEProcessSetTFSDK
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_CTE_PROCESS_SET)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_process_set.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading CTE ProcessSet on CipherTrust Manager: ",
+			"Could not read CTE ProcessSet id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	state.ID = types.StringValue(gjson.Get(response, "id").String())
+	state.URI = types.StringValue(gjson.Get(response, "uri").String())
+	state.Account = types.StringValue(gjson.Get(response, "account").String())
+	state.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	state.Application = types.StringValue(gjson.Get(response, "application").String())
+	state.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	state.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	state.Name = types.StringValue(gjson.Get(response, "name").String())
+	state.Description = types.StringValue(gjson.Get(response, "description").String())
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_process_set.go -> Read]["+id+"]")
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -198,7 +273,7 @@ func (r *resourceCTEProcessSet) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_PROCESS_SET, payloadJSON, "id")
+	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_PROCESS_SET, payloadJSON, "updatedAt")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_process_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -207,7 +282,7 @@ func (r *resourceCTEProcessSet) Update(ctx context.Context, req resource.UpdateR
 		)
 		return
 	}
-	plan.ID = types.StringValue(response)
+	plan.UpdatedAt = types.StringValue(response)
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

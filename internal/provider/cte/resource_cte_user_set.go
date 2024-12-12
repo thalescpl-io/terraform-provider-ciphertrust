@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/tidwall/gjson"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -38,39 +39,73 @@ func (r *resourceCTEUserSet) Schema(_ context.Context, _ resource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "The unique identifier of the resource",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"uri": schema.StringAttribute{
+				Description: "A human readable unique identifier of the resource",
+				Computed:    true,
+			},
+			"account": schema.StringAttribute{
+				Description: "The account which owns this resource.",
+				Computed:    true,
+			},
+			"dev_account ": schema.StringAttribute{
+				Description: "The developer account which owns this resource's application.",
+				Computed:    true,
+			},
+			"application": schema.StringAttribute{
+				Description: "The application this resource belongs to.",
+				Computed:    true,
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Date/time the application was created",
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Date/time the application was updated",
+				Computed:    true,
+			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the user set.",
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Description: "Description of the user set.",
+				Optional:    true,
 			},
 			"labels": schema.MapAttribute{
+				Description: "Labels are key/value pairs used to group resources. They are based on Kubernetes Labels, see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/. To add a label, set the label's value as follows.\n\"labels\": {\n\t\"key1\": \"value1\",\n\t\"key2\": \"value2\"\n}",
 				ElementType: types.StringType,
 				Optional:    true,
 			},
 			"users": schema.ListNestedAttribute{
-				Optional: true,
+				Description: "List of users to be added to the user set.",
+				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"gid": schema.Int64Attribute{
-							Optional: true,
+							Description: "Group ID of the user to be added to the user set.",
+							Optional:    true,
 						},
 						"gname": schema.StringAttribute{
-							Optional: true,
+							Description: "Group name of the user to be added to the user set.",
+							Optional:    true,
 						},
 						"os_domain": schema.StringAttribute{
-							Optional: true,
+							Description: "OS domain name for Windows platforms.",
+							Optional:    true,
 						},
 						"uid": schema.Int64Attribute{
-							Optional: true,
+							Description: "ID of the user to be added to the user set.",
+							Optional:    true,
 						},
 						"uname": schema.StringAttribute{
-							Optional: true,
+							Description: "Name of the user to be added to the user set.",
+							Optional:    true,
 						},
 					},
 				},
@@ -129,7 +164,7 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 
 	payloadJSON, _ := json.Marshal(payload)
 
-	response, err := r.client.PostData(ctx, id, common.URL_CTE_USER_SET, payloadJSON, "id")
+	response, err := r.client.PostDataV2(ctx, id, common.URL_CTE_USER_SET, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -139,7 +174,13 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	plan.ID = types.StringValue(response)
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	plan.Application = types.StringValue(gjson.Get(response, "application").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_user_set.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -151,6 +192,35 @@ func (r *resourceCTEUserSet) Create(ctx context.Context, req resource.CreateRequ
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEUserSet) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEUserSetTFSDK
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_CTE_USER_SET)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading CTE UserSet on CipherTrust Manager: ",
+			"Could not read CTE UserSet id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	state.ID = types.StringValue(gjson.Get(response, "id").String())
+	state.URI = types.StringValue(gjson.Get(response, "uri").String())
+	state.Account = types.StringValue(gjson.Get(response, "account").String())
+	state.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	state.Application = types.StringValue(gjson.Get(response, "application").String())
+	state.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	state.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	state.Name = types.StringValue(gjson.Get(response, "name").String())
+	state.Description = types.StringValue(gjson.Get(response, "description").String())
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_user_set.go -> Read]["+id+"]")
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -190,9 +260,15 @@ func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	payload["users"] = usersJSONArr
 
+	labelsPayload := make(map[string]interface{})
+	for k, v := range plan.Labels.Elements() {
+		labelsPayload[k] = v.(types.String).ValueString()
+	}
+	payload["labels"] = labelsPayload
+
 	payloadJSON, _ := json.Marshal(payload)
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_USER_SET, payloadJSON, "id")
+	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_USER_SET, payloadJSON, "updatedAt")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
