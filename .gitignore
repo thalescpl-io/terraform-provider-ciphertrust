@@ -27,3 +27,5 @@ go.work.sum
 /.github
 *.tfstate
 *.backup
+/docs
+/docs
