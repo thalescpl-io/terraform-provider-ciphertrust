@@ -332,5 +332,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cm.NewResourceCMNTP,
 		cm.NewResourceCMTrialLicense,
 		cm.NewResourceCMPrometheus,
+		connections.NewResourceGCPConnection,
 	}
 }
