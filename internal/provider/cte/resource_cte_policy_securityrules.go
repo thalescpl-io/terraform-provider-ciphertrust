@@ -54,50 +54,48 @@ func (r *resourceCTEPolicySecurityRule) Schema(_ context.Context, _ resource.Sch
 				Optional:    true,
 				Description: "Precedence order of the rule in the parent policy.",
 			},
-			"rule": schema.ListNestedAttribute{
+			"rule": schema.SingleNestedAttribute{
 				Optional:    true,
 				Description: "Security Rule to be updated in the parent policy.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"action": schema.StringAttribute{
-							Optional:    true,
-							Description: "Actions applicable to the rule. Examples of actions are read, write, all_ops, and key_op.",
-							Validators: []validator.String{
-								stringvalidator.OneOf([]string{"read", "write", "all_ops", "key_op"}...),
-							},
+				Attributes: map[string]schema.Attribute{
+					"action": schema.StringAttribute{
+						Optional:    true,
+						Description: "Actions applicable to the rule. Examples of actions are read, write, all_ops, and key_op.",
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{"read", "write", "all_ops", "key_op"}...),
 						},
-						"effect": schema.StringAttribute{
-							Optional:    true,
-							Description: "Effects applicable to the rule. Separate multiple effects by commas. The valid values are: permit, deny, audit, applykey",
-						},
-						"exclude_process_set": schema.BoolAttribute{
-							Optional:    true,
-							Description: "Process set to exclude. Supported for Standard, LDT and IDT policies.",
-						},
-						"exclude_resource_set": schema.BoolAttribute{
-							Optional:    true,
-							Description: "Resource set to exclude. Supported for Standard, LDT and IDT policies.",
-						},
-						"exclude_user_set": schema.BoolAttribute{
-							Optional:    true,
-							Description: "User set to exclude. Supported for Standard, LDT and IDT policies.",
-						},
-						"partial_match": schema.BoolAttribute{
-							Optional:    true,
-							Description: "Whether to allow partial match operations. By default, it is enabled. Supported for Standard, LDT and IDT policies.",
-						},
-						"process_set_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "ID of the process set to link to the policy.",
-						},
-						"resource_set_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "ID of the resource set to link to the policy. Supported for Standard, LDT and IDT policies.",
-						},
-						"user_set_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "ID of the user set to link to the policy.",
-						},
+					},
+					"effect": schema.StringAttribute{
+						Optional:    true,
+						Description: "Effects applicable to the rule. Separate multiple effects by commas. The valid values are: permit, deny, audit, applykey",
+					},
+					"exclude_process_set": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Process set to exclude. Supported for Standard, LDT and IDT policies.",
+					},
+					"exclude_resource_set": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Resource set to exclude. Supported for Standard, LDT and IDT policies.",
+					},
+					"exclude_user_set": schema.BoolAttribute{
+						Optional:    true,
+						Description: "User set to exclude. Supported for Standard, LDT and IDT policies.",
+					},
+					"partial_match": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Whether to allow partial match operations. By default, it is enabled. Supported for Standard, LDT and IDT policies.",
+					},
+					"process_set_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "ID of the process set to link to the policy.",
+					},
+					"resource_set_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "ID of the resource set to link to the policy. Supported for Standard, LDT and IDT policies.",
+					},
+					"user_set_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "ID of the user set to link to the policy.",
 					},
 				},
 			},
@@ -185,6 +183,30 @@ func (r *resourceCTEPolicySecurityRule) Create(ctx context.Context, req resource
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEPolicySecurityRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEPolicyAddSecurityRuleTFSDK
+
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.SecurityRuleID.ValueString(), common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/securityrules")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_securityrules.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading Security Key Rule on CipherTrust Manager: ",
+			"Could not read Security Key Rule id : ,"+state.SecurityRuleID.ValueString()+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_securityrules.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
