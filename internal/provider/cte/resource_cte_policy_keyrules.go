@@ -52,23 +52,21 @@ func (r *resourceCTEPolicyKeyRule) Schema(_ context.Context, _ resource.SchemaRe
 				Optional:    true,
 				Description: "Precedence order of the rule in the parent policy.",
 			},
-			"rule": schema.ListNestedAttribute{
+			"rule": schema.SingleNestedAttribute{
 				Optional:    true,
 				Description: "Key rule to be updated in the parent policy.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"key_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
-						},
-						"key_type": schema.StringAttribute{
-							Optional:    true,
-							Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
-						},
-						"resource_set_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "ID of the resource set to link with the rule. Supported for Standard, LDT and IDT policies.",
-						},
+				Attributes: map[string]schema.Attribute{
+					"key_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
+					},
+					"key_type": schema.StringAttribute{
+						Optional:    true,
+						Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
+					},
+					"resource_set_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "ID of the resource set to link with the rule. Supported for Standard, LDT and IDT policies.",
 					},
 				},
 			},
@@ -138,6 +136,30 @@ func (r *resourceCTEPolicyKeyRule) Create(ctx context.Context, req resource.Crea
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEPolicyKeyRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEPolicyAddKeyRuleTFSDK
+
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.KeyRuleID.ValueString(), common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/keyrules")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_keyrules.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading Key Rule on CipherTrust Manager: ",
+			"Could not read Key Rule id : ,"+state.KeyRuleID.ValueString()+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_keyrules.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
