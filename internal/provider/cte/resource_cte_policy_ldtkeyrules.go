@@ -65,35 +65,31 @@ func (r *resourceCTEPolicyLDTKeyRule) Schema(_ context.Context, _ resource.Schem
 							Optional:    true,
 							Description: "ID of the resource set to link with the rule.",
 						},
-						"current_key": schema.ListNestedAttribute{
+						"current_key": schema.SingleNestedAttribute{
 							Optional:    true,
 							Description: "Properties of the current key.",
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"key_id": schema.StringAttribute{
-										Optional:    true,
-										Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
-									},
-									"key_type": schema.StringAttribute{
-										Optional:    true,
-										Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
-									},
+							Attributes: map[string]schema.Attribute{
+								"key_id": schema.StringAttribute{
+									Optional:    true,
+									Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
+								},
+								"key_type": schema.StringAttribute{
+									Optional:    true,
+									Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
 								},
 							},
 						},
-						"transformation_key": schema.ListNestedAttribute{
+						"transformation_key": schema.SingleNestedAttribute{
 							Optional:    true,
 							Description: "Properties of the transformation key.",
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"key_id": schema.StringAttribute{
-										Optional:    true,
-										Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
-									},
-									"key_type": schema.StringAttribute{
-										Optional:    true,
-										Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
-									},
+							Attributes: map[string]schema.Attribute{
+								"key_id": schema.StringAttribute{
+									Optional:    true,
+									Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
+								},
+								"key_type": schema.StringAttribute{
+									Optional:    true,
+									Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
 								},
 							},
 						},
@@ -111,9 +107,6 @@ func (r *resourceCTEPolicyLDTKeyRule) Create(ctx context.Context, req resource.C
 
 	// Retrieve values from plan
 	var plan CTEPolicyAddLDTKeyRuleTFSDK
-	var payload LDTRuleJSON
-	var ldtKeyRuleCurrentKey CurrentKeyJSON
-	var ldtKeyRuleTransformationKey TransformationKeyJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -121,29 +114,35 @@ func (r *resourceCTEPolicyLDTKeyRule) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	if plan.LDTKeyRule.CurrentKey.KeyID.ValueString() != "" && plan.LDTKeyRule.CurrentKey.KeyID.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleCurrentKey.KeyID = string(plan.LDTKeyRule.CurrentKey.KeyID.ValueString())
+	var ldtKeyRules []LDTRuleJSON
+	for _, ldtKeyRule := range plan.LDTKeyRules {
+		var ldtKeyRuleJSON LDTRuleJSON
+		var ldtKeyRuleCurrentKey CurrentKeyJSON
+		var ldtKeyRuleTransformationKey TransformationKeyJSON
+		if ldtKeyRule.ResourceSetID.ValueString() != "" && ldtKeyRule.ResourceSetID.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleJSON.ResourceSetID = string(ldtKeyRule.ResourceSetID.ValueString())
+		}
+		if ldtKeyRule.IsExclusionRule.ValueBool() != types.BoolNull().ValueBool() {
+			ldtKeyRuleJSON.IsExclusionRule = bool(ldtKeyRule.IsExclusionRule.ValueBool())
+		}
+		if ldtKeyRule.CurrentKey.KeyID.ValueString() != "" && ldtKeyRule.CurrentKey.KeyID.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleCurrentKey.KeyID = string(ldtKeyRule.CurrentKey.KeyID.ValueString())
+		}
+		if ldtKeyRule.CurrentKey.KeyType.ValueString() != "" && ldtKeyRule.CurrentKey.KeyType.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleCurrentKey.KeyType = string(ldtKeyRule.CurrentKey.KeyType.ValueString())
+		}
+		if ldtKeyRule.TransformationKey.KeyID.ValueString() != "" && ldtKeyRule.TransformationKey.KeyID.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleTransformationKey.KeyID = string(ldtKeyRule.TransformationKey.KeyID.ValueString())
+		}
+		if ldtKeyRule.TransformationKey.KeyType.ValueString() != "" && ldtKeyRule.TransformationKey.KeyType.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleTransformationKey.KeyType = string(ldtKeyRule.TransformationKey.KeyType.ValueString())
+		}
+		ldtKeyRuleJSON.CurrentKey = ldtKeyRuleCurrentKey
+		ldtKeyRuleJSON.TransformationKey = ldtKeyRuleTransformationKey
+		ldtKeyRules = append(ldtKeyRules, ldtKeyRuleJSON)
 	}
-	if plan.LDTKeyRule.CurrentKey.KeyType.ValueString() != "" && plan.LDTKeyRule.CurrentKey.KeyType.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleCurrentKey.KeyType = string(plan.LDTKeyRule.CurrentKey.KeyType.ValueString())
-	}
-	if plan.LDTKeyRule.TransformationKey.KeyID.ValueString() != "" && plan.LDTKeyRule.TransformationKey.KeyID.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleTransformationKey.KeyID = string(plan.LDTKeyRule.TransformationKey.KeyID.ValueString())
-	}
-	if plan.LDTKeyRule.TransformationKey.KeyType.ValueString() != "" && plan.LDTKeyRule.TransformationKey.KeyType.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleTransformationKey.KeyType = string(plan.LDTKeyRule.TransformationKey.KeyType.ValueString())
-	}
-	payload.CurrentKey = ldtKeyRuleCurrentKey
-	payload.TransformationKey = ldtKeyRuleTransformationKey
 
-	if plan.LDTKeyRule.ResourceSetID.ValueString() != "" && plan.LDTKeyRule.ResourceSetID.ValueString() != types.StringNull().ValueString() {
-		payload.ResourceSetID = string(plan.LDTKeyRule.ResourceSetID.ValueString())
-	}
-	if plan.LDTKeyRule.IsExclusionRule.ValueBool() != types.BoolNull().ValueBool() {
-		payload.IsExclusionRule = bool(plan.LDTKeyRule.IsExclusionRule.ValueBool())
-	}
-
-	payloadJSON, err := json.Marshal(payload)
+	payloadJSON, err := json.Marshal(ldtKeyRules[0])
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_ldtkeyrules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -180,47 +179,76 @@ func (r *resourceCTEPolicyLDTKeyRule) Create(ctx context.Context, req resource.C
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEPolicyLDTKeyRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEPolicyAddLDTKeyRuleTFSDK
+
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.LDTKeyRuleID.ValueString(), common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/ldtkeyrules")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_ldtkeyyrules.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading LDT Key Rule on CipherTrust Manager: ",
+			"Could not read LDT Key Rule id : ,"+state.LDTKeyRuleID.ValueString()+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_ldtkeyrules.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicyLDTKeyRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan CTEPolicyAddLDTKeyRuleTFSDK
-	var ldtKeyRuleCurrentKey CurrentKeyJSON
-	var ldtKeyRuleTransformationKey TransformationKeyJSON
-	var payload LDTRuleUpdateJSON
+	var plan, state CTEPolicyAddLDTKeyRuleTFSDK
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	if plan.LDTKeyRule.CurrentKey.KeyID.ValueString() != "" && plan.LDTKeyRule.CurrentKey.KeyID.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleCurrentKey.KeyID = string(plan.LDTKeyRule.CurrentKey.KeyID.ValueString())
-	}
-	if plan.LDTKeyRule.CurrentKey.KeyType.ValueString() != "" && plan.LDTKeyRule.CurrentKey.KeyType.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleCurrentKey.KeyType = string(plan.LDTKeyRule.CurrentKey.KeyType.ValueString())
-	}
-	if plan.LDTKeyRule.TransformationKey.KeyID.ValueString() != "" && plan.LDTKeyRule.TransformationKey.KeyID.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleTransformationKey.KeyID = string(plan.LDTKeyRule.TransformationKey.KeyID.ValueString())
-	}
-	if plan.LDTKeyRule.TransformationKey.KeyType.ValueString() != "" && plan.LDTKeyRule.TransformationKey.KeyType.ValueString() != types.StringNull().ValueString() {
-		ldtKeyRuleTransformationKey.KeyType = string(plan.LDTKeyRule.TransformationKey.KeyType.ValueString())
-	}
-	payload.CurrentKey = ldtKeyRuleCurrentKey
-	payload.TransformationKey = ldtKeyRuleTransformationKey
-
-	if plan.LDTKeyRule.ResourceSetID.ValueString() != "" && plan.LDTKeyRule.ResourceSetID.ValueString() != types.StringNull().ValueString() {
-		payload.ResourceSetID = string(plan.LDTKeyRule.ResourceSetID.ValueString())
-	}
-	if plan.LDTKeyRule.IsExclusionRule.ValueBool() != types.BoolNull().ValueBool() {
-		payload.IsExclusionRule = bool(plan.LDTKeyRule.IsExclusionRule.ValueBool())
-	}
-	if plan.OrderNumber.ValueInt64() != types.Int64Null().ValueInt64() {
-		payload.OrderNumber = int64(plan.OrderNumber.ValueInt64())
+	diags = req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	payloadJSON, err := json.Marshal(payload)
+	var ldtKeyRules []LDTRuleUpdateJSON
+	for _, ldtKeyRule := range plan.LDTKeyRules {
+		var ldtKeyRuleJSON LDTRuleUpdateJSON
+		var ldtKeyRuleCurrentKey CurrentKeyJSON
+		var ldtKeyRuleTransformationKey TransformationKeyJSON
+		if ldtKeyRule.ResourceSetID.ValueString() != state.LDTKeyRules[0].ResourceSetID.ValueString() && ldtKeyRule.ResourceSetID.ValueString() != "" && ldtKeyRule.ResourceSetID.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleJSON.ResourceSetID = string(ldtKeyRule.ResourceSetID.ValueString())
+		}
+		if ldtKeyRule.IsExclusionRule.ValueBool() != types.BoolNull().ValueBool() {
+			ldtKeyRuleJSON.IsExclusionRule = bool(ldtKeyRule.IsExclusionRule.ValueBool())
+		}
+		if ldtKeyRule.CurrentKey.KeyID.ValueString() != "" && ldtKeyRule.CurrentKey.KeyID.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleCurrentKey.KeyID = string(ldtKeyRule.CurrentKey.KeyID.ValueString())
+		}
+		if ldtKeyRule.CurrentKey.KeyType.ValueString() != "" && ldtKeyRule.CurrentKey.KeyType.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleCurrentKey.KeyType = string(ldtKeyRule.CurrentKey.KeyType.ValueString())
+		}
+		if ldtKeyRule.TransformationKey.KeyID.ValueString() != "" && ldtKeyRule.TransformationKey.KeyID.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleTransformationKey.KeyID = string(ldtKeyRule.TransformationKey.KeyID.ValueString())
+		}
+		if ldtKeyRule.TransformationKey.KeyType.ValueString() != "" && ldtKeyRule.TransformationKey.KeyType.ValueString() != types.StringNull().ValueString() {
+			ldtKeyRuleTransformationKey.KeyType = string(ldtKeyRule.TransformationKey.KeyType.ValueString())
+		}
+		ldtKeyRuleJSON.CurrentKey = ldtKeyRuleCurrentKey
+		ldtKeyRuleJSON.TransformationKey = ldtKeyRuleTransformationKey
+		ldtKeyRules = append(ldtKeyRules, ldtKeyRuleJSON)
+	}
+
+	payloadJSON, err := json.Marshal(ldtKeyRules[0])
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_ldtkeyrules.go -> Update]["+plan.LDTKeyRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -240,7 +268,7 @@ func (r *resourceCTEPolicyLDTKeyRule) Update(ctx context.Context, req resource.U
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_ldtkeyrules.go -> Update]["+plan.LDTKeyRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy LDT Key Rule on CipherTrust Manager: ",
-			"Could not update CTE Policy LDT Key Rule, unexpected error: "+err.Error(),
+			"Could not update CTE Policy LDT Key Rule, unexpected error: "+err.Error()+string(payloadJSON),
 		)
 		return
 	}
