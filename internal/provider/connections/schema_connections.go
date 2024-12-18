@@ -118,24 +118,28 @@ type CMCreateConnectionResponseCommon struct {
 
 type GCPConnectionTFSDK struct {
 	CMCreateConnectionResponseCommonTFSDK
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	Products    []types.String `tfsdk:"products"`
-	Meta        types.Map      `tfsdk:"meta"`
-	Description types.String   `tfsdk:"description"`
-	Labels      types.Map      `tfsdk:"labels"`
-	CloudName   types.String   `tfsdk:"cloud_name"`
-	KeyFile     types.String   `tfsdk:"key_file"`
+	ID           types.String   `tfsdk:"id"`
+	Name         types.String   `tfsdk:"name"`
+	Products     []types.String `tfsdk:"products"`
+	Meta         types.Map      `tfsdk:"meta"`
+	Description  types.String   `tfsdk:"description"`
+	Labels       types.Map      `tfsdk:"labels"`
+	CloudName    types.String   `tfsdk:"cloud_name"`
+	KeyFile      types.String   `tfsdk:"key_file"`
+	ClientEmail  types.String   `tfsdk:"client_email"`
+	PrivateKeyID types.String   `tfsdk:"private_key_id"`
 }
 
 type GCPConnectionJSON struct {
 	CMCreateConnectionResponseCommon
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Products    []string               `json:"products"`
-	Meta        interface{}            `json:"meta"`
-	Description string                 `json:"description"`
-	Labels      map[string]interface{} `json:"labels"`
-	CloudName   string                 `json:"cloud_name"`
-	KeyFile     string                 `json:"key_file"`
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Products     []string               `json:"products"`
+	Meta         interface{}            `json:"meta"`
+	Description  string                 `json:"description"`
+	Labels       map[string]interface{} `json:"labels"`
+	CloudName    string                 `json:"cloud_name"`
+	KeyFile      string                 `json:"key_file"`
+	ClientEmail  string                 `json:"client_email"`
+	PrivateKeyID string                 `json:"private_key_id"`
 }

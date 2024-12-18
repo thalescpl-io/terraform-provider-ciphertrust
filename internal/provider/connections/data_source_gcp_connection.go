@@ -20,7 +20,7 @@ var (
 )
 
 func NewDataSourceGCPConnection() datasource.DataSource {
-	return &dataSourceScpConnection{}
+	return &dataSourceGCPConnection{}
 }
 
 type dataSourceGCPConnection struct {
@@ -43,7 +43,7 @@ func (d *dataSourceGCPConnection) Schema(_ context.Context, _ datasource.SchemaR
 				ElementType: types.StringType,
 				Optional:    true,
 			},
-			"scp": schema.ListNestedAttribute{
+			"gcp": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -73,6 +73,12 @@ func (d *dataSourceGCPConnection) Schema(_ context.Context, _ datasource.SchemaR
 						"meta": schema.MapAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
+						},
+						"client_email": schema.StringAttribute{
+							Computed: true,
+						},
+						"private_key_id": schema.StringAttribute{
+							Computed: true,
 						},
 						//common response parameters (optional)
 						"uri":                   schema.StringAttribute{Computed: true},
@@ -147,9 +153,11 @@ func (d *dataSourceGCPConnection) Read(ctx context.Context, req datasource.ReadR
 				}
 				return products
 			}(),
-			Description: types.StringValue(gcp.Description),
-			CloudName:   types.StringValue(gcp.CloudName),
-			KeyFile:     types.StringValue(gcp.KeyFile),
+			Description:  types.StringValue(gcp.Description),
+			CloudName:    types.StringValue(gcp.CloudName),
+			KeyFile:      types.StringValue(gcp.KeyFile),
+			ClientEmail:  types.StringValue(gcp.ClientEmail),
+			PrivateKeyID: types.StringValue(gcp.PrivateKeyID),
 		}
 
 		if gcp.Labels != nil {

@@ -73,6 +73,12 @@ func (r *resourceGCPConnection) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Description: productsDescription,
 			},
+			"client_email": schema.StringAttribute{
+				Computed: true,
+			},
+			"private_key_id": schema.StringAttribute{
+				Computed: true,
+			},
 			//common response parameters (optional)
 			"uri":                   schema.StringAttribute{Computed: true, Optional: true},
 			"account":               schema.StringAttribute{Computed: true, Optional: true},
@@ -158,6 +164,8 @@ func (r *resourceGCPConnection) Create(ctx context.Context, req resource.CreateR
 	}
 
 	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.ClientEmail = types.StringValue(gjson.Get(response, "client_email").String())
+	plan.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
 	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
 	plan.Account = types.StringValue(gjson.Get(response, "account").String())
 	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
@@ -274,6 +282,8 @@ func (r *resourceGCPConnection) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.ClientEmail = types.StringValue(gjson.Get(response, "client_email").String())
+	plan.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
 	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
 	plan.Account = types.StringValue(gjson.Get(response, "account").String())
 	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
