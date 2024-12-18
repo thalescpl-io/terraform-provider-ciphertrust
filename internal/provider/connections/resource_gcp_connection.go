@@ -228,10 +228,6 @@ func (r *resourceGCPConnection) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	if plan.Name.ValueString() != "" && plan.Name.ValueString() != types.StringNull().ValueString() {
-		payload.Name = plan.Name.ValueString()
-	}
-
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
 		payload.Description = plan.Description.ValueString()
 	}

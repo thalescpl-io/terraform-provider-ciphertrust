@@ -38,7 +38,7 @@ data "ciphertrust_gcp_connection_list" "example_gcp_connection" {
     id = "60f04cb1-4a48-4786-8965-39f2031518c4"
   }
   # Similarly can provide 'name', 'labels' etc to fetch the existing GCP connection
-  # example for fetching en existing gcp connection with labels
+  # example for fetching an existing gcp connection with labels
   # filters = {
   #   labels = "key=value"
   # }
