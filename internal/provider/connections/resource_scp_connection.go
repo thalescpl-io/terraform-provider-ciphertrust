@@ -88,6 +88,8 @@ To remove a key/value pair, pass value null to the particular key
         syslog connections
     "hsm_anchored_domain" for:
         Luna connections
+    "csm" for:
+        Akeyless connections
 `
 )
 

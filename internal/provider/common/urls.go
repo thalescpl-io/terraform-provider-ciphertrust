@@ -36,4 +36,5 @@ const (
 	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
 	URL_HSM_SETUP      = "api/v1/system/hsm/setup"
 	URL_HSM_Server     = "api/v1/system/hsm/servers"
+	URL_GCP_CONNECTION = "api/v1/connectionmgmt/services/gcp/connections"
 )

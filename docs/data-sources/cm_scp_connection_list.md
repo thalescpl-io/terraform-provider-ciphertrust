@@ -52,4 +52,4 @@ Read-Only:
 This retrieves the SCP connection filtered by the specified labels from the CipherTrust Manager.
 Instead of labels, you can also use name,id or similar identifier to fetch the scp connection.
 
-If you didnt pass any filters, then terraform will fetch all the scp connections in the CipherTrust Manager. It work as a List api.
+If you didn't pass any filters, then terraform will fetch all the scp connections in the CipherTrust Manager. It works as a List api.

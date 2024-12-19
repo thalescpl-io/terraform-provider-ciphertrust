@@ -53,7 +53,7 @@ func (r *resourceCTEUserSet) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "The account which owns this resource.",
 				Computed:    true,
 			},
-			"dev_account ": schema.StringAttribute{
+			"dev_account": schema.StringAttribute{
 				Description: "The developer account which owns this resource's application.",
 				Computed:    true,
 			},

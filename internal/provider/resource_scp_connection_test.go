@@ -10,7 +10,7 @@ func TestResourceCMSCPConnection(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// creating a SCP connection
+			// creating an SCP connection
 			{
 				Config: providerConfig + `
 resource "ciphertrust_scp_connection" "scp_connection" {

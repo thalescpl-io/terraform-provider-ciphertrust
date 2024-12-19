@@ -1,7 +1,7 @@
 # Terraform Configuration for CipherTrust Provider
 
 # The provider is configured to connect to the CipherTrust appliance and fetch details
-# about the SCP (Secure Copy Protocol) connection.
+# about the GCP (Google Cloud Platform) connection.
 
 terraform {
   # Specify required providers
@@ -30,22 +30,22 @@ provider "ciphertrust" {
   bootstrap = "no"
 }
 
-# Data source for retrieving SCP connection details
-data "ciphertrust_scp_connection_list" "example_scp_connection" {
-  # Filters to narrow down the SCP connections
+# Data source for retrieving GCP connection details
+data "ciphertrust_gcp_connection_list" "example_gcp_connection" {
+  # Filters to narrow down the GCP connections
   filters = {
-    # The unique ID of the SCP connection to fetch
+    # The unique ID of the GCP connection to fetch
     id = "60f04cb1-4a48-4786-8965-39f2031518c4"
   }
-  # Similarly can provide 'name' 'protocol' 'labels' etc to fetch the existing SCP connection
-  # example for fetching an existing scp connection with labels
+  # Similarly can provide 'name', 'labels' etc to fetch the existing GCP connection
+  # example for fetching an existing gcp connection with labels
   # filters = {
   #   labels = "key=value"
   # }
 }
 
-# Output the details of the SCP connection
-output "scp_connection_details" {
-  # The value of the SCP connection details returned by the data source
-  value = data.ciphertrust_scp_connection_list.example_scp_connection
+# Output the details of the GCP connection
+output "gcp_connection_details" {
+  # The value of the GCP connection details returned by the data source
+  value = data.ciphertrust_gcp_connection_list.example_gcp_connection
 }
