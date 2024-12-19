@@ -11,21 +11,27 @@ type IAMRoleAnywhereTFSDK struct {
 }
 
 type AWSConnectionModelTFSDK struct {
-	ID                      types.String         `tfsdk:"id"`
-	Name                    types.String         `tfsdk:"name"`
-	Description             types.String         `tfsdk:"description"`
-	AccessKeyID             types.String         `tfsdk:"access_key_id"`
-	AssumeRoleARN           types.String         `tfsdk:"assume_role_arn"`
-	AssumeRoleExternalID    types.String         `tfsdk:"assume_role_external_id"`
-	AWSRegion               types.String         `tfsdk:"aws_region"`
-	AWSSTSRegionalEndpoints types.String         `tfsdk:"aws_sts_regional_endpoints"`
-	CloudName               types.String         `tfsdk:"cloud_name"`
-	IsRoleAnywhere          types.Bool           `tfsdk:"is_role_anywhere"`
-	IAMRoleAnywhere         IAMRoleAnywhereTFSDK `tfsdk:"iam_role_anywhere"`
-	Labels                  types.Map            `tfsdk:"labels"`
-	Meta                    types.Map            `tfsdk:"meta"`
-	Products                []types.String       `tfsdk:"products"`
-	SecretAccessKey         types.String         `tfsdk:"secret_access_key"`
+	ID                      types.String          `tfsdk:"id"`
+	URI                     types.String          `tfsdk:"uri"`
+	Account                 types.String          `tfsdk:"account"`
+	Application             types.String          `tfsdk:"application"`
+	DevAccount              types.String          `tfsdk:"dev_account"`
+	CreatedAt               types.String          `tfsdk:"created_at"`
+	UpdatedAt               types.String          `tfsdk:"updated_at"`
+	Name                    types.String          `tfsdk:"name"`
+	Description             types.String          `tfsdk:"description"`
+	AccessKeyID             types.String          `tfsdk:"access_key_id"`
+	AssumeRoleARN           types.String          `tfsdk:"assume_role_arn"`
+	AssumeRoleExternalID    types.String          `tfsdk:"assume_role_external_id"`
+	AWSRegion               types.String          `tfsdk:"aws_region"`
+	AWSSTSRegionalEndpoints types.String          `tfsdk:"aws_sts_regional_endpoints"`
+	CloudName               types.String          `tfsdk:"cloud_name"`
+	IsRoleAnywhere          types.Bool            `tfsdk:"is_role_anywhere"`
+	IAMRoleAnywhere         *IAMRoleAnywhereTFSDK `tfsdk:"iam_role_anywhere"`
+	Labels                  types.Map             `tfsdk:"labels"`
+	Meta                    types.Map             `tfsdk:"meta"`
+	Products                []types.String        `tfsdk:"products"`
+	SecretAccessKey         types.String          `tfsdk:"secret_access_key"`
 }
 
 type IAMRoleAnywhereJSON struct {
