@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/google/uuid"
+	"github.com/tidwall/gjson"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -36,12 +38,38 @@ func (r *resourceCCKMAWSConnection) Metadata(_ context.Context, req resource.Met
 // Schema defines the schema for the resource.
 func (r *resourceCCKMAWSConnection) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "The APIs in this section deal with connections to the AWS cloud. The following operations can be performed:\n* Create/Delete/Get/Update an AWS connection.\n* List all AWS connections.\n* Test an existing AWS connection.\n*Test a connection that hasn't been created yet by passing in the connection parameters.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "The unique identifier of the resource",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"uri": schema.StringAttribute{
+				Description: "A human readable unique identifier of the resource",
+				Computed:    true,
+			},
+			"account": schema.StringAttribute{
+				Description: "The account which owns this resource.",
+				Computed:    true,
+			},
+			"dev_account": schema.StringAttribute{
+				Description: "The developer account which owns this resource's application.",
+				Computed:    true,
+			},
+			"application": schema.StringAttribute{
+				Description: "The application this resource belongs to.",
+				Computed:    true,
+			},
+			"created_at": schema.StringAttribute{
+				Description: "Date/time the application was created",
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "Date/time the application was updated",
+				Computed:    true,
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -126,7 +154,7 @@ func (r *resourceCCKMAWSConnection) Schema(_ context.Context, _ resource.SchemaR
 				Description: "Optional end-user or service data stored with the connection.",
 			},
 			"products": schema.ListAttribute{
-				Computed:    true,
+				Optional:    true,
 				ElementType: types.StringType,
 				Description: "Array of the CipherTrust products associated with the connection",
 			},
@@ -177,7 +205,7 @@ func (r *resourceCCKMAWSConnection) Create(ctx context.Context, req resource.Cre
 	}
 
 	var varIAMRoleAnywhere IAMRoleAnywhereJSON
-	if (IAMRoleAnywhereTFSDK{} != plan.IAMRoleAnywhere) {
+	if !reflect.DeepEqual((*IAMRoleAnywhereTFSDK)(nil), plan.IAMRoleAnywhere) {
 		if plan.IAMRoleAnywhere.AnywhereRoleARN.ValueString() != "" && plan.IAMRoleAnywhere.AnywhereRoleARN.ValueString() != types.StringNull().ValueString() {
 			varIAMRoleAnywhere.AnywhereRoleARN = plan.IAMRoleAnywhere.AnywhereRoleARN.ValueString()
 		}
@@ -234,7 +262,7 @@ func (r *resourceCCKMAWSConnection) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, common.URL_AWS_CONNECTION, payloadJSON, "id")
+	response, err := r.client.PostDataV2(ctx, id, common.URL_AWS_CONNECTION, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_connection.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -244,7 +272,13 @@ func (r *resourceCCKMAWSConnection) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	plan.ID = types.StringValue(response)
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	plan.Application = types.StringValue(gjson.Get(response, "application").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_aws_connection.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -256,6 +290,35 @@ func (r *resourceCCKMAWSConnection) Create(ctx context.Context, req resource.Cre
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCCKMAWSConnection) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state AWSConnectionModelTFSDK
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_AWS_CONNECTION)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_connection.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading AWS Connection on CipherTrust Manager: ",
+			"Could not read AWS Connection id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	state.ID = types.StringValue(gjson.Get(response, "id").String())
+	state.URI = types.StringValue(gjson.Get(response, "uri").String())
+	state.Account = types.StringValue(gjson.Get(response, "account").String())
+	state.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	state.Application = types.StringValue(gjson.Get(response, "application").String())
+	state.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	state.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	state.Name = types.StringValue(gjson.Get(response, "name").String())
+	state.Description = types.StringValue(gjson.Get(response, "description").String())
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_aws_connection.go -> Read]["+id+"]")
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -292,7 +355,7 @@ func (r *resourceCCKMAWSConnection) Update(ctx context.Context, req resource.Upd
 	}
 
 	var varIAMRoleAnywhere IAMRoleAnywhereJSON
-	if (IAMRoleAnywhereTFSDK{} != plan.IAMRoleAnywhere) {
+	if !reflect.DeepEqual((*IAMRoleAnywhereTFSDK)(nil), plan.IAMRoleAnywhere) {
 		if plan.IAMRoleAnywhere.AnywhereRoleARN.ValueString() != "" && plan.IAMRoleAnywhere.AnywhereRoleARN.ValueString() != types.StringNull().ValueString() {
 			varIAMRoleAnywhere.AnywhereRoleARN = plan.IAMRoleAnywhere.AnywhereRoleARN.ValueString()
 		}
@@ -345,7 +408,7 @@ func (r *resourceCCKMAWSConnection) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_AWS_CONNECTION, payloadJSON, "id")
+	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_AWS_CONNECTION, payloadJSON, "updatedAt")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_connection.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
