@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/scheduler"
 	"os"
 
 	"github.com/google/uuid"
@@ -294,6 +295,7 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		cm.NewDataSourceCertificateAuthorities,
 		connections.NewDataSourceScpConnection,
 		cm.NewDataSourcePrometheus,
+		scheduler.NewDataSourceScheduler,
 	}
 }
 
@@ -332,5 +334,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cm.NewResourceCMNTP,
 		cm.NewResourceCMTrialLicense,
 		cm.NewResourceCMPrometheus,
+		scheduler.NewResourceScheduler,
 	}
 }
