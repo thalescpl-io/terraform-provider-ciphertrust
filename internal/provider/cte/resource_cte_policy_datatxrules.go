@@ -54,7 +54,6 @@ func (r *resourceCTEPolicyDataTXRule) Schema(_ context.Context, _ resource.Schem
 			},
 			"rule": schema.SingleNestedAttribute{
 				Optional: true,
-				//NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"key_id": schema.StringAttribute{
 						Optional:    true,
@@ -69,7 +68,6 @@ func (r *resourceCTEPolicyDataTXRule) Schema(_ context.Context, _ resource.Schem
 						Description: "ID of the resource set linked with the rule.",
 					},
 				},
-				//},
 			},
 		},
 	}
@@ -137,14 +135,43 @@ func (r *resourceCTEPolicyDataTXRule) Create(ctx context.Context, req resource.C
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEPolicyDataTXRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state AddDataTXRulePolicyTFSDK
+
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.DataTXRuleID.ValueString(), common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/datatxrules")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_dataxrules.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading Datax Key Rule on CipherTrust Manager: ",
+			"Could not read Datax Key Rule id : ,"+state.DataTXRuleID.ValueString()+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_dataxrules.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan AddDataTXRulePolicyTFSDK
+	var plan, state AddDataTXRulePolicyTFSDK
 	var payload DataTxRuleUpdateJSON
 
 	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -175,7 +202,7 @@ func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.U
 
 	response, err := r.client.UpdateData(
 		ctx,
-		plan.DataTXRuleID.ValueString(),
+		state.DataTXRuleID.ValueString(),
 		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/datatxrules",
 		payloadJSON,
 		"id")
@@ -183,7 +210,7 @@ func (r *resourceCTEPolicyDataTXRule) Update(ctx context.Context, req resource.U
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_datatxrules.go -> Update]["+plan.DataTXRuleID.ValueString()+"]")
 		resp.Diagnostics.AddError(
 			"Error updating CTE Policy Data TX Rule on CipherTrust Manager: ",
-			"Could not update CTE Policy Data TX Rule, unexpected error: "+err.Error(),
+			"Could not update CTE Policy Data TX Rule, unexpected error: "+err.Error()+"\n"+string(payloadJSON),
 		)
 		return
 	}
@@ -206,7 +233,7 @@ func (r *resourceCTEPolicyDataTXRule) Delete(ctx context.Context, req resource.D
 	}
 
 	// Delete existing order
-	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEClientPolicyID.ValueString(), "dataxrules", state.DataTXRuleID.ValueString())
+	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEClientPolicyID.ValueString(), "datatxrules", state.DataTXRuleID.ValueString())
 	output, err := r.client.DeleteByID(ctx, "DELETE", state.CTEClientPolicyID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_datatxrules.go -> Delete]["+state.DataTXRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
