@@ -177,8 +177,6 @@ func (r *resourceGCPConnection) Create(ctx context.Context, req resource.CreateR
 	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
 	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
-
 	tflog.Debug(ctx, "[resource_gcp_connection.go -> Create Output]["+response+"]")
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_gcp_connection.go -> Create]["+id+"]")
