@@ -8,8 +8,6 @@ description: |-
 
 # ciphertrust_cm_prometheus (Resource)
 
-The CipherTrust Manager (CM) exports metrics that can be collected and viewed by a Prometheus monitoring system (see https://prometheus.io/). The CM provides API tokens for Prometheus metrics monitoring clients. The API tokens can be created by an administrator and passed on to the Prometheus monitoring clients. The API tokens don't expire. An API token is returned when Prometheus metrics are enabled, or when the status is obtained. The API token can be renewed.
-
 
 
 
@@ -20,10 +18,6 @@ The CipherTrust Manager (CM) exports metrics that can be collected and viewed by
 ### Required
 
 - `enabled` (Boolean)
-  This enables collection of Prometheus metrics. It also returns an API token that can be used by a Prometheus client to scrape the CM for metrics.
-
-  sample: [ enabled = true]()
-  
 
 ### Read-Only
 
