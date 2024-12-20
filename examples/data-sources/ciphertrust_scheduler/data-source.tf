@@ -1,7 +1,7 @@
 # Terraform Configuration for CipherTrust Provider
 
 # The provider is configured to connect to the CipherTrust appliance and fetch details
-# about the SCP (Secure Copy Protocol) connection.
+# about the Ciphertrust Scheduler Job Configs.
 
 terraform {
   # Specify required providers

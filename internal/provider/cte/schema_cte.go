@@ -783,7 +783,6 @@ type CTEClientGroupTFSDK struct {
 	InheritAttributes       types.Bool     `tfsdk:"inherit_attributes"`
 	ClientID                types.String   `tfsdk:"client_id"`
 	Paused                  types.Bool     `tfsdk:"paused"`
-	OpType                  types.String   `tfsdk:"op_type"`
 }
 
 type CTEClientGroupJSON struct {
