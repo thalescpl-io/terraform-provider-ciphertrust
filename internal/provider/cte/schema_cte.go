@@ -1169,12 +1169,12 @@ type CTEResourceJSON struct {
 }
 
 type CTEResourceSetJSON struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Labels      map[string]interface{} `json:"labels"`
-	Resources   []CTEResourceJSON      `json:"resources"`
-	Type        string                 `json:"type"`
+	ID                 string                  `json:"id"`
+	Name               string                  `json:"name"`
+	Description        string                  `json:"description"`
+	Labels             map[string]interface{}  `json:"labels"`
+	Resources          []CTEResourceJSON       `json:"resources"`
+	Type               string                  `json:"type"`
 	//ClassificationTags []ClassificationTagJSON `json:"classification_tags"`
 }
 
