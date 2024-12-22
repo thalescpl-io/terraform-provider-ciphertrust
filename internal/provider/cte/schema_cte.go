@@ -1133,19 +1133,19 @@ type CTEResourceTFSDK struct {
 }
 
 type CTEResourceSetTFSDK struct {
-	ID                 types.String             `tfsdk:"id"`
-	URI                types.String             `tfsdk:"uri"`
-	Account            types.String             `tfsdk:"account"`
-	Application        types.String             `tfsdk:"application"`
-	DevAccount         types.String             `tfsdk:"dev_account"`
-	CreatedAt          types.String             `tfsdk:"created_at"`
-	UpdatedAt          types.String             `tfsdk:"updated_at"`
-	Name               types.String             `tfsdk:"name"`
-	Description        types.String             `tfsdk:"description"`
-	Labels             types.Map                `tfsdk:"labels"`
-	Resources          []CTEResourceTFSDK       `tfsdk:"resources"`
-	Type               types.String             `tfsdk:"type"`
-	ClassificationTags []ClassificationTagTFSDK `tfsdk:"classification_tags"`
+	ID          types.String       `tfsdk:"id"`
+	URI         types.String       `tfsdk:"uri"`
+	Account     types.String       `tfsdk:"account"`
+	Application types.String       `tfsdk:"application"`
+	DevAccount  types.String       `tfsdk:"dev_account"`
+	CreatedAt   types.String       `tfsdk:"created_at"`
+	UpdatedAt   types.String       `tfsdk:"updated_at"`
+	Name        types.String       `tfsdk:"name"`
+	Description types.String       `tfsdk:"description"`
+	Labels      types.Map          `tfsdk:"labels"`
+	Resources   []CTEResourceTFSDK `tfsdk:"resources"`
+	Type        types.String       `tfsdk:"type"`
+	//ClassificationTags []ClassificationTagTFSDK `tfsdk:"classification_tags"`
 }
 
 type ClassificationTagAttributesJSON struct {
