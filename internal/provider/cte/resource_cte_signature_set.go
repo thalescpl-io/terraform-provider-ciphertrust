@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MIT
+
 package cte
 
 import (
@@ -54,7 +57,7 @@ func (r *resourceCTESignatureSet) Schema(_ context.Context, _ resource.SchemaReq
 				Description: "The account which owns this resource.",
 				Computed:    true,
 			},
-			"dev_account ": schema.StringAttribute{
+			"dev_account": schema.StringAttribute{
 				Description: "The developer account which owns this resource's application.",
 				Computed:    true,
 			},
@@ -201,7 +204,7 @@ func (r *resourceCTESignatureSet) Read(ctx context.Context, req resource.ReadReq
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTESignatureSet) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan CTESignatureSetTFSDK
+	var plan, state CTESignatureSetTFSDK
 	var payload CTESignatureSetJSON
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -209,9 +212,57 @@ func (r *resourceCTESignatureSet) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	diags = req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
 		payload.Description = common.TrimString(plan.Description.String())
+	}
+
+	stateSet := make(map[string]bool)
+	for _, s := range state.Sources {
+		stateSet[s.String()] = true
+	}
+
+	planSet := make(map[string]bool)
+	for _, s := range plan.Sources {
+		planSet[s.String()] = true
+	}
+
+	// Find removed elements
+	removedList := []string{}
+	for k := range stateSet {
+		if !planSet[k] {
+			removedList = append(removedList, common.TrimString(k))
+		}
+	}
+	if len(removedList) > 0 {
+		var payloaddelete CTESignatureSetJSON
+		payloaddelete.Sources = removedList
+		payloadJSONd, err := json.Marshal(payloaddelete)
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_signature_set.go -> delete-sources]["+plan.ID.ValueString()+"]")
+			diags.AddError(
+				"[resource_cte_signature_set.go -> Signature set delete sources]",
+				err.Error(),
+			)
+		}
+		_, err = r.client.UpdateData(
+			ctx,
+			plan.ID.ValueString()+"/delete-sources",
+			common.URL_CTE_SIGNATURE_SET,
+			payloadJSONd,
+			"id")
+		if err != nil {
+			tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_signature_set.go -> Delete]["+plan.ID.ValueString()+"]")
+			diags.AddError(
+				"Error deleting clients list from the Signature set on CipherTrust Manager: ",
+				"Could not delete clients list from the Signature set, unexpected error: "+err.Error()+fmt.Sprintf("%s", removedList),
+			)
+		}
 	}
 	if plan.Sources != nil {
 		for _, source := range plan.Sources {
@@ -234,17 +285,24 @@ func (r *resourceCTESignatureSet) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_SIGNATURE_SET, payloadJSON, "updatedAt ")
+	response, err := r.client.UpdateDataV2(ctx, plan.ID.ValueString(), common.URL_CTE_SIGNATURE_SET, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_signature_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
-			"Error creating CTE Signature Set on CipherTrust Manager: ",
-			"Could not create CTE Signature Set, unexpected error: "+err.Error(),
+			"Error updating CTE Signature Set on CipherTrust Manager: ",
+			"Could not update CTE Signature Set, unexpected error: "+err.Error(),
 		)
 		return
 	}
-	plan.ID = types.StringValue(response)
+
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	plan.Application = types.StringValue(gjson.Get(response, "application").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 	diags = resp.State.Set(ctx, plan)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
