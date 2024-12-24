@@ -28,8 +28,8 @@ type dataSourceScheduler struct {
 }
 
 type DataSourceModelScheduler struct {
-	Filters types.Map                    `tfsdk:"filters"`
-	Scp     []CreateJobConfigParamsTFSDK `tfsdk:"scheduler"`
+	Filters   types.Map                    `tfsdk:"filters"`
+	Scheduler []CreateJobConfigParamsTFSDK `tfsdk:"scheduler"`
 }
 
 func (d *dataSourceScheduler) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -138,7 +138,7 @@ func (d *dataSourceScheduler) Read(ctx context.Context, req datasource.ReadReque
 		kvs = append(kvs, kv)
 	}
 
-	jsonStr, err := d.client.GetAll(ctx, id, common.URL_SCHEDULER_JOB_CONFIGS+"/?"+strings.Join(kvs, "")+"skip=0&limit=10")
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_SCHEDULER_JOB_CONFIGS+"/?"+strings.Join(kvs, "")+"skip=0&limit=-1")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_scheduler.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -220,7 +220,7 @@ func (d *dataSourceScheduler) Read(ctx context.Context, req datasource.ReadReque
 			}
 		}
 
-		state.Scp = append(state.Scp, schedulerJobs)
+		state.Scheduler = append(state.Scheduler, schedulerJobs)
 	}
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_scheduler.go -> Read]["+id+"]")
