@@ -14,10 +14,10 @@ func TestResourceCMAzureConnection(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "ciphertrust_azure_connection" "azure_connection" {
-  name = "azure-connection"=
-  client_id="3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"=
-  tenant_id= "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"=
-  client_secret="3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"=
+  name = "TestAzureConnection"
+  client_id="3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"
+  tenant_id= "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"
+  client_secret="3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"
   cloud_name= "AzureCloud"
   products = [
     "cckm"
@@ -32,12 +32,13 @@ resource "ciphertrust_azure_connection" "azure_connection" {
   }
 }
 `,
-				// verifying the resources for id, authmethod, protocol and port
+
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ciphertrust_azure_connection.azure_connection", "id"),
-					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "auth_method", "key"),
-					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "protocol", "azure"),
-					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "port", "22"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "name", "TestAzureConnection"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "tenant_id", "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "description", "a description of the connection"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "client_id", "3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"),
 				),
 			},
 
@@ -46,26 +47,20 @@ resource "ciphertrust_azure_connection" "azure_connection" {
 				Config: providerConfig + `
 resource "ciphertrust_azure_connection" "azure_connection" {
   name        = "TestAzureConnection"
-  client_id="3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"=
-  tenant_id= "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"=
-  client_secret="3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"=
-  cloud_name= "AzureCloud"
+  client_id="updated-client-id"
+  tenant_id= "updated-tenant-id"
   products = [
     "cckm"
   ]
-  description = "a description of the connection"
-  labels = {
-    "environment" = "test"
-    "department"  = "IT"
-  }
-  products = ["backup/restore"]
+  description = "updated description of the connection"
+  
 }
 				`,
-				// verifying the updated field username,port and protocol
+
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "protocol", "sftp"),
-					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "port", "2022"),
-					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "username", "updated-user"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "tenant_id", "updated-tenant-id"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "description", "updated description of the connection"),
+					resource.TestCheckResourceAttr("ciphertrust_azure_connection.azure_connection", "client_id", "updated-client-id"),
 				),
 			},
 		},

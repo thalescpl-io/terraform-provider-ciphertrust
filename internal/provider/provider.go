@@ -14,8 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	cm "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cm"
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 	connections "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/connections"
+	cte "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/cte"
 )
 
 // Ensure the implementation satisfies the expected interfaces.

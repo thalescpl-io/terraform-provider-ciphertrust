@@ -29,8 +29,8 @@ func TestCiphertrustAzureConnectionDataSource(t *testing.T) {
 		data "ciphertrust_azure_connection_list" "azure_connection_details" {
 		depends_on = [ciphertrust_azure_connection.azure_connection]
 		   filters = {
-   			 labels = "environment=test"
-  			}
+   			 labels = "environment=devenv"
+			}
 		}`
 
 	//Name of the data source to check
@@ -47,12 +47,12 @@ func TestCiphertrustAzureConnectionDataSource(t *testing.T) {
 					// Ensure the resource was created first
 					resource.TestCheckResourceAttrSet("ciphertrust_azure_connection.azure_connection", "id"),
 
-					resource.TestCheckResourceAttr(datasourceName, "azure.0.name", "TestAzureConnection1"),
-					resource.TestCheckResourceAttr(datasourceName, "azure.0.client_secret", "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"),
+					resource.TestCheckResourceAttr(datasourceName, "azure.0.name", "test-azure-connection"),
+					resource.TestCheckResourceAttr(datasourceName, "azure.0.client_secret", ""),
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.tenant_id", "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"),
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.description", "connection description"),
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.cloud_name", "AzureCloud"),
-					resource.TestCheckResourceAttr(datasourceName, "azure.0.client_id", "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"),
+					resource.TestCheckResourceAttr(datasourceName, "azure.0.client_id", "3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"),
 				),
 			},
 		},
