@@ -893,7 +893,7 @@ type CTEProcessSetTFSDK struct {
 	ID          types.String      `tfsdk:"id"`
 	URI         types.String      `tfsdk:"uri"`
 	Account     types.String      `tfsdk:"account"`
-	Application types.String      `tfsdk:"application "`
+	Application types.String      `tfsdk:"application"`
 	DevAccount  types.String      `tfsdk:"dev_account"`
 	CreatedAt   types.String      `tfsdk:"created_at"`
 	UpdatedAt   types.String      `tfsdk:"updated_at"`
@@ -1136,7 +1136,7 @@ type CTEResourceSetTFSDK struct {
 	ID          types.String       `tfsdk:"id"`
 	URI         types.String       `tfsdk:"uri"`
 	Account     types.String       `tfsdk:"account"`
-	Application types.String       `tfsdk:"application "`
+	Application types.String       `tfsdk:"application"`
 	DevAccount  types.String       `tfsdk:"dev_account"`
 	CreatedAt   types.String       `tfsdk:"created_at"`
 	UpdatedAt   types.String       `tfsdk:"updated_at"`
@@ -1182,7 +1182,7 @@ type CTESignatureSetTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	URI         types.String   `tfsdk:"uri"`
 	Account     types.String   `tfsdk:"account"`
-	Application types.String   `tfsdk:"application "`
+	Application types.String   `tfsdk:"application"`
 	DevAccount  types.String   `tfsdk:"dev_account"`
 	CreatedAt   types.String   `tfsdk:"created_at"`
 	UpdatedAt   types.String   `tfsdk:"updated_at"`
@@ -1214,7 +1214,7 @@ type CTEUserSetTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	URI         types.String   `tfsdk:"uri"`
 	Account     types.String   `tfsdk:"account"`
-	Application types.String   `tfsdk:"application "`
+	Application types.String   `tfsdk:"application"`
 	DevAccount  types.String   `tfsdk:"dev_account"`
 	CreatedAt   types.String   `tfsdk:"created_at"`
 	UpdatedAt   types.String   `tfsdk:"updated_at"`
