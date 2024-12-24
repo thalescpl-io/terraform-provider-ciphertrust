@@ -153,13 +153,13 @@ type KeyRuleJSON struct {
 }
 
 type CurrentKeyJSON struct {
-	KeyID   string `json:"key_id"`
-	KeyType string `json:"key_type"`
+	KeyID   string `json:"key_id,omitempty"`
+	KeyType string `json:"key_type,omitempty"`
 }
 
 type TransformationKeyJSON struct {
-	KeyID   string `json:"key_id"`
-	KeyType string `json:"key_type"`
+	KeyID   string `json:"key_id,omitempty"`
+	KeyType string `json:"key_type,omitempty"`
 }
 
 type LDTRuleJSON struct {
@@ -427,37 +427,37 @@ type AddDataTXRulePolicyTFSDK struct {
 
 type DataTxRuleUpdateJSON struct {
 	KeyID         string `json:"key_id"`
-	KeyType       string `json:"key_type"`
-	ResourceSetID string `json:"resource_set_id"`
-	OrderNumber   int64  `json:"order_number"`
+	KeyType       string `json:"key_type,omitempty"`
+	ResourceSetID string `json:"resource_set_id,omitempty"`
+	OrderNumber   int64  `json:"order_number,omitempty"`
 }
 
 type KeyRuleUpdateJSON struct {
 	KeyID         string `json:"key_id"`
-	KeyType       string `json:"key_type"`
-	ResourceSetID string `json:"resource_set_id"`
-	OrderNumber   int64  `json:"order_number"`
+	KeyType       string `json:"key_type,omitempty"`
+	ResourceSetID string `json:"resource_set_id,omitempty"`
+	OrderNumber   int64  `json:"order_number,omitempty"`
 }
 
 type LDTRuleUpdateJSON struct {
 	CurrentKey        CurrentKeyJSON        `json:"current_key"`
 	TransformationKey TransformationKeyJSON `json:"transformation_key"`
-	IsExclusionRule   bool                  `json:"is_exclusion_rule"`
-	ResourceSetID     string                `json:"resource_set_id"`
-	OrderNumber       int64                 `json:"order_number"`
+	IsExclusionRule   bool                  `json:"is_exclusion_rule,omitempty"`
+	ResourceSetID     string                `json:"resource_set_id,omitempty"`
+	OrderNumber       int64                 `json:"order_number,omitempty"`
 }
 
 type SecurityRuleUpdateJSON struct {
-	Action             string `json:"action"`
-	Effect             string `json:"effect"`
-	ExcludeProcessSet  bool   `json:"exclude_process_set"`
-	ExcludeResourceSet bool   `json:"exclude_resource_set"`
-	ExcludeUserSet     bool   `json:"exclude_user_set"`
-	PartialMatch       bool   `json:"partial_match"`
-	ProcessSetID       string `json:"process_set_id"`
-	ResourceSetID      string `json:"resource_set_id"`
-	UserSetID          string `json:"user_set_id"`
-	OrderNumber        int64  `json:"order_number"`
+	Action             string `json:"action,omitempty"`
+	Effect             string `json:"effect,omitempty"`
+	ExcludeProcessSet  bool   `json:"exclude_process_set,omitempty"`
+	ExcludeResourceSet bool   `json:"exclude_resource_set,omitempty"`
+	ExcludeUserSet     bool   `json:"exclude_user_set,omitempty"`
+	PartialMatch       bool   `json:"partial_match,omitempty"`
+	ProcessSetID       string `json:"process_set_id,omitempty"`
+	ResourceSetID      string `json:"resource_set_id,omitempty"`
+	UserSetID          string `json:"user_set_id,omitempty"`
+	OrderNumber        int64  `json:"order_number,omitempty"`
 }
 
 type UpdateIDTKeyRulePolicyTFSDK struct {
@@ -861,10 +861,10 @@ type CTEPolicyAddKeyRuleTFSDK struct {
 }
 
 type CTEPolicyAddLDTKeyRuleTFSDK struct {
-	CTEClientPolicyID types.String    `tfsdk:"policy_id"`
-	LDTKeyRuleID      types.String    `tfsdk:"rule_id"`
-	OrderNumber       types.Int64     `tfsdk:"order_number"`
-	LDTKeyRule        LDTKeyRuleTFSDK `tfsdk:"rule"`
+	CTEClientPolicyID types.String      `tfsdk:"policy_id"`
+	LDTKeyRuleID      types.String      `tfsdk:"rule_id"`
+	OrderNumber       types.Int64       `tfsdk:"order_number"`
+	LDTKeyRules       []LDTKeyRuleTFSDK `tfsdk:"rule"`
 }
 
 type CTEPolicyAddSecurityRuleTFSDK struct {
@@ -893,7 +893,7 @@ type CTEProcessSetTFSDK struct {
 	ID          types.String      `tfsdk:"id"`
 	URI         types.String      `tfsdk:"uri"`
 	Account     types.String      `tfsdk:"account"`
-	Application types.String      `tfsdk:"application "`
+	Application types.String      `tfsdk:"application"`
 	DevAccount  types.String      `tfsdk:"dev_account"`
 	CreatedAt   types.String      `tfsdk:"created_at"`
 	UpdatedAt   types.String      `tfsdk:"updated_at"`
@@ -1136,7 +1136,7 @@ type CTEResourceSetTFSDK struct {
 	ID          types.String       `tfsdk:"id"`
 	URI         types.String       `tfsdk:"uri"`
 	Account     types.String       `tfsdk:"account"`
-	Application types.String       `tfsdk:"application "`
+	Application types.String       `tfsdk:"application"`
 	DevAccount  types.String       `tfsdk:"dev_account"`
 	CreatedAt   types.String       `tfsdk:"created_at"`
 	UpdatedAt   types.String       `tfsdk:"updated_at"`
@@ -1182,7 +1182,7 @@ type CTESignatureSetTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	URI         types.String   `tfsdk:"uri"`
 	Account     types.String   `tfsdk:"account"`
-	Application types.String   `tfsdk:"application "`
+	Application types.String   `tfsdk:"application"`
 	DevAccount  types.String   `tfsdk:"dev_account"`
 	CreatedAt   types.String   `tfsdk:"created_at"`
 	UpdatedAt   types.String   `tfsdk:"updated_at"`
@@ -1214,7 +1214,7 @@ type CTEUserSetTFSDK struct {
 	ID          types.String   `tfsdk:"id"`
 	URI         types.String   `tfsdk:"uri"`
 	Account     types.String   `tfsdk:"account"`
-	Application types.String   `tfsdk:"application "`
+	Application types.String   `tfsdk:"application"`
 	DevAccount  types.String   `tfsdk:"dev_account"`
 	CreatedAt   types.String   `tfsdk:"created_at"`
 	UpdatedAt   types.String   `tfsdk:"updated_at"`

@@ -141,35 +141,31 @@ func (r *resourceCTEPolicy) Schema(_ context.Context, _ resource.SchemaRequest, 
 							Optional:    true,
 							Description: "ID of the resource set to link with the rule.",
 						},
-						"current_key": schema.ListNestedAttribute{
+						"current_key": schema.SingleNestedAttribute{
 							Optional:    true,
 							Description: "Properties of the current key.",
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"key_id": schema.StringAttribute{
-										Optional:    true,
-										Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
-									},
-									"key_type": schema.StringAttribute{
-										Optional:    true,
-										Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
-									},
+							Attributes: map[string]schema.Attribute{
+								"key_id": schema.StringAttribute{
+									Optional:    true,
+									Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
+								},
+								"key_type": schema.StringAttribute{
+									Optional:    true,
+									Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
 								},
 							},
 						},
-						"transformation_key": schema.ListNestedAttribute{
+						"transformation_key": schema.SingleNestedAttribute{
 							Optional:    true,
 							Description: "Properties of the transformation key.",
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"key_id": schema.StringAttribute{
-										Optional:    true,
-										Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
-									},
-									"key_type": schema.StringAttribute{
-										Optional:    true,
-										Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
-									},
+							Attributes: map[string]schema.Attribute{
+								"key_id": schema.StringAttribute{
+									Optional:    true,
+									Description: "Identifier of the key to link with the rule. Supported fields are name, id, slug, alias, uri, uuid, muid, and key_id. Note: For decryption, where a clear key is to be supplied, use the string \"clear_key\" only. Do not specify any other identifier.",
+								},
+								"key_type": schema.StringAttribute{
+									Optional:    true,
+									Description: "Specify the type of the key. Must be one of name, id, slug, alias, uri, uuid, muid or key_id. If not specified, the type of the key is inferred.",
 								},
 							},
 						},
@@ -459,14 +455,43 @@ func (r *resourceCTEPolicy) Create(ctx context.Context, req resource.CreateReque
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEPolicy) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEPolicyTFSDK
+
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_CTE_POLICY)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading Policy on CipherTrust Manager: ",
+			"Could not Policy id : ,"+state.ID.ValueString()+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicy) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan CTEPolicyTFSDK
+	var plan, state CTEPolicyTFSDK
 	var payload CTEPolicyJSON
 
 	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -488,8 +513,12 @@ func (r *resourceCTEPolicy) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	var metadata CTEPolicyMetadataJSON
-	if plan.Metadata.RestrictUpdate.ValueBool() != types.BoolNull().ValueBool() {
-		metadata.RestrictUpdate = bool(plan.Metadata.RestrictUpdate.ValueBool())
+	if !reflect.DeepEqual((*CTEPolicyMetadataTFSDK)(nil), plan.Metadata) {
+		tflog.Debug(ctx, "Metadata should not be empty at this point")
+		if plan.Metadata.RestrictUpdate.ValueBool() != types.BoolNull().ValueBool() {
+			metadata.RestrictUpdate = bool(plan.Metadata.RestrictUpdate.ValueBool())
+		}
+		payload.Metadata = metadata
 	}
 	payload.Metadata = metadata
 
@@ -503,7 +532,7 @@ func (r *resourceCTEPolicy) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_POLICY, payloadJSON, "id")
+	response, err := r.client.UpdateData(ctx, state.ID.ValueString(), common.URL_CTE_POLICY, payloadJSON, "id")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
