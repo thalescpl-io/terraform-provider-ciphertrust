@@ -32,8 +32,9 @@ const (
 	URL_PROMETHEUS_DISABLE = "api//v1/system/metrics/prometheus/disable"
 	URL_PROMETHEUS_STATUS  = "api/v1/system/metrics/prometheus/status"
 	// CCKM Endpoints
-	URL_AWS_CONNECTION = "api/v1/connectionmgmt/services/aws/connections"
-	URL_AWS_XKS        = "api/v1/cckm/aws/custom-key-stores"
-	URL_HSM_SETUP      = "api/v1/system/hsm/setup"
-	URL_HSM_Server     = "api/v1/system/hsm/servers"
+	URL_AWS_CONNECTION   = "api/v1/connectionmgmt/services/aws/connections"
+	URL_AWS_XKS          = "api/v1/cckm/aws/custom-key-stores"
+	URL_HSM_SETUP        = "api/v1/system/hsm/setup"
+	URL_HSM_Server       = "api/v1/system/hsm/servers"
+	URL_AZURE_CONNECTION = "api/v1/connectionmgmt/services/azure/connections"
 )
