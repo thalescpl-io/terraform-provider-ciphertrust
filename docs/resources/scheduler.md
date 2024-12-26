@@ -8,7 +8,7 @@ description: |-
 
 # ciphertrust_scheduler (Resource)
 
-
+The ciphertrust_scheduler resource allows you to define and manage scheduled jobs within the CipherTrust Manager. This resource enables setting up automated tasks such as database backups with customizable parameters, including backup keys, connections, retention policies, and more. You can configure the scheduling using cron-style expressions to specify when the jobs should run.
 
 
 
