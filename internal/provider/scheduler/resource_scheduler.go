@@ -70,7 +70,7 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 			},
 			"operation": schema.StringAttribute{
 				Required:    true,
-				Description: "The database_backup_params param must be specified for the database_backup operation",
+				Description: "The operation field specifies the type of operation to be performed. Currently, only 'database_backup' is supported. Ensure that the database_backup_params parameter is specified when using this operation.",
 			},
 			"run_at": schema.StringAttribute{
 				Required:    true,
@@ -202,49 +202,14 @@ func (r *resourceScheduler) Create(ctx context.Context, req resource.CreateReque
 		payload.RunAt = plan.RunAt.ValueString()
 	}
 
-	var databaseBackupParams DatabaseBackupParamsJSON
-	if !reflect.DeepEqual(DatabaseBackupParamsTFSDK{}, plan.DatabaseBackupParams) {
-
-		if plan.DatabaseBackupParams.Description.ValueString() != "" && plan.DatabaseBackupParams.Description.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.Description = plan.DatabaseBackupParams.Description.ValueString()
+	switch plan.Operation.ValueString() {
+	case "database_backup":
+		dbBackupParams := getDatabaseOperationBackupParams(plan)
+		if dbBackupParams != nil {
+			payload.DatabaseBackupParams = dbBackupParams
 		}
-
-		if plan.DatabaseBackupParams.BackupKey.ValueString() != "" && plan.DatabaseBackupParams.BackupKey.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.BackupKey = plan.DatabaseBackupParams.BackupKey.ValueString()
-		}
-		if plan.DatabaseBackupParams.Connection.ValueString() != "" && plan.DatabaseBackupParams.Connection.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.Connection = plan.DatabaseBackupParams.Connection.ValueString()
-		}
-		if plan.DatabaseBackupParams.DoSCP.ValueBool() {
-			databaseBackupParams.DoSCP = plan.DatabaseBackupParams.DoSCP.ValueBool()
-		}
-		if plan.DatabaseBackupParams.Scope.ValueString() != "" && plan.DatabaseBackupParams.Scope.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.Scope = plan.DatabaseBackupParams.Scope.ValueString()
-		}
-		if plan.DatabaseBackupParams.TiedToHSM.ValueBool() {
-			databaseBackupParams.TiedToHSM = plan.DatabaseBackupParams.TiedToHSM.ValueBool()
-		}
-		if plan.DatabaseBackupParams.RetentionCount.ValueInt64() != types.Int64Null().ValueInt64() {
-			databaseBackupParams.RetentionCount = plan.DatabaseBackupParams.RetentionCount.ValueInt64()
-		}
-
-		if len(plan.DatabaseBackupParams.Filters) != 0 {
-			var filters []BackupFilterJSON
-			for _, filter := range plan.DatabaseBackupParams.Filters {
-				if !filter.ResourceType.IsNull() {
-					newFilter := BackupFilterJSON{
-						ResourceType: filter.ResourceType.ValueString(),
-					}
-					if !filter.ResourceQuery.IsNull() {
-						newFilter.ResourceQuery = filter.ResourceQuery.ValueString()
-					}
-					filters = append(filters, newFilter)
-				}
-			}
-			databaseBackupParams.Filters = &filters
-		}
-		payload.DatabaseBackupParams = &databaseBackupParams
 	}
+
 	if plan.StartDate.ValueString() != "" && plan.StartDate.ValueString() != types.StringNull().ValueString() {
 		parsedTime, err := time.Parse(time.RFC3339, plan.StartDate.ValueString())
 		if err != nil {
@@ -356,49 +321,14 @@ func (r *resourceScheduler) Update(ctx context.Context, req resource.UpdateReque
 		payload.RunAt = plan.RunAt.ValueString()
 	}
 
-	var databaseBackupParams DatabaseBackupParamsJSON
-	if !reflect.DeepEqual(DatabaseBackupParamsTFSDK{}, plan.DatabaseBackupParams) {
-
-		if plan.DatabaseBackupParams.Description.ValueString() != "" && plan.DatabaseBackupParams.Description.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.Description = plan.DatabaseBackupParams.Description.ValueString()
+	switch plan.Operation.ValueString() {
+	case "database_backup":
+		dbBackupParams := getDatabaseOperationBackupParams(plan)
+		if dbBackupParams != nil {
+			payload.DatabaseBackupParams = dbBackupParams
 		}
-
-		if plan.DatabaseBackupParams.BackupKey.ValueString() != "" && plan.DatabaseBackupParams.BackupKey.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.BackupKey = plan.DatabaseBackupParams.BackupKey.ValueString()
-		}
-		if plan.DatabaseBackupParams.Connection.ValueString() != "" && plan.DatabaseBackupParams.Connection.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.Connection = plan.DatabaseBackupParams.Connection.ValueString()
-		}
-		if plan.DatabaseBackupParams.DoSCP.ValueBool() {
-			databaseBackupParams.DoSCP = plan.DatabaseBackupParams.DoSCP.ValueBool()
-		}
-		if plan.DatabaseBackupParams.Scope.ValueString() != "" && plan.DatabaseBackupParams.Scope.ValueString() != types.StringNull().ValueString() {
-			databaseBackupParams.Scope = plan.DatabaseBackupParams.Scope.ValueString()
-		}
-		if plan.DatabaseBackupParams.TiedToHSM.ValueBool() {
-			databaseBackupParams.TiedToHSM = plan.DatabaseBackupParams.TiedToHSM.ValueBool()
-		}
-		if plan.DatabaseBackupParams.RetentionCount.ValueInt64() != types.Int64Null().ValueInt64() {
-			databaseBackupParams.RetentionCount = plan.DatabaseBackupParams.RetentionCount.ValueInt64()
-		}
-
-		if len(plan.DatabaseBackupParams.Filters) != 0 {
-			var filters []BackupFilterJSON
-			for _, filter := range plan.DatabaseBackupParams.Filters {
-				if !filter.ResourceType.IsNull() {
-					newFilter := BackupFilterJSON{
-						ResourceType: filter.ResourceType.ValueString(),
-					}
-					if !filter.ResourceQuery.IsNull() {
-						newFilter.ResourceQuery = filter.ResourceQuery.ValueString()
-					}
-					filters = append(filters, newFilter)
-				}
-			}
-			databaseBackupParams.Filters = &filters
-		}
-		payload.DatabaseBackupParams = &databaseBackupParams
 	}
+
 	if plan.StartDate.ValueString() != "" && plan.StartDate.ValueString() != types.StringNull().ValueString() {
 		parsedTime, err := time.Parse(time.RFC3339, plan.StartDate.ValueString())
 		if err != nil {
@@ -503,4 +433,52 @@ func (d *resourceScheduler) Configure(_ context.Context, req resource.ConfigureR
 	}
 
 	d.client = client
+}
+
+func getDatabaseOperationBackupParams(plan CreateJobConfigParamsTFSDK) *DatabaseBackupParamsJSON {
+
+	if !reflect.DeepEqual(DatabaseBackupParamsTFSDK{}, plan.DatabaseBackupParams) {
+		var databaseBackupParams DatabaseBackupParamsJSON
+
+		if plan.DatabaseBackupParams.Description.ValueString() != "" && plan.DatabaseBackupParams.Description.ValueString() != types.StringNull().ValueString() {
+			databaseBackupParams.Description = plan.DatabaseBackupParams.Description.ValueString()
+		}
+
+		if plan.DatabaseBackupParams.BackupKey.ValueString() != "" && plan.DatabaseBackupParams.BackupKey.ValueString() != types.StringNull().ValueString() {
+			databaseBackupParams.BackupKey = plan.DatabaseBackupParams.BackupKey.ValueString()
+		}
+		if plan.DatabaseBackupParams.Connection.ValueString() != "" && plan.DatabaseBackupParams.Connection.ValueString() != types.StringNull().ValueString() {
+			databaseBackupParams.Connection = plan.DatabaseBackupParams.Connection.ValueString()
+		}
+		if plan.DatabaseBackupParams.DoSCP.ValueBool() {
+			databaseBackupParams.DoSCP = plan.DatabaseBackupParams.DoSCP.ValueBool()
+		}
+		if plan.DatabaseBackupParams.Scope.ValueString() != "" && plan.DatabaseBackupParams.Scope.ValueString() != types.StringNull().ValueString() {
+			databaseBackupParams.Scope = plan.DatabaseBackupParams.Scope.ValueString()
+		}
+		if plan.DatabaseBackupParams.TiedToHSM.ValueBool() {
+			databaseBackupParams.TiedToHSM = plan.DatabaseBackupParams.TiedToHSM.ValueBool()
+		}
+		if plan.DatabaseBackupParams.RetentionCount.ValueInt64() != types.Int64Null().ValueInt64() {
+			databaseBackupParams.RetentionCount = plan.DatabaseBackupParams.RetentionCount.ValueInt64()
+		}
+
+		if len(plan.DatabaseBackupParams.Filters) != 0 {
+			var filters []BackupFilterJSON
+			for _, filter := range plan.DatabaseBackupParams.Filters {
+				if !filter.ResourceType.IsNull() {
+					newFilter := BackupFilterJSON{
+						ResourceType: filter.ResourceType.ValueString(),
+					}
+					if !filter.ResourceQuery.IsNull() {
+						newFilter.ResourceQuery = filter.ResourceQuery.ValueString()
+					}
+					filters = append(filters, newFilter)
+				}
+			}
+			databaseBackupParams.Filters = &filters
+		}
+		return &databaseBackupParams
+	}
+	return nil
 }

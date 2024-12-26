@@ -178,48 +178,11 @@ func (d *dataSourceScheduler) Read(ctx context.Context, req datasource.ReadReque
 			StartDate:   types.StringValue(jobs.StartDate.Format(time.RFC3339)),
 			EndDate:     types.StringValue(jobs.EndDate.Format(time.RFC3339)),
 		}
-		if jobs.DatabaseBackupParams != nil {
-			schedulerJobs.DatabaseBackupParams = DatabaseBackupParamsTFSDK{
-				BackupKey:      types.StringValue(jobs.DatabaseBackupParams.BackupKey),
-				Connection:     types.StringValue(jobs.DatabaseBackupParams.Connection),
-				Description:    types.StringValue(jobs.DatabaseBackupParams.Description),
-				DoSCP:          types.BoolValue(jobs.DatabaseBackupParams.DoSCP),
-				Scope:          types.StringValue(jobs.DatabaseBackupParams.Scope),
-				TiedToHSM:      types.BoolValue(jobs.DatabaseBackupParams.TiedToHSM),
-				RetentionCount: types.Int64Value(jobs.DatabaseBackupParams.RetentionCount),
-				Filters: func() []BackupFilterTFSDK {
-					var filters []BackupFilterTFSDK
-					if jobs.DatabaseBackupParams.Filters != nil {
-						for _, filter := range *jobs.DatabaseBackupParams.Filters {
-							var resourceQueryStr string
 
-							// Handle ResourceQuery which is an interface
-							switch query := filter.ResourceQuery.(type) {
-							case string:
-								resourceQueryStr = query
-							case map[string]interface{}:
-								// Serialize map into a JSON string
-								bytes, err := json.Marshal(query)
-								if err != nil {
-									resourceQueryStr = "error_serializing_resource_query"
-								} else {
-									resourceQueryStr = string(bytes)
-								}
-							default:
-								resourceQueryStr = fmt.Sprintf("%v", query)
-							}
-
-							filters = append(filters, BackupFilterTFSDK{
-								ResourceType:  types.StringValue(filter.ResourceType),
-								ResourceQuery: types.StringValue(resourceQueryStr),
-							})
-						}
-					}
-					return filters
-				}(),
-			}
+		switch jobs.Operation {
+		case "database_backup":
+			getDataBaseBackupParams(jobs, &schedulerJobs)
 		}
-
 		state.Scheduler = append(state.Scheduler, schedulerJobs)
 	}
 
@@ -247,4 +210,48 @@ func (d *dataSourceScheduler) Configure(ctx context.Context, req datasource.Conf
 	}
 
 	d.client = client
+}
+
+func getDataBaseBackupParams(jobs CreateJobConfigParamsListJSON, schedulerJobs *CreateJobConfigParamsTFSDK) {
+	if jobs.DatabaseBackupParams != nil {
+		schedulerJobs.DatabaseBackupParams = DatabaseBackupParamsTFSDK{
+			BackupKey:      types.StringValue(jobs.DatabaseBackupParams.BackupKey),
+			Connection:     types.StringValue(jobs.DatabaseBackupParams.Connection),
+			Description:    types.StringValue(jobs.DatabaseBackupParams.Description),
+			DoSCP:          types.BoolValue(jobs.DatabaseBackupParams.DoSCP),
+			Scope:          types.StringValue(jobs.DatabaseBackupParams.Scope),
+			TiedToHSM:      types.BoolValue(jobs.DatabaseBackupParams.TiedToHSM),
+			RetentionCount: types.Int64Value(jobs.DatabaseBackupParams.RetentionCount),
+			Filters: func() []BackupFilterTFSDK {
+				var filters []BackupFilterTFSDK
+				if jobs.DatabaseBackupParams.Filters != nil {
+					for _, filter := range *jobs.DatabaseBackupParams.Filters {
+						var resourceQueryStr string
+
+						// Handle ResourceQuery which is an interface
+						switch query := filter.ResourceQuery.(type) {
+						case string:
+							resourceQueryStr = query
+						case map[string]interface{}:
+							// Serialize map into a JSON string
+							bytes, err := json.Marshal(query)
+							if err != nil {
+								resourceQueryStr = "error_serializing_resource_query"
+							} else {
+								resourceQueryStr = string(bytes)
+							}
+						default:
+							resourceQueryStr = fmt.Sprintf("%v", query)
+						}
+
+						filters = append(filters, BackupFilterTFSDK{
+							ResourceType:  types.StringValue(filter.ResourceType),
+							ResourceQuery: types.StringValue(resourceQueryStr),
+						})
+					}
+				}
+				return filters
+			}(),
+		}
+	}
 }
