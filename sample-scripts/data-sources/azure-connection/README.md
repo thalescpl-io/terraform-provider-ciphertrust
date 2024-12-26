@@ -24,7 +24,7 @@ provider "ciphertrust" {
 ```bash
 # Data source for retrieving azure connection details
 data "ciphertrust_azure_connection_list" "example_azure_connection" {
-  # Filters to narrow down the GCP connections
+  # Filters to narrow down the Azure connections
   filters = {
     # The unique ID of the Azure connection to fetch
     id = "7a844b20-8f63-4608-86a9-d349daf1e32c"
