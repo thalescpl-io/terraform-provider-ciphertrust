@@ -28,8 +28,8 @@ type dataSourceAzureConnection struct {
 }
 
 type AzureConnectionDataSourceModel struct {
-	Filters types.Map                `tfsdk:"filters"`
-	Azure   []CMAzureConnectionTFSDK `tfsdk:"azure"`
+	Filters types.Map              `tfsdk:"filters"`
+	Azure   []AzureConnectionTFSDK `tfsdk:"azure"`
 }
 
 func (d *dataSourceAzureConnection) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -142,7 +142,7 @@ func (d *dataSourceAzureConnection) Read(ctx context.Context, req datasource.Rea
 		kvs = append(kvs, kv)
 	}
 
-	jsonStr, err := d.client.GetAll(ctx, id, common.URL_AZURE_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=10")
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_AZURE_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=-1")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_azure_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -152,7 +152,7 @@ func (d *dataSourceAzureConnection) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	azureConnections := []CMAzureConnectionJSON{}
+	azureConnections := []AzureConnectionJSON{}
 	err = json.Unmarshal([]byte(jsonStr), &azureConnections)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_azure_connection.go -> Read]["+id+"]")
@@ -164,7 +164,7 @@ func (d *dataSourceAzureConnection) Read(ctx context.Context, req datasource.Rea
 	}
 
 	for _, azure := range azureConnections {
-		azureConn := CMAzureConnectionTFSDK{
+		azureConn := AzureConnectionTFSDK{
 			CMCreateConnectionResponseCommonTFSDK: CMCreateConnectionResponseCommonTFSDK{
 				URI:                 types.StringValue(azure.URI),
 				Account:             types.StringValue(azure.Account),

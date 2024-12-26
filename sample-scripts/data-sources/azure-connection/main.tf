@@ -14,12 +14,12 @@ provider "ciphertrust" {
   bootstrap = "no"
 }
 
-data "ciphertrust_gcp_connection_list" "example_gcp_connection" {
+data "ciphertrust_azure_connection_list" "example_azure_connection" {
    filters = {
      labels = "key=value"
    }
 }
 
-output "gcp_connection_details" {
-  value = data.ciphertrust_gcp_connection_list.example_gcp_connection
+output "azure_connection_details" {
+  value = data.ciphertrust_azure_connection_list.example_azure_connection
 }

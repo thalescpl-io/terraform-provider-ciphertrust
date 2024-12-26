@@ -8,93 +8,28 @@ description: |-
 
 # ciphertrust_azure_connection (Resource)
 
-
+ciphertrust_azure_connection resource creates an azure connection on CipherTrust Manager.
 
 ## Example Usage
 
 ```terraform
-# Terraform Configuration for CipherTrust Provider
-
-# This configuration demonstrates the creation of an azure connection resource
-# with the CipherTrust provider, including setting up azure connection details,
-# labels, and custom metadata.
-
-terraform {
-  # Define the required providers for the configuration
-  required_providers {
-    # CipherTrust provider for managing CipherTrust resources
-    ciphertrust = {
-      # The source of the provider
-      source = "thalesgroup.com/oss/ciphertrust"
-      # Version of the provider to use
-      version = "1.0.0"
-    }
-  }
-}
-
-# Configure the CipherTrust provider for authentication
-provider "ciphertrust" {
-  # The address of the CipherTrust appliance (replace with the actual address)
-  address = "https://52.87.160.91"
-
-  # Username for authenticating with the CipherTrust appliance
-  username = "admin"
-
-  # Password for authenticating with the CipherTrust appliance
-  password = "SamplePassword@1"
-
-  bootstrap = "no"
-}
-
-# Define an azure connection resource with CipherTrust
+# Create an azure connection resource with CipherTrust
 resource "ciphertrust_azure_connection" "azure_connection" {
-  # Name of the azure connection (unique identifier)
   name = "azure-connection"
-
-  # Unique identifier for azure application
   client_id="3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"
-
-  # Tenant ID for azure application
   tenant_id= "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"
-
-  # Secret key for the azure application
   client_secret="3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"
-
-  # Name of the azure cloud
   cloud_name= "AzureCloud"
-
-  # List of products associated with this azure connection
-  # In this case, it's related to backup/restore operations
   products = [
     "cckm"
   ]
-
-  # Description of the azure connection
   description = "a description of the connection"
-
-  # Labels for categorizing the azure connection
   labels = {
     "environment" = "devenv"
-  }
-
-  # Custom metadata for the azure connection
-  # This can be used to store additional information related to the azure connection
   meta = {
     "custom_meta_key1" = "custom_value1"  # Example custom metadata key-value pair
     "customer_meta_key2" = "custom_value2"  # Another custom metadata entry
   }
-}
-
-# Output the unique ID of the created azure connection
-output "azure_connection_id" {
-  # The value will be the ID of the azure connection resource
-  value = ciphertrust_azure_connection.azure_connection.id
-}
-
-# Output the name of the created azure connection
-output "azure_connection_name" {
-  # The value will be the name of the azure connection resource
-  value = ciphertrust_azure_connection.azure_connection.name
 }
 ```
 
@@ -109,7 +44,6 @@ output "azure_connection_name" {
 
 ### Optional
 
-- `account` (String)
 - `active_directory_endpoint` (String) Azure stack active directory authority URL
 - `azure_stack_connection_type` (String) Azure stack connection type
 
@@ -118,7 +52,6 @@ output "azure_connection_name" {
 		AAD
 		ADFS
 - `azure_stack_server_cert` (String) Azure stack server certificate
-- `category` (String)
 - `cert_duration` (Number) Duration in days for which the azure certificate is valid, default (730 i.e. 2 Years).
 - `certificate` (String) User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection in Update (PATCH) API call. Any unused certificate will automatically deleted in 24 hours.
 - `client_secret` (String) Secret key for the Azure application. Required in Azure Stack connection.
@@ -133,7 +66,7 @@ output "azure_connection_name" {
 - `created_at` (String)
 - `description` (String) Description about the connection.
 - `external_certificate_used` (Boolean) true if the certificate associated with the connection is generated externally, false otherwise.
-- `is_certificate_used` (Boolean) User has the option to choose the Certificate Authentication method instead of Client Secret for Azure Cloud connection. In order to use the Certificate, set it to true. Once the connection is created, in the response user will get a certificate. By default, the certificate is valid for 2 Years. User can update the certificate in the existing connection by setting it to true in Update (PATCH) API call.
+- `is_certificate_used` (Boolean) User has the option to choose the Certificate Authentication method instead of Client Secret for Azure Cloud connection. In order to use the Certificate, set it to true. Once the connection is created, in the response user will get a certificate. By default, the certificate is valid for 2 Years. User can update the certificate in the existing connection by setting it to true.
 - `key_vault_dns_suffix` (String) Azure stack key vault dns suffix
 - `labels` (Map of String) Labels are key/value pairs used to group resources. They are based on Kubernetes Labels, see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/.
 
@@ -149,9 +82,6 @@ To remove a key/value pair, pass value null to the particular key
     "labels": {
       "key1": null
     }
-- `last_connection_at` (String)
-- `last_connection_error` (String)
-- `last_connection_ok` (Boolean)
 - `management_url` (String) Azure stack management URL
 - `meta` (Map of String) Optional end-user or service data stored with the connection.
 - `products` (List of String) Array of the CipherTrust products associated with the connection. Valid values are:
@@ -181,10 +111,6 @@ To remove a key/value pair, pass value null to the particular key
     "hsm_anchored_domain" for:
         Luna connections
 - `resource_manager_url` (String) Azure stack resource manager URL.
-- `resource_url` (String)
-- `service` (String)
-- `updated_at` (String)
-- `uri` (String)
 - `vault_resource_url` (String) Azure stack vault service resource URL.
 
 ### Read-Only

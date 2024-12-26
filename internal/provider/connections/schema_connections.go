@@ -122,7 +122,7 @@ type CMCreateConnectionResponseCommon struct {
 	LastConnectionAt    string `json:"last_connection_at"`
 }
 
-type CMAzureConnectionTFSDK struct {
+type AzureConnectionTFSDK struct {
 	CMCreateConnectionResponseCommonTFSDK
 	ID                       types.String   `tfsdk:"id"`
 	ClientID                 types.String   `tfsdk:"client_id"`
@@ -147,7 +147,7 @@ type CMAzureConnectionTFSDK struct {
 	VaultResourceURL         types.String   `tfsdk:"vault_resource_url"`
 }
 
-type CMAzureConnectionJSON struct {
+type AzureConnectionJSON struct {
 	CMCreateConnectionResponseCommon
 	ID                       string                 `json:"id"`
 	ClientID                 string                 `json:"client_id"`

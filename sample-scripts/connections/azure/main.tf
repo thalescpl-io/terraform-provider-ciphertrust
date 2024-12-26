@@ -16,10 +16,10 @@ provider "ciphertrust" {
 
 resource "ciphertrust_azure_connection" "azure_connection" {
   name        = "azure-connection"
-  products = [
-    "cckm"
-  ]
-   client_secret="3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"
+    products = [
+      "cckm"
+    ]
+  client_secret="3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"
   cloud_name= "AzureCloud"
   client_id="3bf0dbe6-a2c7-431d-9a6f-4843b74c7e12"
   tenant_id= "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"

@@ -335,6 +335,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cm.NewResourceCMTrialLicense,
 		cm.NewResourceCMPrometheus,
 		connections.NewResourceGCPConnection,
-		connections.NewResourceCMAzureConnection,
+		connections.NewResourceAzureConnection,
 	}
 }

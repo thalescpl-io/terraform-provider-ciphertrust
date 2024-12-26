@@ -34,20 +34,20 @@ var (
 `
 )
 
-func NewResourceCMAzureConnection() resource.Resource {
-	return &resourceCMAzureConnection{}
+func NewResourceAzureConnection() resource.Resource {
+	return &resourceAzureConnection{}
 }
 
-type resourceCMAzureConnection struct {
+type resourceAzureConnection struct {
 	client *common.Client
 }
 
-func (r *resourceCMAzureConnection) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *resourceAzureConnection) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_azure_connection"
 }
 
 // Schema defines the schema for the resource.
-func (r *resourceCMAzureConnection) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -86,7 +86,7 @@ func (r *resourceCMAzureConnection) Schema(_ context.Context, _ resource.SchemaR
 			},
 			"certificate": schema.StringAttribute{
 				Optional:    true,
-				Description: "User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection in Update (PATCH) API call. Any unused certificate will automatically deleted in 24 hours.",
+				Description: "User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection. Any unused certificate will automatically deleted in 24 hours.",
 			},
 			"client_secret": schema.StringAttribute{
 				Optional:    true,
@@ -106,7 +106,7 @@ func (r *resourceCMAzureConnection) Schema(_ context.Context, _ resource.SchemaR
 			},
 			"is_certificate_used": schema.BoolAttribute{
 				Optional:    true,
-				Description: "User has the option to choose the Certificate Authentication method instead of Client Secret for Azure Cloud connection. In order to use the Certificate, set it to true. Once the connection is created, in the response user will get a certificate. By default, the certificate is valid for 2 Years. User can update the certificate in the existing connection by setting it to true in Update (PATCH) API call.",
+				Description: "User has the option to choose the Certificate Authentication method instead of Client Secret for Azure Cloud connection. In order to use the Certificate, set it to true. Once the connection is created, in the response user will get a certificate. By default, the certificate is valid for 2 Years. User can update the certificate in the existing connection by setting it to true.",
 			},
 			"key_vault_dns_suffix": schema.StringAttribute{
 				Optional:    true,
@@ -155,13 +155,13 @@ func (r *resourceCMAzureConnection) Schema(_ context.Context, _ resource.SchemaR
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *resourceCMAzureConnection) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *resourceAzureConnection) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_azure_connection.go -> Create]["+id+"]")
 
 	// Retrieve values from plan
-	var plan CMAzureConnectionTFSDK
-	var payload CMAzureConnectionJSON
+	var plan AzureConnectionTFSDK
+	var payload AzureConnectionJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -287,8 +287,6 @@ func (r *resourceCMAzureConnection) Create(ctx context.Context, req resource.Cre
 	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
 	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
-
 	tflog.Debug(ctx, "[resource_azure_connection.go -> Create Output]["+response+"]")
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_azure_connection.go -> Create]["+id+"]")
@@ -299,8 +297,8 @@ func (r *resourceCMAzureConnection) Create(ctx context.Context, req resource.Cre
 	}
 }
 
-func (r *resourceCMAzureConnection) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state CMAzureConnectionTFSDK
+func (r *resourceAzureConnection) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state AzureConnectionTFSDK
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_azure_connection.go -> Read]["+id+"]")
 
@@ -324,11 +322,11 @@ func (r *resourceCMAzureConnection) Read(ctx context.Context, req resource.ReadR
 	return
 }
 
-func (r *resourceCMAzureConnection) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *resourceAzureConnection) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	id := uuid.New().String()
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_azure_connection.go -> Update]["+id+"]")
-	var plan CMAzureConnectionTFSDK
-	var payload CMAzureConnectionJSON
+	var plan AzureConnectionTFSDK
+	var payload AzureConnectionJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -457,8 +455,8 @@ func (r *resourceCMAzureConnection) Update(ctx context.Context, req resource.Upd
 	}
 }
 
-func (r *resourceCMAzureConnection) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state CMAzureConnectionTFSDK
+func (r *resourceAzureConnection) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state AzureConnectionTFSDK
 	tflog.Trace(ctx, common.MSG_METHOD_START+"[resource_azure_connection.go -> Delete]["+state.ID.ValueString()+"]")
 
 	diags := req.State.Get(ctx, &state)
@@ -480,7 +478,7 @@ func (r *resourceCMAzureConnection) Delete(ctx context.Context, req resource.Del
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_azure_connection.go -> Delete]["+state.ID.ValueString()+"]["+output+"]")
 }
 
-func (d *resourceCMAzureConnection) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (d *resourceAzureConnection) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}

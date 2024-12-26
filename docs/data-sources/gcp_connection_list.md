@@ -22,7 +22,7 @@ The GCP data source in this Terraform provider retrieves details of existing cip
 
 - `gcp` (Attributes List) (see [below for nested schema](#nestedatt--gcp))
 
-<a id="nestedatt--scp"></a>
+<a id="nestedatt--gcp"></a>
 ### Nested Schema for `gcp`
 
 Read-Only:
@@ -36,7 +36,7 @@ Read-Only:
 - `name` (String)
 - `products` (List of String)
 
-### Fetch an existing scp connection using `filters`
+### Fetch an existing gcp connection using `filters`
 
     data "ciphertrust_gcp_connection_list" "example_gcp_connection" {
        filters = {

@@ -1,7 +1,7 @@
 # Terraform Configuration for CipherTrust Provider
 
 # The provider is configured to connect to the CipherTrust appliance and fetch details
-# about the Ciphertrust Scheduler Job Configs.
+# about the Azure connection.
 
 terraform {
   # Specify required providers
@@ -30,18 +30,22 @@ provider "ciphertrust" {
   bootstrap = "no"
 }
 
-# Data source for retrieving Scheduler Job Configs
-data "ciphertrust_scheduler_list" "jobs" {
+# Data source for retrieving Azure connection details
+data "ciphertrust_azure_connection_list" "example_azure_connection" {
+  # Filters to narrow down the Azure connections
   filters = {
-  # Filters to narrow down the Scheduler Jobs
-    # The unique ID of the Job
-    id = "60f04cb1-4a48-4786-8965-39f2031518c4"
+    # The unique ID of the Azure connection to fetch
+    id = "88a90d8f-05b5-419f-bbe9-2dc3aa8ec216"
   }
-  # Similarly can provide 'name' 'operation' 'disabled' etc to fetch the existing Scheduler Job
-  # Provide no filters and it will fetch all the scheduler jobs present in the provider
+  # Similarly can provide 'name', 'labels' etc to fetch the existing Azure connection
+  # example for fetching an existing azure connection with labels
+  # filters = {
+  #   labels = "key=value"
+  # }
 }
 
-# Output the details of the Scheduler job
-output "scheduler_jobs" {
-  value = data.ciphertrust_scheduler_list.jobs
+# Output the details of the Azure connection
+output "azure_connection_details" {
+  # The value of the Azure connection details returned by the data source
+  value = data.ciphertrust_azure_connection_list.example_azure_connection
 }
