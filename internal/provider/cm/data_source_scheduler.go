@@ -214,7 +214,7 @@ func (d *dataSourceScheduler) Configure(ctx context.Context, req datasource.Conf
 
 func getDataBaseBackupParams(jobs CreateJobConfigParamsListJSON, schedulerJobs *CreateJobConfigParamsTFSDK) {
 	if jobs.DatabaseBackupParams != nil {
-		schedulerJobs.DatabaseBackupParams = DatabaseBackupParamsTFSDK{
+		schedulerJobs.DatabaseBackupParams = &DatabaseBackupParamsTFSDK{
 			BackupKey:      types.StringValue(jobs.DatabaseBackupParams.BackupKey),
 			Connection:     types.StringValue(jobs.DatabaseBackupParams.Connection),
 			Description:    types.StringValue(jobs.DatabaseBackupParams.Description),

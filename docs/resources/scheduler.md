@@ -17,8 +17,8 @@ The ciphertrust_scheduler resource allows you to define and manage scheduled job
 
 ### Required
 
-- `name` (String) The name of the job configuration
-- `operation` (String) The database_backup_params param must be specified for the database_backup operation
+- `name` (String) The name of the job configuration.
+- `operation` (String) The operation field specifies the type of operation to be performed. Currently, only 'database_backup' is supported. Ensure that the database_backup_params parameter is specified when using this operation.
 - `run_at` (String) Described using the cron expression format : "* * * * *" These five values indicate when the job should be executed. They are in order of minute, hour, day of month, month, and day of week. Valid values are 0-59 (minutes), 0-23 (hours), 1-31 (day of month), 1-12 or jan-dec (month), and 0-6 or sun-sat (day of week). Names are case insensitive. For use of special characters, consult the Time Specification description at the top of this page.
 
 For example:

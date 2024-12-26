@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	common "github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 	"github.com/tidwall/gjson"
-	"reflect"
 	"regexp"
 	"time"
 )
@@ -66,7 +65,7 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the job configuration",
+				Description: "The name of the job configuration.",
 			},
 			"operation": schema.StringAttribute{
 				Required:    true,
@@ -437,7 +436,7 @@ func (d *resourceScheduler) Configure(_ context.Context, req resource.ConfigureR
 
 func getDatabaseOperationBackupParams(plan CreateJobConfigParamsTFSDK) *DatabaseBackupParamsJSON {
 
-	if !reflect.DeepEqual(DatabaseBackupParamsTFSDK{}, plan.DatabaseBackupParams) {
+	if plan.DatabaseBackupParams != nil {
 		var databaseBackupParams DatabaseBackupParamsJSON
 
 		if plan.DatabaseBackupParams.Description.ValueString() != "" && plan.DatabaseBackupParams.Description.ValueString() != types.StringNull().ValueString() {

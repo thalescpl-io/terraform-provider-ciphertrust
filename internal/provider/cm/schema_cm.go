@@ -787,22 +787,22 @@ type BackupFilterJSON struct {
 }
 
 type CreateJobConfigParamsTFSDK struct {
-	ID                   types.String              `tfsdk:"id"`
-	URI                  types.String              `tfsdk:"uri"`
-	Account              types.String              `tfsdk:"account"`
-	Application          types.String              `tfsdk:"application"`
-	DevAccount           types.String              `tfsdk:"dev_account"`
-	CreatedAt            types.String              `tfsdk:"created_at"`
-	UpdatedAt            types.String              `tfsdk:"updated_at"`
-	Name                 types.String              `tfsdk:"name"`
-	Description          types.String              `tfsdk:"description"`
-	Operation            types.String              `tfsdk:"operation"`
-	RunAt                types.String              `tfsdk:"run_at"`
-	RunOn                types.String              `tfsdk:"run_on"`
-	Disabled             types.Bool                `tfsdk:"disabled"`
-	StartDate            types.String              `tfsdk:"start_date"`
-	EndDate              types.String              `tfsdk:"end_date"`
-	DatabaseBackupParams DatabaseBackupParamsTFSDK `tfsdk:"database_backup_params"`
+	ID                   types.String               `tfsdk:"id"`
+	URI                  types.String               `tfsdk:"uri"`
+	Account              types.String               `tfsdk:"account"`
+	Application          types.String               `tfsdk:"application"`
+	DevAccount           types.String               `tfsdk:"dev_account"`
+	CreatedAt            types.String               `tfsdk:"created_at"`
+	UpdatedAt            types.String               `tfsdk:"updated_at"`
+	Name                 types.String               `tfsdk:"name"`
+	Description          types.String               `tfsdk:"description"`
+	Operation            types.String               `tfsdk:"operation"`
+	RunAt                types.String               `tfsdk:"run_at"`
+	RunOn                types.String               `tfsdk:"run_on"`
+	Disabled             types.Bool                 `tfsdk:"disabled"`
+	StartDate            types.String               `tfsdk:"start_date"`
+	EndDate              types.String               `tfsdk:"end_date"`
+	DatabaseBackupParams *DatabaseBackupParamsTFSDK `tfsdk:"database_backup_params"`
 }
 
 type DatabaseBackupParamsTFSDK struct {
