@@ -10,7 +10,7 @@ terraform {
 provider "ciphertrust" {
   address = "https://3.81.114.229"
   username = "admin"
-  password = "Zxcv1234."
+  password = "SamplePassword@1"
   bootstrap = "no"
 }
 
