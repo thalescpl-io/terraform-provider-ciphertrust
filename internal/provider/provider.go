@@ -295,6 +295,7 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		connections.NewDataSourceScpConnection,
 		cm.NewDataSourcePrometheus,
 		connections.NewDataSourceGCPConnection,
+		cm.NewDataSourceScheduler,
 	}
 }
 
@@ -334,5 +335,6 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		cm.NewResourceCMTrialLicense,
 		cm.NewResourceCMPrometheus,
 		connections.NewResourceGCPConnection,
+		cm.NewResourceScheduler,
 	}
 }
