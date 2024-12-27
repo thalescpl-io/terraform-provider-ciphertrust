@@ -122,6 +122,56 @@ type CMCreateConnectionResponseCommon struct {
 	LastConnectionAt    string `json:"last_connection_at"`
 }
 
+type AzureConnectionTFSDK struct {
+	CMCreateConnectionResponseCommonTFSDK
+	ID                       types.String   `tfsdk:"id"`
+	ClientID                 types.String   `tfsdk:"client_id"`
+	Name                     types.String   `tfsdk:"name"`
+	TenantID                 types.String   `tfsdk:"tenant_id"`
+	ActiveDirectoryEndpoint  types.String   `tfsdk:"active_directory_endpoint"`
+	AzureStackConnectionType types.String   `tfsdk:"azure_stack_connection_type"`
+	AzureStackServerCert     types.String   `tfsdk:"azure_stack_server_cert"`
+	CertDuration             types.Int64    `tfsdk:"cert_duration"`
+	Certificate              types.String   `tfsdk:"certificate"`
+	ClientSecret             types.String   `tfsdk:"client_secret"`
+	CloudName                types.String   `tfsdk:"cloud_name"`
+	Description              types.String   `tfsdk:"description"`
+	ExternalCertificateUsed  types.Bool     `tfsdk:"external_certificate_used"`
+	IsCertificateUsed        types.Bool     `tfsdk:"is_certificate_used"`
+	KeyVaultDNSSuffix        types.String   `tfsdk:"key_vault_dns_suffix"`
+	Labels                   types.Map      `tfsdk:"labels"`
+	ManagementURL            types.String   `tfsdk:"management_url"`
+	Meta                     types.Map      `tfsdk:"meta"`
+	Products                 []types.String `tfsdk:"products"`
+	ResourceManagerURL       types.String   `tfsdk:"resource_manager_url"`
+	VaultResourceURL         types.String   `tfsdk:"vault_resource_url"`
+}
+
+type AzureConnectionJSON struct {
+	CMCreateConnectionResponseCommon
+	ID                       string                 `json:"id"`
+	ClientID                 string                 `json:"client_id"`
+	Name                     string                 `json:"name"`
+	TenantID                 string                 `json:"tenant_id"`
+	ActiveDirectoryEndpoint  string                 `json:"active_directory_endpoint"`
+	AzureStackConnectionType string                 `json:"azure_stack_connection_type"`
+	AzureStackServerCert     string                 `json:"azure_stack_server_cert"`
+	CertDuration             int64                  `json:"cert_duration"`
+	Certificate              string                 `json:"certificate"`
+	ClientSecret             string                 `json:"client_secret"`
+	CloudName                string                 `json:"cloud_name"`
+	Description              string                 `json:"description"`
+	ExternalCertificateUsed  bool                   `json:"external_certificate_used"`
+	IsCertificateUsed        bool                   `json:"is_certificate_used"`
+	KeyVaultDNSSuffix        string                 `json:"key_vault_dns_suffix"`
+	Labels                   map[string]interface{} `json:"labels"`
+	ManagementURL            string                 `json:"management_url"`
+	Meta                     interface{}            `json:"meta"`
+	Products                 []string               `json:"products"`
+	ResourceManagerURL       string                 `json:"resource_manager_url"`
+	VaultResourceURL         string                 `json:"vault_resource_url"`
+}
+
 type GCPConnectionTFSDK struct {
 	CMCreateConnectionResponseCommonTFSDK
 	ID           types.String   `tfsdk:"id"`

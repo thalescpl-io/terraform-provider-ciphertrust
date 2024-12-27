@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MIT
+
 package cte
 
 import (
@@ -268,7 +271,7 @@ func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequ
 
 	payloadJSON, _ := json.Marshal(payload)
 
-	response, err := r.client.UpdateData(ctx, plan.ID.ValueString(), common.URL_CTE_USER_SET, payloadJSON, "updatedAt")
+	response, err := r.client.UpdateDataV2(ctx, plan.ID.ValueString(), common.URL_CTE_USER_SET, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_user_set.go -> Update]["+plan.ID.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -277,7 +280,13 @@ func (r *resourceCTEUserSet) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
-	plan.ID = types.StringValue(response)
+
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	plan.Application = types.StringValue(gjson.Get(response, "application").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
