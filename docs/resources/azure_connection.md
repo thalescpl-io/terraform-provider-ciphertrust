@@ -38,12 +38,12 @@ resource "ciphertrust_azure_connection" "azure_connection" {
 
 ### Required
 
-- `client_id` (String) Unique Identifier (client ID) for the Azure application.
 - `name` (String) Unique connection name.
-- `tenant_id` (String) Tenant ID of the Azure application.
 
 ### Optional
 
+- `client_id` (String) Unique Identifier (client ID) for the Azure application.
+- `tenant_id` (String) Tenant ID of the Azure application.
 - `active_directory_endpoint` (String) Azure stack active directory authority URL
 - `azure_stack_connection_type` (String) Azure stack connection type
 
@@ -51,9 +51,9 @@ resource "ciphertrust_azure_connection" "azure_connection" {
 	
 		AAD
 		ADFS
-- `azure_stack_server_cert` (String) Azure stack server certificate
+- `azure_stack_server_cert` (String) Azure stack server certificate.The certificate should be provided in either \n (newline) or EOF (End of File) format.
 - `cert_duration` (Number) Duration in days for which the azure certificate is valid, default (730 i.e. 2 Years).
-- `certificate` (String) User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection in Update (PATCH) API call. Any unused certificate will automatically deleted in 24 hours.
+- `certificate` (String) User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection. Any unused certificate will automatically deleted in 24 hours.The certificate should be provided in either \n (newline) or EOF (End of File) format.
 - `client_secret` (String) Secret key for the Azure application. Required in Azure Stack connection.
 - `cloud_name` (String) Name of the cloud.
 
@@ -65,7 +65,6 @@ resource "ciphertrust_azure_connection" "azure_connection" {
 		AzureStack
 - `created_at` (String)
 - `description` (String) Description about the connection.
-- `external_certificate_used` (Boolean) true if the certificate associated with the connection is generated externally, false otherwise.
 - `is_certificate_used` (Boolean) User has the option to choose the Certificate Authentication method instead of Client Secret for Azure Cloud connection. In order to use the Certificate, set it to true. Once the connection is created, in the response user will get a certificate. By default, the certificate is valid for 2 Years. User can update the certificate in the existing connection by setting it to true.
 - `key_vault_dns_suffix` (String) Azure stack key vault dns suffix
 - `labels` (Map of String) Labels are key/value pairs used to group resources. They are based on Kubernetes Labels, see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/.
@@ -116,3 +115,5 @@ To remove a key/value pair, pass value null to the particular key
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `external_certificate_used` (Boolean) true if the certificate associated with the connection is generated externally, false otherwise.
+- `certificate_thumbprint` (String)

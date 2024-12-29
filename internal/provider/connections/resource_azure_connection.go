@@ -57,7 +57,7 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 				},
 			},
 			"client_id": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "Unique Identifier (client ID) for the Azure application.",
 			},
 			"name": schema.StringAttribute{
@@ -65,7 +65,7 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 				Description: "Unique connection name.",
 			},
 			"tenant_id": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "Tenant ID of the Azure application.",
 			},
 			"active_directory_endpoint": schema.StringAttribute{
@@ -78,15 +78,16 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"azure_stack_server_cert": schema.StringAttribute{
 				Optional:    true,
-				Description: "Azure stack server certificate",
+				Description: "Azure stack server certificate.The certificate should be provided in either \\n (newline) or EOF (End of File) format.",
 			},
-			"cert_duration": schema.Int64Attribute{
+			"cert_duration": schema.Int32Attribute{
 				Optional:    true,
 				Description: "Duration in days for which the azure certificate is valid, default (730 i.e. 2 Years).",
 			},
 			"certificate": schema.StringAttribute{
 				Optional:    true,
-				Description: "User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection. Any unused certificate will automatically deleted in 24 hours.",
+				Computed:    true,
+				Description: "User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection. Any unused certificate will automatically deleted in 24 hours.The certificate should be provided in either \\n (newline) or EOF (End of File) format.",
 			},
 			"client_secret": schema.StringAttribute{
 				Optional:    true,
@@ -101,7 +102,7 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 				Description: "Description about the connection.",
 			},
 			"external_certificate_used": schema.BoolAttribute{
-				Optional:    true,
+				Computed:    true,
 				Description: "true if the certificate associated with the connection is generated externally, false otherwise.",
 			},
 			"is_certificate_used": schema.BoolAttribute{
@@ -138,6 +139,9 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			"vault_resource_url": schema.StringAttribute{
 				Optional:    true,
 				Description: "Azure stack vault service resource URL.",
+			},
+			"certificate_thumbprint": schema.StringAttribute{
+				Computed: true,
 			},
 			//common response parameters (optional)
 			"uri":                   schema.StringAttribute{Computed: true, Optional: true},
@@ -193,8 +197,8 @@ func (r *resourceAzureConnection) Create(ctx context.Context, req resource.Creat
 		payload.AzureStackServerCert = plan.AzureStackServerCert.ValueString()
 	}
 
-	if plan.CertDuration.ValueInt64() != types.Int64Null().ValueInt64() {
-		payload.CertDuration = plan.CertDuration.ValueInt64()
+	if plan.CertDuration.ValueInt32() != types.Int32Null().ValueInt32() {
+		payload.CertDuration = plan.CertDuration.ValueInt32()
 	}
 
 	if plan.Certificate.ValueString() != "" && plan.Certificate.ValueString() != types.StringNull().ValueString() {
@@ -211,10 +215,6 @@ func (r *resourceAzureConnection) Create(ctx context.Context, req resource.Creat
 
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
 		payload.Description = plan.Description.ValueString()
-	}
-
-	if plan.ExternalCertificateUsed.ValueBool() != types.BoolNull().ValueBool() {
-		payload.ExternalCertificateUsed = plan.ExternalCertificateUsed.ValueBool()
 	}
 
 	if plan.IsCertificateUsed.ValueBool() != types.BoolNull().ValueBool() {
@@ -276,6 +276,9 @@ func (r *resourceAzureConnection) Create(ctx context.Context, req resource.Creat
 	}
 
 	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.ExternalCertificateUsed = types.BoolValue(gjson.Get(response, "external_certificate_used").Bool())
+	plan.Certificate = types.StringValue(gjson.Get(response, "certificate").String())
+	plan.CertificateThumbprint = types.StringValue(gjson.Get(response, "certificate_thumbprint").String())
 	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
 	plan.Account = types.StringValue(gjson.Get(response, "account").String())
 	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
@@ -346,9 +349,9 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 		payload.AzureStackServerCert = plan.AzureStackServerCert.ValueString()
 	}
 
-	if plan.CertDuration.ValueInt64() != types.Int64Null().ValueInt64() {
-		payload.CertDuration = plan.CertDuration.ValueInt64()
-	}
+	//if plan.CertDuration.ValueInt32() != types.Int32Null().ValueInt32() {
+	//	payload.CertDuration = plan.CertDuration.ValueInt32()
+	//}
 
 	if plan.Certificate.ValueString() != "" && plan.Certificate.ValueString() != types.StringNull().ValueString() {
 		payload.Certificate = plan.Certificate.ValueString()
@@ -368,10 +371,6 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 
 	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
 		payload.Description = plan.Description.ValueString()
-	}
-
-	if plan.ExternalCertificateUsed.ValueBool() != types.BoolNull().ValueBool() {
-		payload.ExternalCertificateUsed = plan.ExternalCertificateUsed.ValueBool()
 	}
 
 	if plan.IsCertificateUsed.ValueBool() != types.BoolNull().ValueBool() {
@@ -435,6 +434,9 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.Certificate = types.StringValue(gjson.Get(response, "certificate").String())
+	plan.CertificateThumbprint = types.StringValue(gjson.Get(response, "certificateThumbprint").String())
+	plan.ExternalCertificateUsed = types.BoolValue(gjson.Get(response, "externalCertificateUsed").Bool())
 	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
 	plan.Account = types.StringValue(gjson.Get(response, "account").String())
 	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())

@@ -131,7 +131,7 @@ type AzureConnectionTFSDK struct {
 	ActiveDirectoryEndpoint  types.String   `tfsdk:"active_directory_endpoint"`
 	AzureStackConnectionType types.String   `tfsdk:"azure_stack_connection_type"`
 	AzureStackServerCert     types.String   `tfsdk:"azure_stack_server_cert"`
-	CertDuration             types.Int64    `tfsdk:"cert_duration"`
+	CertDuration             types.Int32    `tfsdk:"cert_duration"`
 	Certificate              types.String   `tfsdk:"certificate"`
 	ClientSecret             types.String   `tfsdk:"client_secret"`
 	CloudName                types.String   `tfsdk:"cloud_name"`
@@ -145,6 +145,7 @@ type AzureConnectionTFSDK struct {
 	Products                 []types.String `tfsdk:"products"`
 	ResourceManagerURL       types.String   `tfsdk:"resource_manager_url"`
 	VaultResourceURL         types.String   `tfsdk:"vault_resource_url"`
+	CertificateThumbprint    types.String   `tfsdk:"certificate_thumbprint"`
 }
 
 type AzureConnectionJSON struct {
@@ -156,7 +157,7 @@ type AzureConnectionJSON struct {
 	ActiveDirectoryEndpoint  string                 `json:"active_directory_endpoint"`
 	AzureStackConnectionType string                 `json:"azure_stack_connection_type"`
 	AzureStackServerCert     string                 `json:"azure_stack_server_cert"`
-	CertDuration             int64                  `json:"cert_duration"`
+	CertDuration             int32                  `json:"cert_duration"`
 	Certificate              string                 `json:"certificate"`
 	ClientSecret             string                 `json:"client_secret"`
 	CloudName                string                 `json:"cloud_name"`
@@ -170,6 +171,7 @@ type AzureConnectionJSON struct {
 	Products                 []string               `json:"products"`
 	ResourceManagerURL       string                 `json:"resource_manager_url"`
 	VaultResourceURL         string                 `json:"vault_resource_url"`
+	CertificateThumbprint    string                 `json:"certificate_thumbprint"`
 }
 
 type GCPConnectionTFSDK struct {
