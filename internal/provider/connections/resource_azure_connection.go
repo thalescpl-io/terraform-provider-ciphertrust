@@ -349,10 +349,6 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 		payload.AzureStackServerCert = plan.AzureStackServerCert.ValueString()
 	}
 
-	//if plan.CertDuration.ValueInt32() != types.Int32Null().ValueInt32() {
-	//	payload.CertDuration = plan.CertDuration.ValueInt32()
-	//}
-
 	if plan.Certificate.ValueString() != "" && plan.Certificate.ValueString() != types.StringNull().ValueString() {
 		payload.Certificate = plan.Certificate.ValueString()
 	}
