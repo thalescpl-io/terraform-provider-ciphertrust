@@ -78,7 +78,7 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"azure_stack_server_cert": schema.StringAttribute{
 				Optional:    true,
-				Description: "Azure stack server certificate.The certificate should be provided in either \\n (newline) or EOF (End of File) format.",
+				Description: "Azure stack server certificate.The certificate should be provided in \\n (newline) format.",
 			},
 			"cert_duration": schema.Int32Attribute{
 				Optional:    true,
@@ -87,7 +87,7 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			"certificate": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection. Any unused certificate will automatically deleted in 24 hours.The certificate should be provided in either \\n (newline) or EOF (End of File) format.",
+				Description: "User has the option to upload external certificate for Azure Cloud connection. This option cannot be used with option is_certificate_used and client_secret.User first has to generate a new Certificate Signing Request (CSR) in POST /v1/connectionmgmt/connections/csr. The generated CSR can be signed with any internal or external CA. The Certificate must have an RSA key strength of 2048 or 4096. User can also update the new external certificate in the existing connection. Any unused certificate will automatically deleted in 24 hours.The certificate should be provided in \\n (newline) format.",
 			},
 			"client_secret": schema.StringAttribute{
 				Optional:    true,
