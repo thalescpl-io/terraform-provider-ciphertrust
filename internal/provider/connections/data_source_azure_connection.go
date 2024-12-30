@@ -113,6 +113,9 @@ func (d *dataSourceAzureConnection) Schema(_ context.Context, _ datasource.Schem
 						"vault_resource_url": schema.StringAttribute{
 							Computed: true,
 						},
+						"certificate_thumbprint": schema.StringAttribute{
+							Computed: true,
+						},
 						//common response parameters (optional)
 						"uri":                   schema.StringAttribute{Computed: true},
 						"account":               schema.StringAttribute{Computed: true},
@@ -184,13 +187,11 @@ func (d *dataSourceAzureConnection) Read(ctx context.Context, req datasource.Rea
 			ActiveDirectoryEndpoint:  types.StringValue(azure.ActiveDirectoryEndpoint),
 			AzureStackConnectionType: types.StringValue(azure.AzureStackConnectionType),
 			AzureStackServerCert:     types.StringValue(azure.AzureStackServerCert),
-			CertDuration:             types.Int64Value(azure.CertDuration),
 			Certificate:              types.StringValue(azure.Certificate),
-			ClientSecret:             types.StringValue(azure.ClientSecret),
+			CertificateThumbprint:    types.StringValue(azure.CertificateThumbprint),
 			CloudName:                types.StringValue(azure.CloudName),
 			Description:              types.StringValue(azure.Description),
 			ExternalCertificateUsed:  types.BoolValue(azure.ExternalCertificateUsed),
-			IsCertificateUsed:        types.BoolValue(azure.IsCertificateUsed),
 			KeyVaultDNSSuffix:        types.StringValue(azure.KeyVaultDNSSuffix),
 			ManagementURL:            types.StringValue(azure.ManagementURL),
 			Products: func() []types.String {
