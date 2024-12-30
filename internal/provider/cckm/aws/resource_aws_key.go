@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
+	// "reflect"
 
 	"github.com/google/uuid"
 
@@ -492,9 +492,9 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	if plan.Region.ValueString() != "" && plan.Region.ValueString() != types.StringNull().ValueString() {
 		payload.Region = plan.Region.ValueString()
 	}
-	if plan.PolicyTemplate.ValueString() != "" && plan.PolicyTemplate.ValueString() != types.StringNull().ValueString() {
-		payload.PolicyTemplate = plan.PolicyTemplate.ValueString()
-	}
+	// if plan.PolicyTemplate.ValueString() != "" && plan.PolicyTemplate.ValueString() != types.StringNull().ValueString() {
+	// 	payload.PolicyTemplate = plan.PolicyTemplate.ValueString()
+	// }
 
 	var externalAccounts []string
 	for _, externalAccount := range plan.ExternalAccounts {
@@ -509,9 +509,9 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	payload.KeyAdmins = keyAdmins
 
 	var keyAdminRoles []string
-	for _, keyAdminRole := range plan.KeyAdminRoles {
-		keyAdminRoles = append(keyAdminRoles, keyAdminRole.ValueString())
-	}
+	// for _, keyAdminRole := range plan.KeyAdminRoles {
+	// 	keyAdminRoles = append(keyAdminRoles, keyAdminRole.ValueString())
+	// }
 	payload.KeyAdminRoles = keyAdminRoles
 
 	var keyUsers []string
@@ -521,54 +521,54 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	payload.KeyUsers = keyUsers
 
 	var keyUserRoles []string
-	for _, keyUserRole := range plan.KeyUserRoles {
-		keyUserRoles = append(keyUserRoles, keyUserRole.ValueString())
-	}
+	// for _, keyUserRole := range plan.KeyUserRoles {
+	// 	keyUserRoles = append(keyUserRoles, keyUserRole.ValueString())
+	// }
 	payload.KeyUserRoles = keyUserRoles
 
 	// Add aws_param to the payload if set
-	var awsParam AWSKeyParamJSON
-	if !reflect.DeepEqual((*AWSKeyParamTFSDK)(nil), plan.AWSParam) {
-		tflog.Debug(ctx, "aws_param should not be empty at this point")
-		if plan.AWSParam.Alias.ValueString() != "" && plan.AWSParam.Alias.ValueString() != types.StringNull().ValueString() {
-			awsParam.Alias = plan.AWSParam.Alias.ValueString()
-		}
-		if plan.AWSParam.BypassPolicyLockoutSafetyCheck.ValueBool() != types.BoolNull().ValueBool() {
-			awsParam.BypassPolicyLockoutSafetyCheck = plan.AWSParam.BypassPolicyLockoutSafetyCheck.ValueBool()
-		}
-		if plan.AWSParam.CustomerMasterKeySpec.ValueString() != "" && plan.AWSParam.CustomerMasterKeySpec.ValueString() != types.StringNull().ValueString() {
-			awsParam.CustomerMasterKeySpec = plan.AWSParam.CustomerMasterKeySpec.ValueString()
-		}
-		if plan.AWSParam.Description.ValueString() != "" && plan.AWSParam.Description.ValueString() != types.StringNull().ValueString() {
-			awsParam.Description = plan.AWSParam.Description.ValueString()
-		}
-		if plan.AWSParam.KeyUsage.ValueString() != "" && plan.AWSParam.KeyUsage.ValueString() != types.StringNull().ValueString() {
-			awsParam.KeyUsage = plan.AWSParam.KeyUsage.ValueString()
-		}
-		if plan.AWSParam.MultiRegion.ValueBool() != types.BoolNull().ValueBool() {
-			awsParam.MultiRegion = plan.AWSParam.MultiRegion.ValueBool()
-		}
-		policyPayload := make(map[string]interface{})
-		for k, v := range plan.AWSParam.Policy.Elements() {
-			policyPayload[k] = v.(types.String).ValueString()
-		}
-		payload.AWSParam.Policy = policyPayload
+	// var awsParam AWSKeyParamJSON
+	// if !reflect.DeepEqual((*AWSKeyParamTFSDK)(nil), plan.AWSParam) {
+	// 	tflog.Debug(ctx, "aws_param should not be empty at this point")
+	// 	if plan.AWSParam.Alias.ValueString() != "" && plan.AWSParam.Alias.ValueString() != types.StringNull().ValueString() {
+	// 		awsParam.Alias = plan.AWSParam.Alias.ValueString()
+	// 	}
+	// 	if plan.AWSParam.BypassPolicyLockoutSafetyCheck.ValueBool() != types.BoolNull().ValueBool() {
+	// 		awsParam.BypassPolicyLockoutSafetyCheck = plan.AWSParam.BypassPolicyLockoutSafetyCheck.ValueBool()
+	// 	}
+	// 	if plan.AWSParam.CustomerMasterKeySpec.ValueString() != "" && plan.AWSParam.CustomerMasterKeySpec.ValueString() != types.StringNull().ValueString() {
+	// 		awsParam.CustomerMasterKeySpec = plan.AWSParam.CustomerMasterKeySpec.ValueString()
+	// 	}
+	// 	if plan.AWSParam.Description.ValueString() != "" && plan.AWSParam.Description.ValueString() != types.StringNull().ValueString() {
+	// 		awsParam.Description = plan.AWSParam.Description.ValueString()
+	// 	}
+	// 	if plan.AWSParam.KeyUsage.ValueString() != "" && plan.AWSParam.KeyUsage.ValueString() != types.StringNull().ValueString() {
+	// 		awsParam.KeyUsage = plan.AWSParam.KeyUsage.ValueString()
+	// 	}
+	// 	if plan.AWSParam.MultiRegion.ValueBool() != types.BoolNull().ValueBool() {
+	// 		awsParam.MultiRegion = plan.AWSParam.MultiRegion.ValueBool()
+	// 	}
+	// 	policyPayload := make(map[string]interface{})
+	// 	for k, v := range plan.AWSParam.Policy.Elements() {
+	// 		policyPayload[k] = v.(types.String).ValueString()
+	// 	}
+	// 	payload.AWSParam.Policy = policyPayload
 
-		var tags []AWSKeyParamTagJSON
-		for _, tagInput := range plan.AWSParam.Tags {
-			var tag AWSKeyParamTagJSON
-			if tagInput.TagKey.ValueString() != "" && tagInput.TagKey.ValueString() != types.StringNull().ValueString() {
-				tag.TagKey = tagInput.TagKey.ValueString()
-			}
-			if tagInput.TagValue.ValueString() != "" && tagInput.TagValue.ValueString() != types.StringNull().ValueString() {
-				tag.TagValue = tagInput.TagValue.ValueString()
-			}
-			tags = append(tags, tag)
-		}
-		payload.AWSParam.Tags = tags
+	// 	var tags []AWSKeyParamTagJSON
+	// 	for _, tagInput := range plan.AWSParam.Tags {
+	// 		var tag AWSKeyParamTagJSON
+	// 		if tagInput.TagKey.ValueString() != "" && tagInput.TagKey.ValueString() != types.StringNull().ValueString() {
+	// 			tag.TagKey = tagInput.TagKey.ValueString()
+	// 		}
+	// 		if tagInput.TagValue.ValueString() != "" && tagInput.TagValue.ValueString() != types.StringNull().ValueString() {
+	// 			tag.TagValue = tagInput.TagValue.ValueString()
+	// 		}
+	// 		tags = append(tags, tag)
+	// 	}
+	// 	payload.AWSParam.Tags = tags
 
-		payload.AWSParam = &awsParam
-	}
+	// 	payload.AWSParam = &awsParam
+	// }
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -619,47 +619,47 @@ func (r *resourceAWSKey) Update(ctx context.Context, req resource.UpdateRequest,
 		EnableDisableKey(r, ctx, &plan, &state, &resp.Diagnostics)
 	}
 
-	if plan.UpdateOpType.ValueString() != "" && plan.UpdateOpType.ValueString() != types.StringNull().ValueString() {
-		if plan.UpdateOpType.ValueString() == "enable-rotation-job" {
+	// if plan.UpdateOpType.ValueString() != "" && plan.UpdateOpType.ValueString() != types.StringNull().ValueString() {
+	// 	if plan.UpdateOpType.ValueString() == "enable-rotation-job" {
 
-		} else if plan.UpdateOpType.ValueString() == "disable-rotation-job" {
+	// 	} else if plan.UpdateOpType.ValueString() == "disable-rotation-job" {
 
-		} else if plan.UpdateOpType.ValueString() == "import-material" {
+	// 	} else if plan.UpdateOpType.ValueString() == "import-material" {
 
-		} else if plan.UpdateOpType.ValueString() == "delete-material" {
+	// 	} else if plan.UpdateOpType.ValueString() == "delete-material" {
 
-		} else if plan.UpdateOpType.ValueString() == "rotate" {
+	// 	} else if plan.UpdateOpType.ValueString() == "rotate" {
 
-		} else if plan.UpdateOpType.ValueString() == "rotate-material" {
+	// 	} else if plan.UpdateOpType.ValueString() == "rotate-material" {
 
-		} else if plan.UpdateOpType.ValueString() == "schedule-deletion" {
+	// 	} else if plan.UpdateOpType.ValueString() == "schedule-deletion" {
 
-		} else if plan.UpdateOpType.ValueString() == "policy" {
+	// 	} else if plan.UpdateOpType.ValueString() == "policy" {
 
-		} else if plan.UpdateOpType.ValueString() == "update-description" {
+	// 	} else if plan.UpdateOpType.ValueString() == "update-description" {
 
-		} else if plan.UpdateOpType.ValueString() == "enable" {
+	// 	} else if plan.UpdateOpType.ValueString() == "enable" {
 
-		} else if plan.UpdateOpType.ValueString() == "diable" {
+	// 	} else if plan.UpdateOpType.ValueString() == "diable" {
 
-		} else if plan.UpdateOpType.ValueString() == "add-tags" {
+	// 	} else if plan.UpdateOpType.ValueString() == "add-tags" {
 
-		} else if plan.UpdateOpType.ValueString() == "remove-tags" {
+	// 	} else if plan.UpdateOpType.ValueString() == "remove-tags" {
 
-		} else if plan.UpdateOpType.ValueString() == "add-alias" {
+	// 	} else if plan.UpdateOpType.ValueString() == "add-alias" {
 
-		} else if plan.UpdateOpType.ValueString() == "delete-alias" {
+	// 	} else if plan.UpdateOpType.ValueString() == "delete-alias" {
 
-		} else if plan.UpdateOpType.ValueString() == "cancel-deletion" {
+	// 	} else if plan.UpdateOpType.ValueString() == "cancel-deletion" {
 
-		} else if plan.UpdateOpType.ValueString() == "enable-auto-rotation" {
+	// 	} else if plan.UpdateOpType.ValueString() == "enable-auto-rotation" {
 
-		} else if plan.UpdateOpType.ValueString() == "disable-auto-rotation" {
+	// 	} else if plan.UpdateOpType.ValueString() == "disable-auto-rotation" {
 
-		} else {
+	// 	} else {
 
-		}
-	}
+	// 	}
+	// }
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {

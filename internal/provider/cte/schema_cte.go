@@ -708,38 +708,39 @@ type CTEClientGuardPointParamsTFSDK struct {
 	IsEarlyAccessEnabled           types.Bool   `tfsdk:"early_access"`
 	IsIntelligentProtectionEnabled types.Bool   `tfsdk:"intelligent_protection"`
 	IsDeviceIDTCapable             types.Bool   `tfsdk:"is_idt_capable_device"`
+	IsGuardEnabled                 types.Bool   `tfsdk:"guard_enabled"`
 	IsMFAEnabled                   types.Bool   `tfsdk:"mfa_enabled"`
 	NWShareCredentialsID           types.String `tfsdk:"network_share_credentials_id"`
 	PreserveSparseRegions          types.Bool   `tfsdk:"preserve_sparse_regions"`
 }
 
 type CTEClientGuardPointTFSDK struct {
-	CTEClientID      types.String                   `tfsdk:"cte_client_id"`
+	ID               types.String                   `tfsdk:"id"`
+	CTEClientID      types.String                   `tfsdk:"client_id"`
 	GuardPaths       []types.String                 `tfsdk:"guard_paths"`
-	GuardPointParams CTEClientGuardPointParamsTFSDK `tfsdk:"guard_point_params"`
+	GuardPointParams CTEClientGuardPointParamsTFSDK `tfsdk:"guard_point_params" validate:"required"`
 }
 
 type CTEClientGuardPointParamsJSON struct {
-	GPType                         string `json:"guard_point_type"`
-	PolicyID                       string `json:"policy_id"`
-	IsAutomountEnabled             bool   `json:"automount_enabled"`
-	IsCIFSEnabled                  bool   `json:"cifs_enabled"`
-	IsDataClassificationEnabled    bool   `json:"data_classification_enabled"`
-	IsDataLineageEnabled           bool   `json:"data_lineage_enabled"`
-	DiskName                       string `json:"disk_name"`
-	DiskgroupName                  string `json:"diskgroup_name"`
-	IsEarlyAccessEnabled           bool   `json:"early_access"`
-	IsIntelligentProtectionEnabled bool   `json:"intelligent_protection"`
-	IsDeviceIDTCapable             bool   `json:"is_idt_capable_device"`
-	IsMFAEnabled                   bool   `json:"mfa_enabled"`
-	NWShareCredentialsID           string `json:"network_share_credentials_id"`
-	PreserveSparseRegions          bool   `json:"preserve_sparse_regions"`
+	GPType                         string `json:"guard_point_type" validate:"required"`
+	PolicyID                       string `json:"policy_id" validate:"required_unless=guard_point_type ransomware"`
+	IsAutomountEnabled             bool   `json:"automount_enabled,omitempty"`
+	IsCIFSEnabled                  bool   `json:"cifs_enabled,omitempty"`
+	IsDataClassificationEnabled    bool   `json:"data_classification_enabled,omitempty"`
+	IsDataLineageEnabled           bool   `json:"data_lineage_enabled,omitempty"`
+	DiskName                       string `json:"disk_name,omitempty"`
+	DiskgroupName                  string `json:"diskgroup_name,omitempty"`
+	IsEarlyAccessEnabled           bool   `json:"early_access,omitempty"`
+	IsIntelligentProtectionEnabled bool   `json:"intelligent_protection,omitempty"`
+	IsDeviceIDTCapable             bool   `json:"is_idt_capable_device,omitempty"`
+	IsMFAEnabled                   bool   `json:"mfa_enabled,omitempty"`
+	NWShareCredentialsID           string `json:"network_share_credentials_id,omitempty"`
+	PreserveSparseRegions          bool   `json:"preserve_sparse_regions,omitempty"`
 }
 
 type CTEClientGuardPointJSON struct {
-	CTEClientID      string                         `json:"cte_client_id"`
 	GuardPaths       []string                       `json:"guard_paths"`
-	GuardPointParams *CTEClientGuardPointParamsJSON `json:"guard_point_params"`
+	GuardPointParams *CTEClientGuardPointParamsJSON `json:"guard_point_params" validate:"required"`
 }
 
 type UpdateCTEGuardPointTFSDK struct {
@@ -753,15 +754,16 @@ type UpdateCTEGuardPointTFSDK struct {
 }
 
 type UpdateCTEGuardPointJSON struct {
-	CTEClientID                 string `json:"cte_client_id"`
-	GPID                        string `json:"cte_client_gp_id"`
 	IsDataClassificationEnabled bool   `json:"data_classification_enabled"`
 	IsDataLineageEnabled        bool   `json:"data_lineage_enabled"`
 	IsGuardEnabled              bool   `json:"guard_enabled"`
-	IsMFAEnabled                bool   `json:"mfa_enabled"`
-	NWShareCredentialsID        string `json:"network_share_credentials_id"`
+	IsMFAEnabled                bool   `json:"mfa_enabled,omitempty"`
+	NWShareCredentialsID        string `json:"network_share_credentials_id,omitempty"`
 }
 
+type CTEClientGuardPointUnguardJSON struct {
+	GuardPointIdList []string `json:"guard_point_id_list" validate:"required"`
+}
 type CTEClientGroupTFSDK struct {
 	ID                      types.String   `tfsdk:"id"`
 	ClusterType             types.String   `tfsdk:"cluster_type"`
@@ -782,6 +784,7 @@ type CTEClientGroupTFSDK struct {
 	ClientList              []types.String `tfsdk:"client_list"`
 	InheritAttributes       types.Bool     `tfsdk:"inherit_attributes"`
 	ClientID                types.String   `tfsdk:"client_id"`
+	OpType                  types.String   `tfsdk:"op_type"`
 	Paused                  types.Bool     `tfsdk:"paused"`
 }
 
