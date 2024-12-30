@@ -36,7 +36,11 @@ For example:
 
 For CTE policies, valid resourceQuery parameter values are the same as query parameters of the list '/v1/transparent-encryption/policies' endpoint described in the CTE > Policies section. For example, to back up LDT policies only, use {"policy_type":"LDT"}. Similarly, to back up policies with learn mode enabled, use {"never_deny": true}. For users, the valid resourceQuery parameter values are the same as query parameters of the list '/v1/usermgmt/users' endpoint as described in the “Users” page. For example, to back up all users with name "frank" and email id "frank@local", use {"name":"frank","email": "frank@local"}.
 
-For Customer fragments, valid resourceQuery parameter values are 'ids' and 'names' of Customer fragments. To backup specific customer fragments using ids, use {"ids":["370c4373-2675-4aa1-8cc7-07a9f95a5861", "4e1b9dec-2e38-40d7-b4d6-244043200546"]}. To backup specific customer fragments using names, use {"names":["customerFragment1", "customerFragment2"]}.`
+For Customer fragments, valid resourceQuery parameter values are 'ids' and 'names' of Customer fragments. To backup specific customer fragments using ids, use {"ids":["370c4373-2675-4aa1-8cc7-07a9f95a5861", "4e1b9dec-2e38-40d7-b4d6-244043200546"]}. To backup specific customer fragments using names, use {"names":["customerFragment1", "customerFragment2"]}.
+
+Note: When providing resource_query as a JSON string, ensure proper escaping of special characters like quotes (") and use \n for line breaks if entering the JSON in multiple lines. 
+For example: "{\"ids\": ["56fc2127-3a96-428e-b93b-ab169728c23c", "a6c8d8eb-1b69-42f0-97d7-4f0845fbf602"]}"
+`
 )
 
 const schedulerDateRegEx = `^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$`
@@ -470,7 +474,13 @@ func getDatabaseOperationBackupParams(plan CreateJobConfigParamsTFSDK) *Database
 						ResourceType: filter.ResourceType.ValueString(),
 					}
 					if !filter.ResourceQuery.IsNull() {
-						newFilter.ResourceQuery = filter.ResourceQuery.ValueString()
+						// Parse the JSON string into a map
+						var resourceQuery map[string]interface{}
+						err := json.Unmarshal([]byte(filter.ResourceQuery.ValueString()), &resourceQuery)
+						if err != nil {
+							tflog.Error(context.Background(), "Invalid resource_query JSON: "+err.Error())
+						}
+						newFilter.ResourceQuery = resourceQuery
 					}
 					filters = append(filters, newFilter)
 				}

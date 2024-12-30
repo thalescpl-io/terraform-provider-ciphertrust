@@ -75,6 +75,16 @@ For CTE policies, valid resourceQuery parameter values are the same as query par
 
 For Customer fragments, valid resourceQuery parameter values are 'ids' and 'names' of Customer fragments. To backup specific customer fragments using ids, use {"ids":["370c4373-2675-4aa1-8cc7-07a9f95a5861", "4e1b9dec-2e38-40d7-b4d6-244043200546"]}. To backup specific customer fragments using names, use {"names":["customerFragment1", "customerFragment2"]}.
 
+Note: When providing resource_query as a JSON string, ensure proper escaping of special characters like quotes (") and use \n for line breaks if entering the JSON in multiple lines.
+
+For example:
+
+     filters = [
+      {
+        resource_type = "customer_fragments"
+        resource_query = "{\"ids\": [\"56fc2127-3a96-428e-b93b-ab169728c23c\", \"a6c8d8eb-1b69-42f0-97d7-4f0845fbf602\"]}"
+      }
+    ]
 
 ## Run the Example
 
