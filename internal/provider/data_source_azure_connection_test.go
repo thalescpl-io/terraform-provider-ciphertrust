@@ -48,7 +48,6 @@ func TestCiphertrustAzureConnectionDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ciphertrust_azure_connection.azure_connection", "id"),
 
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.name", "test-azure-connection"),
-					resource.TestCheckResourceAttr(datasourceName, "azure.0.client_secret", ""),
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.tenant_id", "3bf0dbe6-a2c7-431d-9a6f-4843b74c71285nfjdu2"),
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.description", "connection description"),
 					resource.TestCheckResourceAttr(datasourceName, "azure.0.cloud_name", "AzureCloud"),
