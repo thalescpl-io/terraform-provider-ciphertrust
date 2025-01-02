@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -114,15 +116,18 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Description about the connection.",
 			},
 			"labels": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: labelsDescription,
 			},
 			"meta": schema.MapAttribute{
 				ElementType: types.StringType,
+				Computed:    true,
 				Optional:    true,
 				Description: "Optional end-user or service data stored with the connection.",
 			},
@@ -132,6 +137,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"port": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Port where SCP/SFTP service runs on host (usually 22).",
 			},
 			"products": schema.ListAttribute{
@@ -283,14 +289,26 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	tflog.Debug(ctx, "vijay state id - 1"+state.ID.ValueString())
 
-	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_SCP_CONNECTION)
+	response, err := r.client.ReadDataByParam(ctx, id, state.ID.ValueString(), common.URL_SCP_CONNECTION)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_scp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error reading SCP Connection on CipherTrust Manager: ",
 			"Could not read scp connection id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
 		)
+		return
+	}
+	tflog.Debug(ctx, "vijay response - 1"+response)
+	state.ID = types.StringValue(gjson.Get(response, "id").String())
+	state.Description = types.StringValue(gjson.Get(response, "description").String())
+	state.Port = types.Int64Value(gjson.Get(response, "port").Int())
+
+	tflog.Debug(ctx, fmt.Sprintf("vijay whole state = %v", state))
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -393,9 +411,12 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
 	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
 	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+	plan.Description = types.StringValue(gjson.Get(response, "description").String())
+	plan.Port = types.Int64Value(gjson.Get(response, "port").Int())
+	plan.Labels = parseMap(response, &resp.Diagnostics, "labels")
+	plan.Meta = parseMap(response, &resp.Diagnostics, "meta")
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
-
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -441,4 +462,28 @@ func (d *resourceCMScpConnection) Configure(_ context.Context, req resource.Conf
 	}
 
 	d.client = client
+}
+
+func parseMap(response string, diagnostics *diag.Diagnostics, paramName string) types.Map {
+	// Parse the "config" field from the JSON response
+	configJSON := gjson.Get(response, paramName).Raw
+
+	// Initialize a map to hold the parsed config
+	var configMap map[string]interface{}
+	if err := json.Unmarshal([]byte(configJSON), &configMap); err != nil {
+		diagnostics.AddError(
+			"Error parsing config",
+			"Unable to parse 'config' field: "+err.Error(),
+		)
+		return types.MapNull(types.StringType)
+	}
+
+	// Convert map[string]interface{} to Terraform types.Map
+	convertedMap := make(map[string]attr.Value)
+	for key, value := range configMap {
+		// Convert each value to a Terraform String or dynamic value based on its type
+		convertedMap[key] = types.StringValue(fmt.Sprintf("%v", value))
+	}
+
+	return types.MapValueMust(types.StringType, convertedMap)
 }

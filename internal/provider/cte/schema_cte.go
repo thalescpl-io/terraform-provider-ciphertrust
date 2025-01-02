@@ -782,6 +782,7 @@ type CTEClientGroupTFSDK struct {
 	ClientList              []types.String `tfsdk:"client_list"`
 	InheritAttributes       types.Bool     `tfsdk:"inherit_attributes"`
 	ClientID                types.String   `tfsdk:"client_id"`
+	OpType                  types.String   `tfsdk:"op_type"`
 	Paused                  types.Bool     `tfsdk:"paused"`
 }
 
