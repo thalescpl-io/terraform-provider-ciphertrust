@@ -34,33 +34,6 @@ To remove a key/value pair, pass value null to the particular key
       "key1": null
     }
 `
-	passwordDescription = `Array of the CipherTrust products associated with the connection. Valid values are:
-
-    "cckm" for:
-        AWS
-        Azure
-        GCP
-        Luna connections
-        DSM
-        Salesforce
-        SAP Data Custodian
-    "ddc" for:
-        GCP
-        Hadoop connections
-    "cte" for:
-        Hadoop connections
-        SMB
-        OIDC
-        LDAP connections
-    "data discovery" for Hadoop connections.
-    "backup/restore" for SCP/SFTP connections.
-    "logger" for:
-        loki connections
-        elasticsearch connections
-        syslog connections
-    "hsm_anchored_domain" for:
-        Luna connections
-`
 
 	productsDescription = `Array of the CipherTrust products associated with the connection. Valid values are:
 
@@ -155,7 +128,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"password": schema.StringAttribute{
 				Optional:    true,
-				Description: passwordDescription,
+				Description: "Password for SCP/SFTP server.",
 			},
 			"port": schema.Int64Attribute{
 				Optional:    true,

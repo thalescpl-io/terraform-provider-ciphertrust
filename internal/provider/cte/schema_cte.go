@@ -784,7 +784,7 @@ type CTEClientGroupTFSDK struct {
 	ClientList              []types.String `tfsdk:"client_list"`
 	InheritAttributes       types.Bool     `tfsdk:"inherit_attributes"`
 	ClientID                types.String   `tfsdk:"client_id"`
-	OpType                  types.String   `tfsdk:"op_type"`
+	OpType                  types.String   `tfsdk:op_type`
 	Paused                  types.Bool     `tfsdk:"paused"`
 }
 
@@ -962,12 +962,12 @@ type CTEProfileServiceSettingTFSDK struct {
 }
 
 type CTEProfileSyslogSettingServerTFSDK struct {
-	CACert        types.String `tfsdk:"caCertificate"`
+	CACert        types.String `tfsdk:"ca_certificate"`
 	Certificate   types.String `tfsdk:"certificate"`
 	MessageFormat types.String `tfsdk:"message_format"`
 	Name          types.String `tfsdk:"name"`
 	Port          types.Int64  `tfsdk:"port"`
-	PrivateKey    types.String `tfsdk:"privateKey"`
+	PrivateKey    types.String `tfsdk:"private_key"`
 	Protocol      types.String `tfsdk:"protocol"`
 }
 
@@ -988,131 +988,128 @@ type CTEProfileUploadSettingsTFSDK struct {
 }
 
 type CTEProfileTFSDK struct {
-	ID                      types.String                           `tfsdk:"id"`
-	Name                    types.String                           `tfsdk:"name"`
-	CacheSettings           CTEProfileCacheSettingsTFSDK           `tfsdk:"cache_settings"`
-	ConciseLogging          types.Bool                             `tfsdk:"concise_logging"`
-	ConnectTimeout          types.Int64                            `tfsdk:"connect_timeout"`
-	Description             types.String                           `tfsdk:"description"`
-	DuplicateSettings       CTEProfileDuplicateSettingsTFSDK       `tfsdk:"duplicate_settings"`
-	FileSettings            CTEProfileFileSettingsTFSDK            `tfsdk:"file_settings"`
-	Labels                  types.Map                              `tfsdk:"labels"`
-	LDTQOSCapCPUAllocation  types.Bool                             `tfsdk:"ldt_qos_cap_cpu_allocation"`
-	LDTQOSCapCPUPercent     types.Int64                            `tfsdk:"ldt_qos_cpu_percent"`
-	LDTQOSRekeyOption       types.String                           `tfsdk:"ldt_qos_rekey_option"`
-	LDTQOSRekeyRate         types.Int64                            `tfsdk:"ldt_qos_rekey_rate"`
-	LDTQOSSchedule          types.String                           `tfsdk:"ldt_qos_schedule"`
-	LDTQOSStatusCheckRate   types.Int64                            `tfsdk:"ldt_qos_status_check_rate"`
-	ManagementServiceLogger CTEProfileManagementServiceLoggerTFSDK `tfsdk:"management_service_logger"`
-	MetadataScanInterval    types.Int64                            `tfsdk:"metadata_scan_interval"`
-	MFAExemptUserSetID      types.String                           `tfsdk:"mfa_exempt_user_set_id"`
-	OIDCConnectionID        types.String                           `tfsdk:"oidc_connection_id"`
-	PolicyEvaluationLogger  CTEProfileManagementServiceLoggerTFSDK `tfsdk:"policy_evaluation_logger"`
-	QOSSchedules            []CTEProfileQOSScheduleTFSDK           `tfsdk:"qos_schedules"`
-	RWPOperation            types.String                           `tfsdk:"rwp_operation"`
-	RWPProcessSet           types.String                           `tfsdk:"rwp_process_set"`
-	SecurityAdminLogger     CTEProfileManagementServiceLoggerTFSDK `tfsdk:"security_admin_logger"`
-	ServerResponseRate      types.Int64                            `tfsdk:"server_response_rate"`
-	ServerSettings          []CTEProfileServiceSettingTFSDK        `tfsdk:"server_settings"`
-	SyslogSettings          CTEProfileSyslogSettingsTFSDK          `tfsdk:"syslog_settings"`
-	SystemAdminLogger       CTEProfileManagementServiceLoggerTFSDK `tfsdk:"system_admin_logger"`
-	UploadSettings          CTEProfileUploadSettingsTFSDK          `tfsdk:"upload_settings"`
+	ID                     types.String                            `tfsdk:"id"`
+	Name                   types.String                            `tfsdk:"name"`
+	CacheSettings          *CTEProfileCacheSettingsTFSDK           `tfsdk:"cache_settings"`
+	ConciseLogging         types.Bool                              `tfsdk:"concise_logging"`
+	ConnectTimeout         types.Int64                             `tfsdk:"connect_timeout"`
+	Description            types.String                            `tfsdk:"description"`
+	DuplicateSettings      *CTEProfileDuplicateSettingsTFSDK       `tfsdk:"duplicate_settings"`
+	FileSettings           *CTEProfileFileSettingsTFSDK            `tfsdk:"file_settings"`
+	Labels                 types.Map                               `tfsdk:"labels"`
+	LDTQOSCapCPUAllocation types.Bool                              `tfsdk:"ldt_qos_cap_cpu_allocation"`
+	LDTQOSCapCPUPercent    types.Int64                             `tfsdk:"ldt_qos_cpu_percent"`
+	LDTQOSRekeyOption      types.String                            `tfsdk:"ldt_qos_rekey_option"`
+	LDTQOSRekeyRate        types.Int64                             `tfsdk:"ldt_qos_rekey_rate"`
+	LDTQOSSchedule         types.String                            `tfsdk:"ldt_qos_schedule"`
+	LDTQOSStatusCheckRate  types.Int64                             `tfsdk:"ldt_qos_status_check_rate"`
+	Client_Logging_Config  *CTEProfileManagementServiceLoggerTFSDK `tfsdk:"client_logging_configuration"`
+	MetadataScanInterval   types.Int64                             `tfsdk:"metadata_scan_interval"`
+	MFAExemptUserSetID     types.String                            `tfsdk:"mfa_exempt_user_set_id"`
+	OIDCConnectionID       types.String                            `tfsdk:"oidc_connection_id"`
+	QOSSchedules           []CTEProfileQOSScheduleTFSDK            `tfsdk:"qos_schedules"`
+	RWPOperation           types.String                            `tfsdk:"rwp_operation"`
+	RWPProcessSet          types.String                            `tfsdk:"rwp_process_set"`
+	ServerResponseRate     types.Int64                             `tfsdk:"server_response_rate"`
+	ServerSettings         []CTEProfileServiceSettingTFSDK         `tfsdk:"server_settings"`
+	SyslogSettings         *CTEProfileSyslogSettingsTFSDK          `tfsdk:"syslog_settings"`
+	UploadSettings         *CTEProfileUploadSettingsTFSDK          `tfsdk:"upload_settings"`
 }
 
 type CTEProfileCacheSettingsJSON struct {
-	MaxFiles int64 `json:"max_files"`
-	MaxSpace int64 `json:"max_space"`
+	MaxFiles int64 `json:"max_files,omitempty"`
+	MaxSpace int64 `json:"max_space,omitempty"`
 }
 
 type CTEProfileDuplicateSettingsJSON struct {
-	SuppressInterval  int64 `json:"suppress_interval"`
-	SuppressThreshold int64 `json:"suppress_threshold"`
+	SuppressInterval  int64 `json:"suppress_interval,omitempty"`
+	SuppressThreshold int64 `json:"suppress_threshold,omitempty"`
 }
 
 type CTEProfileFileSettingsJSON struct {
-	AllowPurge    bool   `json:"allow_purge"`
-	FileThreshold string `json:"file_threshold"`
-	MaxFileSize   int64  `json:"max_file_size"`
-	MaxOldFiles   int64  `json:"max_old_files"`
+	AllowPurge    bool   `json:"allow_purge,omitempty"`
+	FileThreshold string `json:"file_threshold,omitempty"`
+	MaxFileSize   int64  `json:"max_file_size,omitempty"`
+	MaxOldFiles   int64  `json:"max_old_files,omitempty"`
 }
 
 type CTEProfileManagementServiceLoggerJSON struct {
-	Duplicates    string `json:"duplicates"`
-	FileEnabled   bool   `json:"file_enabled"`
-	SyslogEnabled bool   `json:"syslog_enabled"`
-	Threshold     string `json:"threshold"`
-	UploadEnabled bool   `json:"upload_enabled"`
+	Duplicates    string `json:"duplicates,omitempty"`
+	FileEnabled   bool   `json:"file_enabled,omitempty"`
+	SyslogEnabled bool   `json:"syslog_enabled,omitempty"`
+	Threshold     string `json:"threshold,omitempty"`
+	UploadEnabled bool   `json:"upload_enabled,omitempty"`
 }
 
 type CTEProfileQOSScheduleJSON struct {
-	EndTimeHour   int64  `json:"end_time_hour"`
-	EndTimeMin    int64  `json:"end_time_min"`
-	EndWeekday    string `json:"end_weekday"`
-	StartTimeHour int64  `json:"start_time_hour"`
-	StartTimeMin  int64  `json:"start_time_min"`
-	StartWeekday  string `json:"start_weekday"`
+	EndTimeHour   int64  `json:"end_time_hour,omitempty"`
+	EndTimeMin    int64  `json:"end_time_min,omitempty"`
+	EndWeekday    string `json:"end_weekday,omitempty"`
+	StartTimeHour int64  `json:"start_time_hour,omitempty"`
+	StartTimeMin  int64  `json:"start_time_min,omitempty"`
+	StartWeekday  string `json:"start_weekday,omitempty"`
 }
 
 type CTEProfileServiceSettingJSON struct {
-	HostName string `json:"hostName"`
-	Priority int64  `json:"priority"`
+	HostName string `json:"hostName,omitempty"`
+	Priority int64  `json:"priority,omitempty"`
 }
 
 type CTEProfileSyslogSettingServerJSON struct {
-	CACert        string `json:"caCertificate"`
-	Certificate   string `json:"certificate"`
-	MessageFormat string `json:"message_format"`
-	Name          string `json:"name"`
-	Port          int64  `json:"port"`
-	PrivateKey    string `json:"privateKey"`
-	Protocol      string `json:"protocol"`
+	CACert        string `json:"caCertificate,omitempty"`
+	Certificate   string `json:"certificate,omitempty"`
+	MessageFormat string `json:"message_format,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Port          int64  `json:"port,omitempty"`
+	PrivateKey    string `json:"privateKey,omitempty"`
+	Protocol      string `json:"protocol,omitempty"`
 }
 
 type CTEProfileSyslogSettingsJSON struct {
-	Local     bool                                `json:"local"`
-	Servers   []CTEProfileSyslogSettingServerJSON `json:"servers"`
-	Threshold string                              `json:"syslog_threshold"`
+	Local     bool                                `json:"local,omitempty"`
+	Servers   []CTEProfileSyslogSettingServerJSON `json:"servers,omitempty"`
+	Threshold string                              `json:"syslog_threshold,omitempty"`
 }
 
 type CTEProfileUploadSettingsJSON struct {
-	ConnectionTimeout    int64  `json:"connection_timeout"`
-	DropIfBusy           bool   `json:"drop_if_busy"`
-	JobCompletionTimeout int64  `json:"job_completion_timeout"`
-	MaxInterval          int64  `json:"max_interval"`
-	MaxMessages          int64  `json:"max_messages"`
-	MinInterval          int64  `json:"min_interval"`
-	Threshold            string `json:"upload_threshold"`
+	ConnectionTimeout    int64  `json:"connection_timeout,omitempty"`
+	DropIfBusy           bool   `json:"drop_if_busy,omitempty"`
+	JobCompletionTimeout int64  `json:"job_completion_timeout,omitempty"`
+	MaxInterval          int64  `json:"max_interval,omitempty"`
+	MaxMessages          int64  `json:"max_messages,omitempty"`
+	MinInterval          int64  `json:"min_interval,omitempty"`
+	Threshold            string `json:"upload_threshold,omitempty"`
 }
 
 type CTEProfileJSON struct {
-	Name                    string                                `json:"name"`
-	CacheSettings           CTEProfileCacheSettingsJSON           `json:"cache_settings"`
-	ConciseLogging          bool                                  `json:"concise_logging"`
-	ConnectTimeout          int64                                 `json:"connect_timeout"`
-	Description             string                                `json:"description"`
-	DuplicateSettings       CTEProfileDuplicateSettingsJSON       `json:"duplicate_settings"`
-	FileSettings            CTEProfileFileSettingsJSON            `json:"file_settings"`
-	Labels                  map[string]interface{}                `json:"labels"`
-	LDTQOSCapCPUAllocation  bool                                  `json:"ldt_qos_cap_cpu_allocation"`
-	LDTQOSCapCPUPercent     int64                                 `json:"ldt_qos_cpu_percent"`
-	LDTQOSRekeyOption       string                                `json:"ldt_qos_rekey_option"`
-	LDTQOSRekeyRate         int64                                 `json:"ldt_qos_rekey_rate"`
-	LDTQOSSchedule          string                                `json:"ldt_qos_schedule"`
-	LDTQOSStatusCheckRate   int64                                 `json:"ldt_qos_status_check_rate"`
-	ManagementServiceLogger CTEProfileManagementServiceLoggerJSON `json:"management_service_logger"`
-	MetadataScanInterval    int64                                 `json:"metadata_scan_interval"`
-	MFAExemptUserSetID      string                                `json:"mfa_exempt_user_set_id"`
-	OIDCConnectionID        string                                `json:"oidc_connection_id"`
-	PolicyEvaluationLogger  CTEProfileManagementServiceLoggerJSON `json:"policy_evaluation_logger"`
-	QOSSchedules            []CTEProfileQOSScheduleJSON           `json:"qos_schedules"`
-	RWPOperation            string                                `json:"rwp_operation"`
-	RWPProcessSet           string                                `json:"rwp_process_set"`
-	SecurityAdminLogger     CTEProfileManagementServiceLoggerJSON `json:"security_admin_logger"`
-	ServerResponseRate      int64                                 `json:"server_response_rate"`
-	ServerSettings          []CTEProfileServiceSettingJSON        `json:"server_settings"`
-	SyslogSettings          CTEProfileSyslogSettingsJSON          `json:"syslog_settings"`
-	SystemAdminLogger       CTEProfileManagementServiceLoggerJSON `json:"system_admin_logger"`
-	UploadSettings          CTEProfileUploadSettingsJSON          `json:"upload_settings"`
+	Name                    string                                 `json:"name"`
+	CacheSettings           *CTEProfileCacheSettingsJSON           `json:"cache_settings,omitempty"`
+	ConciseLogging          bool                                   `json:"concise_logging,omitempty"`
+	ConnectTimeout          int64                                  `json:"connect_timeout,omitempty"`
+	Description             string                                 `json:"description,omitempty"`
+	DuplicateSettings       *CTEProfileDuplicateSettingsJSON       `json:"duplicate_settings,omitempty"`
+	FileSettings            *CTEProfileFileSettingsJSON            `json:"file_settings,omitempty"`
+	Labels                  map[string]interface{}                 `json:"labels,omitempty"`
+	LDTQOSCapCPUAllocation  bool                                   `json:"ldt_qos_cap_cpu_allocation,omitempty"`
+	LDTQOSCapCPUPercent     int64                                  `json:"ldt_qos_cpu_percent,omitempty"`
+	LDTQOSRekeyOption       string                                 `json:"ldt_qos_rekey_option,omitempty"`
+	LDTQOSRekeyRate         int64                                  `json:"ldt_qos_rekey_rate,omitempty"`
+	LDTQOSSchedule          string                                 `json:"ldt_qos_schedule,omitempty"`
+	LDTQOSStatusCheckRate   int64                                  `json:"ldt_qos_status_check_rate,omitempty"`
+	ManagementServiceLogger *CTEProfileManagementServiceLoggerJSON `json:"management_service_logger,omitempty"`
+	MetadataScanInterval    int64                                  `json:"metadata_scan_interval,omitempty"`
+	MFAExemptUserSetID      string                                 `json:"mfa_exempt_user_set_id,omitempty"`
+	OIDCConnectionID        string                                 `json:"oidc_connection_id,omitempty"`
+	PolicyEvaluationLogger  *CTEProfileManagementServiceLoggerJSON `json:"policy_evaluation_logger,omitempty"`
+	QOSSchedules            *[]CTEProfileQOSScheduleJSON           `json:"qos_schedules,omitempty"`
+	RWPOperation            string                                 `json:"rwp_operation,omitempty"`
+	RWPProcessSet           string                                 `json:"rwp_process_set,omitempty"`
+	SecurityAdminLogger     *CTEProfileManagementServiceLoggerJSON `json:"security_admin_logger,omitempty"`
+	ServerResponseRate      int64                                  `json:"server_response_rate,omitempty"`
+	ServerSettings          *[]CTEProfileServiceSettingJSON        `json:"server_settings,omitempty"`
+	SyslogSettings          *CTEProfileSyslogSettingsJSON          `json:"syslog_settings,omitempty"`
+	SystemAdminLogger       *CTEProfileManagementServiceLoggerJSON `json:"system_admin_logger,omitempty"`
+	UploadSettings          *CTEProfileUploadSettingsJSON          `json:"upload_settings,omitempty"`
 }
 
 type ClassificationTagAttributesTFSDK struct {

@@ -121,7 +121,7 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 		kvs = append(kvs, kv)
 	}
 
-	jsonStr, err := d.client.GetAll(ctx, id, common.URL_SCP_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=10")
+	jsonStr, err := d.client.GetAll(ctx, id, common.URL_SCP_CONNECTION+"/?"+strings.Join(kvs, "")+"skip=0&limit=-1")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [data_source_scp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
