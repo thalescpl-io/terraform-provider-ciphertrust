@@ -502,6 +502,7 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 		payload.PolicyTemplate = plan.KeyPolicy.PolicyTemplate.ValueString()
 	}
 
+
 	var externalAccounts []string
 	for _, externalAccount := range plan.ExternalAccounts {
 		externalAccounts = append(externalAccounts, externalAccount.ValueString())
@@ -520,13 +521,14 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 		keyAdminsRoles = append(keyAdminsRoles, keyAdminsRole.ValueString())
 	}
 	payload.KeyAdminsRoles = keyAdminsRoles
- 
+  
 
 	var keyUsers []string
 	for _, keyUser := range plan.KeyUsers {
 		keyUsers = append(keyUsers, keyUser.ValueString())
 	}
 	payload.KeyUsers = keyUsers
+
 
 
 	var keyUsersRoles []string
@@ -575,6 +577,7 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	payload.AWSParam.Tags = tags
 
 	payload.AWSParam = &awsParam
+ 
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -721,6 +724,7 @@ func (r *resourceAWSKey) Update(ctx context.Context, req resource.UpdateRequest,
 		EnableKeyRotationJob(r, ctx, &plan, &state, &resp.Diagnostics, id)
 	}
 
+ 
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -990,6 +994,7 @@ func UploadKeyAWS(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, sta
 	payload.AWSParam.Tags = tags
 
 	payload.AWSParam = &awsParam
+ 
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
