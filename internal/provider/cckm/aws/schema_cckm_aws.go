@@ -95,7 +95,9 @@ type AWSUploadKeyTFSDK struct {
 type AWSKeyTFSDK struct {
 	ID                             types.String                  `tfsdk:"id"`
 	Region                         types.String                  `tfsdk:"region"`
+	AliasKMSKey                    types.String                  `tfsdk:"alias_kms_key"`
 	Alias                          []types.String                `tfsdk:"alias"`
+	AWSKeyPolicy                   types.Map                     `tfsdk:"policy"`
 	AutoRotate                     types.Bool                    `tfsdk:"auto_rotate"`
 	BypassPolicyLockoutSafetyCheck types.Bool                    `tfsdk:"bypass_policy_lockout_safety_check"`
 	CustomerMasterKeySpec          types.String                  `tfsdk:"customer_master_key_spec"`
@@ -185,28 +187,65 @@ type AWSKeyParamTagJSON struct {
 	TagKey   string `json:"TagKey"`
 	TagValue string `json:"TagValue"`
 }
-type AWSKeyParamJSON struct {
+type CommonAWSParamsJSON struct {
 	Alias                          string                 `json:"Alias"`
 	BypassPolicyLockoutSafetyCheck bool                   `json:"BypassPolicyLockoutSafetyCheck"`
 	CustomerMasterKeySpec          string                 `json:"CustomerMasterKeySpec"`
 	Description                    string                 `json:"Description"`
 	KeyUsage                       string                 `json:"KeyUsage"`
 	MultiRegion                    bool                   `json:"MultiRegion"`
-	Origin                         string                 `json:"Origin"`
 	Policy                         map[string]interface{} `json:"Policy"`
 	Tags                           []AWSKeyParamTagJSON   `json:"Tags"`
+}
+type AWSKeyParamJSON struct {
+	CommonAWSParamsJSON
+	Origin string `json:"Origin"`
+}
+type CommonAWSKeyCreatePayloadJSON struct {
+	KMS              string   `json:"kms"`
+	Region           string   `json:"region"`
+	ExternalAccounts []string `json:"external_accounts"`
+	KeyAdmins        []string `json:"key_admins"`
+	KeyAdminsRoles   []string `json:"key_admins_roles"`
+	KeyUsers         []string `json:"key_users"`
+	KeyUsersRoles    []string `json:"key_users_roles"`
+	PolicyTemplate   string   `json:"policytemplate"`
+}
+type CreateAWSKeyPayloadJSON struct {
+	CommonAWSKeyCreatePayloadJSON
+	AWSParam *AWSKeyParamJSON `json:"aws_param"`
+}
+type UploadAWSKeyParamJSON struct {
+	CommonAWSParamsJSON
+	ValidTo string `json:"validTo"`
+}
+type UploadAWSKeyPayloadJSON struct {
+	CommonAWSKeyCreatePayloadJSON
+	AWSParam            *UploadAWSKeyParamJSON `json:"aws_param"`
+	SourceKeyIdentifier string                 `json:"source_key_identifier"`
+	KeyExpiration       bool                   `json:"key_expiration"`
+	SourceKeyTier       string                 `json:"source_key_tier"`
+}
+type AWSKeyImportKeyPayloadJSON struct {
+	SourceKeyID   string `tfsdk:"source_key_identifier"`
+	SourceKeyTier string `tfsdk:"source_key_tier"`
+	KeyExpiration bool   `tfsdk:"key_expiration"`
+	ValidTo       string `tfsdk:"valid_to"`
+}
+type AWSEnableKeyRotationJobPayloadJSON struct {
+	JobConfigID                           string `json:"job_config_id"`
+	AutoRotateDisableEncrypt              bool   `json:"auto_rotate_disable_encrypt"`
+	AutoRotateDisableEncryptOnAllAccounts bool   `json:"auto_rotate_disable_encrypt_on_all_accounts"`
+	AutoRotateDomainID                    string `json:"auto_rotate_domain_id"`
+	AutoRotateExternalCMDomainID          string `json:"auto_rotate_external_cm_domain_id"`
+	AutoRotateKeySource                   string `json:"auto_rotate_key_source"`
+	AutoRotatePartitionID                 string `json:"auto_rotate_partition_id"`
 }
 type AWSKeyJSON struct {
 	ID                                    string               `json:"id"`
 	KMS                                   string               `json:"kms"`
 	Region                                string               `json:"region"`
 	AWSParam                              *AWSKeyParamJSON     `json:"aws_param"`
-	ExternalAccounts                      []string             `json:"external_accounts"`
-	KeyAdmins                             []string             `json:"key_admins"`
-	KeyAdminRoles                         []string             `json:"key_admins_roles"`
-	KeyUsers                              []string             `json:"key_users"`
-	KeyUserRoles                          []string             `json:"key_users_roles"`
-	PolicyTemplate                        string               `json:"policytemplate"`
 	JobConfigID                           string               `json:"job_config_id"`
 	AutoRotateDisableEncrypt              bool                 `json:"auto_rotate_disable_encrypt"`
 	AutoRotateDisableEncryptOnAllAccounts bool                 `json:"auto_rotate_disable_encrypt_on_all_accounts"`

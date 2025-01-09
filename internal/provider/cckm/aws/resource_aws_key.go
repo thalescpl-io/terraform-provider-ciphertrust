@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/google/uuid"
+	"github.com/tidwall/gjson"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -50,6 +51,10 @@ func (r *resourceAWSKey) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"region": schema.StringAttribute{
 				Required:    true,
 				Description: "AWS region in which to create or replicate a key.",
+			},
+			"alias_kms_key": schema.StringAttribute{
+				Optional:    true,
+				Description: "Alias for the KMS key.",
 			},
 			"alias": schema.ListAttribute{
 				Optional:    true,
@@ -478,7 +483,7 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 
 	// Retrieve values from plan
 	var plan AWSKeyTFSDK
-	var payload AWSKeyJSON
+	var payload CreateAWSKeyPayloadJSON
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -492,8 +497,9 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	if plan.Region.ValueString() != "" && plan.Region.ValueString() != types.StringNull().ValueString() {
 		payload.Region = plan.Region.ValueString()
 	}
-	if plan.PolicyTemplate.ValueString() != "" && plan.PolicyTemplate.ValueString() != types.StringNull().ValueString() {
-		payload.PolicyTemplate = plan.PolicyTemplate.ValueString()
+
+	if plan.KeyPolicy.PolicyTemplate.ValueString() != "" && plan.KeyPolicy.PolicyTemplate.ValueString() != types.StringNull().ValueString() {
+		payload.PolicyTemplate = plan.KeyPolicy.PolicyTemplate.ValueString()
 	}
 
 	var externalAccounts []string
@@ -508,11 +514,11 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	payload.KeyAdmins = keyAdmins
 
-	var keyAdminRoles []string
-	for _, keyAdminRole := range plan.KeyAdminRoles {
-		keyAdminRoles = append(keyAdminRoles, keyAdminRole.ValueString())
+	var keyAdminsRoles []string
+	for _, keyAdminsRole := range plan.KeyAdminsRoles {
+		keyAdminsRoles = append(keyAdminsRoles, keyAdminsRole.ValueString())
 	}
-	payload.KeyAdminRoles = keyAdminRoles
+	payload.KeyAdminsRoles = keyAdminsRoles
 
 	var keyUsers []string
 	for _, keyUser := range plan.KeyUsers {
@@ -520,55 +526,52 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	payload.KeyUsers = keyUsers
 
-	var keyUserRoles []string
-	for _, keyUserRole := range plan.KeyUserRoles {
-		keyUserRoles = append(keyUserRoles, keyUserRole.ValueString())
+	var keyUsersRoles []string
+	for _, keyUsersRole := range plan.KeyUsersRoles {
+		keyUsersRoles = append(keyUsersRoles, keyUsersRole.ValueString())
 	}
-	payload.KeyUserRoles = keyUserRoles
+	payload.KeyUsersRoles = keyUsersRoles
 
 	// Add aws_param to the payload if set
 	var awsParam AWSKeyParamJSON
-	if !reflect.DeepEqual((*AWSKeyParamTFSDK)(nil), plan.AWSParam) {
-		tflog.Debug(ctx, "aws_param should not be empty at this point")
-		if plan.AWSParam.Alias.ValueString() != "" && plan.AWSParam.Alias.ValueString() != types.StringNull().ValueString() {
-			awsParam.Alias = plan.AWSParam.Alias.ValueString()
-		}
-		if plan.AWSParam.BypassPolicyLockoutSafetyCheck.ValueBool() != types.BoolNull().ValueBool() {
-			awsParam.BypassPolicyLockoutSafetyCheck = plan.AWSParam.BypassPolicyLockoutSafetyCheck.ValueBool()
-		}
-		if plan.AWSParam.CustomerMasterKeySpec.ValueString() != "" && plan.AWSParam.CustomerMasterKeySpec.ValueString() != types.StringNull().ValueString() {
-			awsParam.CustomerMasterKeySpec = plan.AWSParam.CustomerMasterKeySpec.ValueString()
-		}
-		if plan.AWSParam.Description.ValueString() != "" && plan.AWSParam.Description.ValueString() != types.StringNull().ValueString() {
-			awsParam.Description = plan.AWSParam.Description.ValueString()
-		}
-		if plan.AWSParam.KeyUsage.ValueString() != "" && plan.AWSParam.KeyUsage.ValueString() != types.StringNull().ValueString() {
-			awsParam.KeyUsage = plan.AWSParam.KeyUsage.ValueString()
-		}
-		if plan.AWSParam.MultiRegion.ValueBool() != types.BoolNull().ValueBool() {
-			awsParam.MultiRegion = plan.AWSParam.MultiRegion.ValueBool()
-		}
-		policyPayload := make(map[string]interface{})
-		for k, v := range plan.AWSParam.Policy.Elements() {
-			policyPayload[k] = v.(types.String).ValueString()
-		}
-		payload.AWSParam.Policy = policyPayload
-
-		var tags []AWSKeyParamTagJSON
-		for _, tagInput := range plan.AWSParam.Tags {
-			var tag AWSKeyParamTagJSON
-			if tagInput.TagKey.ValueString() != "" && tagInput.TagKey.ValueString() != types.StringNull().ValueString() {
-				tag.TagKey = tagInput.TagKey.ValueString()
-			}
-			if tagInput.TagValue.ValueString() != "" && tagInput.TagValue.ValueString() != types.StringNull().ValueString() {
-				tag.TagValue = tagInput.TagValue.ValueString()
-			}
-			tags = append(tags, tag)
-		}
-		payload.AWSParam.Tags = tags
-
-		payload.AWSParam = &awsParam
+	if plan.AliasKMSKey.ValueString() != "" && plan.AliasKMSKey.ValueString() != types.StringNull().ValueString() {
+		awsParam.Alias = plan.AliasKMSKey.ValueString()
 	}
+	if plan.BypassPolicyLockoutSafetyCheck.ValueBool() != types.BoolNull().ValueBool() {
+		awsParam.BypassPolicyLockoutSafetyCheck = plan.BypassPolicyLockoutSafetyCheck.ValueBool()
+	}
+	if plan.CustomerMasterKeySpec.ValueString() != "" && plan.CustomerMasterKeySpec.ValueString() != types.StringNull().ValueString() {
+		awsParam.CustomerMasterKeySpec = plan.CustomerMasterKeySpec.ValueString()
+	}
+	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
+		awsParam.Description = plan.Description.ValueString()
+	}
+	if plan.KeyUsage.ValueString() != "" && plan.KeyUsage.ValueString() != types.StringNull().ValueString() {
+		awsParam.KeyUsage = plan.KeyUsage.ValueString()
+	}
+	if plan.MultiRegion.ValueBool() != types.BoolNull().ValueBool() {
+		awsParam.MultiRegion = plan.MultiRegion.ValueBool()
+	}
+	policyPayload := make(map[string]interface{})
+	for k, v := range plan.AWSKeyPolicy.Elements() {
+		policyPayload[k] = v.(types.String).ValueString()
+	}
+	payload.AWSParam.Policy = policyPayload
+
+	var tags []AWSKeyParamTagJSON
+	for _, tagInput := range plan.Tags {
+		var tag AWSKeyParamTagJSON
+		if tagInput.TagKey.ValueString() != "" && tagInput.TagKey.ValueString() != types.StringNull().ValueString() {
+			tag.TagKey = tagInput.TagKey.ValueString()
+		}
+		if tagInput.TagValue.ValueString() != "" && tagInput.TagValue.ValueString() != types.StringNull().ValueString() {
+			tag.TagValue = tagInput.TagValue.ValueString()
+		}
+		tags = append(tags, tag)
+	}
+	payload.AWSParam.Tags = tags
+
+	payload.AWSParam = &awsParam
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -580,17 +583,61 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	response, err := r.client.PostData(ctx, id, common.URL_KEY_MANAGEMENT, payloadJSON, "id")
+	response, err := r.client.PostDataV2(ctx, id, common.URL_KEY_MANAGEMENT, payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cm_key.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
-			"Error creating key on CipherTrust Manager: ",
-			"Could not create key, unexpected error: "+err.Error(),
+			"Error creating AWS key: ",
+			"Could not create AWS key, unexpected error: "+err.Error(),
 		)
 		return
 	}
 
-	plan.ID = types.StringValue(response)
+	//Fill with response
+	plan.ARN = types.StringValue(gjson.Get(response, "aws_param.Arn").String())
+	plan.AWSAccountID = types.StringValue(gjson.Get(response, "aws_param.AWSAccountId").String())
+	plan.AWSKeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	//plan.DeletionDate = types.StringValue(gjson.Get(response, "").String())
+	plan.Enabled = types.BoolValue(gjson.Get(response, "aws_param.Enabled").Bool())
+
+	var encryptionAlgos []types.String
+	for _, item := range gjson.Get(response, "aws_param.EncryptionAlgorithms").Array() {
+		encryptionAlgos = append(encryptionAlgos, types.StringValue(item.String()))
+	}
+	plan.EncryptionAlgorithms = encryptionAlgos
+
+	//plan.ExpirationModel = types.StringValue(gjson.Get(response, "").String())
+	//ExternalAccounts
+	//KeyAdmins
+	//KeyAdminsRoles
+	plan.KeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.KeyManager = types.StringValue(gjson.Get(response, "aws_param.KeyManager").String())
+	//plan.KeyMaterialOrigin = types.StringValue(gjson.Get(response, "aws_param.Origin").String())
+	plan.KeyRotationEnabled = types.BoolValue(gjson.Get(response, "aws_param.KeyRotationEnabled").Bool())
+	//KeySource
+	plan.KeyState = types.StringValue(gjson.Get(response, "aws_param.KeyState").String())
+	plan.KeyType = types.StringValue(gjson.Get(response, "key_type").String())
+	//KeyUsers
+	//KeyUsersRoles
+	plan.KMSID = types.StringValue(gjson.Get(response, "kms_id").String())
+	//Labels
+	//LocalKeyID
+	//LocalKeyName
+	//MultiRegionKeyType
+	//MultiRegionPrimaryKey
+	//MultiRegionReplicaKeys
+	plan.Policy = types.StringValue(gjson.Get(response, "aws_param.Policy").String())
+	//PolicyTemplateTag
+	//ReplicaPolicy
+	//RotatedAt
+	//RotatedFrom
+	//RotatedTo
+	plan.RotationStatus = types.StringValue(gjson.Get(response, "rotation_status").String())
+	plan.SyncedAt = types.StringValue(gjson.Get(response, "synced_at").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	//ValidTo
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cm_key.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -602,12 +649,55 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceAWSKey) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state AWSKeyTFSDK
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_AWS_KEY)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading AWS Key: ",
+			"Could not read AWS Key id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	state.ARN = types.StringValue(gjson.Get(response, "aws_param.Arn").String())
+	state.AWSAccountID = types.StringValue(gjson.Get(response, "aws_param.AWSAccountId").String())
+	state.AWSKeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	state.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	state.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	state.Enabled = types.BoolValue(gjson.Get(response, "aws_param.Enabled").Bool())
+
+	var encryptionAlgos []types.String
+	for _, item := range gjson.Get(response, "aws_param.EncryptionAlgorithms").Array() {
+		encryptionAlgos = append(encryptionAlgos, types.StringValue(item.String()))
+	}
+	state.EncryptionAlgorithms = encryptionAlgos
+
+	state.KeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	state.KeyManager = types.StringValue(gjson.Get(response, "aws_param.KeyManager").String())
+	state.KeyMaterialOrigin = types.StringValue(gjson.Get(response, "aws_param.Origin").String())
+	state.KeyRotationEnabled = types.BoolValue(gjson.Get(response, "aws_param.KeyRotationEnabled").Bool())
+	state.KeyState = types.StringValue(gjson.Get(response, "aws_param.KeyState").String())
+	state.KMSID = types.StringValue(gjson.Get(response, "kms_id").String())
+	state.Policy = types.StringValue(gjson.Get(response, "aws_param.Policy").String())
+	state.RotationStatus = types.StringValue(gjson.Get(response, "rotation_status").String())
+	state.SyncedAt = types.StringValue(gjson.Get(response, "synced_at").String())
+	state.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceAWSKey) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan, state AWSKeyTFSDK
 	var payload AWSKeyJSON
+
+	id := uuid.New().String()
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -618,47 +708,14 @@ func (r *resourceAWSKey) Update(ctx context.Context, req resource.UpdateRequest,
 	if plan.EnableKey.ValueBool() != types.BoolNull().ValueBool() {
 		EnableDisableKey(r, ctx, &plan, &state, &resp.Diagnostics)
 	}
-
-	if plan.UpdateOpType.ValueString() != "" && plan.UpdateOpType.ValueString() != types.StringNull().ValueString() {
-		if plan.UpdateOpType.ValueString() == "enable-rotation-job" {
-
-		} else if plan.UpdateOpType.ValueString() == "disable-rotation-job" {
-
-		} else if plan.UpdateOpType.ValueString() == "import-material" {
-
-		} else if plan.UpdateOpType.ValueString() == "delete-material" {
-
-		} else if plan.UpdateOpType.ValueString() == "rotate" {
-
-		} else if plan.UpdateOpType.ValueString() == "rotate-material" {
-
-		} else if plan.UpdateOpType.ValueString() == "schedule-deletion" {
-
-		} else if plan.UpdateOpType.ValueString() == "policy" {
-
-		} else if plan.UpdateOpType.ValueString() == "update-description" {
-
-		} else if plan.UpdateOpType.ValueString() == "enable" {
-
-		} else if plan.UpdateOpType.ValueString() == "diable" {
-
-		} else if plan.UpdateOpType.ValueString() == "add-tags" {
-
-		} else if plan.UpdateOpType.ValueString() == "remove-tags" {
-
-		} else if plan.UpdateOpType.ValueString() == "add-alias" {
-
-		} else if plan.UpdateOpType.ValueString() == "delete-alias" {
-
-		} else if plan.UpdateOpType.ValueString() == "cancel-deletion" {
-
-		} else if plan.UpdateOpType.ValueString() == "enable-auto-rotation" {
-
-		} else if plan.UpdateOpType.ValueString() == "disable-auto-rotation" {
-
-		} else {
-
-		}
+	if !reflect.DeepEqual((*AWSUploadKeyTFSDK)(nil), plan.UploadKey) {
+		UploadKeyAWS(r, ctx, &plan, &state, &resp.Diagnostics, id)
+	}
+	if !reflect.DeepEqual((*AWSKeyImportKeyMaterialTFSDK)(nil), plan.ImportKeyMaterials) {
+		ImportKeyToAWS(r, ctx, &plan, &state, &resp.Diagnostics, id)
+	}
+	if !reflect.DeepEqual((*AWSKeyEnableRotationTFSDK)(nil), plan.EnableRotation) {
+		EnableKeyRotationJob(r, ctx, &plan, &state, &resp.Diagnostics, id)
 	}
 
 	payloadJSON, err := json.Marshal(payload)
@@ -691,7 +748,293 @@ func (r *resourceAWSKey) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 }
 
-func EnableKeyRotation(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, state *AWSKeyTFSDK, diag *diag.Diagnostics) {
+func funName(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, state *AWSKeyTFSDK, diag *diag.Diagnostics) {
+}
+func EnableKeyRotationJob(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, state *AWSKeyTFSDK, diag *diag.Diagnostics, id string) {
+	var payload AWSEnableKeyRotationJobPayloadJSON
+
+	if plan.EnableRotation.JobConfigID.ValueString() != "" && plan.EnableRotation.JobConfigID.ValueString() != types.StringNull().ValueString() {
+		payload.JobConfigID = plan.EnableRotation.JobConfigID.ValueString()
+	}
+	if plan.EnableRotation.AutoRotateDisableEncrypt.ValueBool() != types.BoolNull().ValueBool() {
+		payload.AutoRotateDisableEncrypt = plan.EnableRotation.AutoRotateDisableEncrypt.ValueBool()
+	}
+	if plan.EnableRotation.AutoRotateDisableEncryptOnAllAccounts.ValueBool() != types.BoolNull().ValueBool() {
+		payload.AutoRotateDisableEncryptOnAllAccounts = plan.EnableRotation.AutoRotateDisableEncryptOnAllAccounts.ValueBool()
+	}
+	if plan.EnableRotation.AutoRotateDomainID.ValueString() != "" && plan.EnableRotation.AutoRotateDomainID.ValueString() != types.StringNull().ValueString() {
+		payload.AutoRotateDomainID = plan.EnableRotation.AutoRotateDomainID.ValueString()
+	}
+	if plan.EnableRotation.AutoRotateExternalCMDomainID.ValueString() != "" && plan.EnableRotation.AutoRotateExternalCMDomainID.ValueString() != types.StringNull().ValueString() {
+		payload.AutoRotateExternalCMDomainID = plan.EnableRotation.AutoRotateExternalCMDomainID.ValueString()
+	}
+	if plan.EnableRotation.AutoRotateKeySource.ValueString() != "" && plan.EnableRotation.AutoRotateKeySource.ValueString() != types.StringNull().ValueString() {
+		payload.AutoRotateKeySource = plan.EnableRotation.AutoRotateKeySource.ValueString()
+	}
+	if plan.EnableRotation.AutoRotatePartitionID.ValueString() != "" && plan.EnableRotation.AutoRotatePartitionID.ValueString() != types.StringNull().ValueString() {
+		payload.AutoRotatePartitionID = plan.EnableRotation.AutoRotatePartitionID.ValueString()
+	}
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Create]["+id+"]")
+		diag.AddError(
+			"Invalid data input: Import Key Material",
+			err.Error(),
+		)
+		return
+	}
+
+	response, err := r.client.PostDataV2(ctx, id, common.URL_KEY_MANAGEMENT, payloadJSON)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Create]["+id+"]")
+		diag.AddError(
+			"Error importing key material to AWS: ",
+			"Could not import key to AWS, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	//Fill with response
+	plan.ARN = types.StringValue(gjson.Get(response, "aws_param.Arn").String())
+	plan.AWSAccountID = types.StringValue(gjson.Get(response, "aws_param.AWSAccountId").String())
+	plan.AWSKeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Enabled = types.BoolValue(gjson.Get(response, "aws_param.Enabled").Bool())
+
+	var encryptionAlgos []types.String
+	for _, item := range gjson.Get(response, "aws_param.EncryptionAlgorithms").Array() {
+		encryptionAlgos = append(encryptionAlgos, types.StringValue(item.String()))
+	}
+	plan.EncryptionAlgorithms = encryptionAlgos
+
+	plan.KeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.KeyManager = types.StringValue(gjson.Get(response, "aws_param.KeyManager").String())
+	plan.KeyMaterialOrigin = types.StringValue(gjson.Get(response, "key_material_origin").String())
+	plan.KeyRotationEnabled = types.BoolValue(gjson.Get(response, "aws_param.KeyRotationEnabled").Bool())
+	plan.KeyState = types.StringValue(gjson.Get(response, "aws_param.KeyState").String())
+	plan.KeyType = types.StringValue(gjson.Get(response, "key_type").String())
+	plan.KMSID = types.StringValue(gjson.Get(response, "kms_id").String())
+	//Labels
+	plan.Policy = types.StringValue(gjson.Get(response, "aws_param.Policy").String())
+	plan.RotationStatus = types.StringValue(gjson.Get(response, "rotation_status").String())
+	plan.SyncedAt = types.StringValue(gjson.Get(response, "synced_at").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+}
+
+func ImportKeyToAWS(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, state *AWSKeyTFSDK, diag *diag.Diagnostics, id string) {
+	var payload AWSKeyImportKeyPayloadJSON
+
+	if plan.ImportKeyMaterials.KeyExpiration.ValueBool() != types.BoolNull().ValueBool() {
+		payload.KeyExpiration = plan.ImportKeyMaterials.KeyExpiration.ValueBool()
+	}
+	if plan.ImportKeyMaterials.SourceKeyName.ValueString() != "" && plan.ImportKeyMaterials.SourceKeyName.ValueString() != types.StringNull().ValueString() {
+		payload.SourceKeyID = plan.ImportKeyMaterials.SourceKeyName.ValueString()
+	}
+	if plan.ImportKeyMaterials.SourceKeyTier.ValueString() != "" && plan.ImportKeyMaterials.SourceKeyTier.ValueString() != types.StringNull().ValueString() {
+		payload.SourceKeyTier = plan.ImportKeyMaterials.SourceKeyTier.ValueString()
+	}
+	if plan.ImportKeyMaterials.ValidTo.ValueString() != "" && plan.ImportKeyMaterials.ValidTo.ValueString() != types.StringNull().ValueString() {
+		payload.ValidTo = plan.ImportKeyMaterials.ValidTo.ValueString()
+	}
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Create]["+id+"]")
+		diag.AddError(
+			"Invalid data input: Import Key Material",
+			err.Error(),
+		)
+		return
+	}
+
+	response, err := r.client.PostDataV2(ctx, id, common.URL_KEY_MANAGEMENT, payloadJSON)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Create]["+id+"]")
+		diag.AddError(
+			"Error importing key material to AWS: ",
+			"Could not import key to AWS, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	//Fill with response
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.ARN = types.StringValue(gjson.Get(response, "aws_param.Arn").String())
+	plan.AWSAccountID = types.StringValue(gjson.Get(response, "aws_param.AWSAccountId").String())
+	plan.AWSKeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Enabled = types.BoolValue(gjson.Get(response, "aws_param.Enabled").Bool())
+
+	var encryptionAlgos []types.String
+	for _, item := range gjson.Get(response, "aws_param.EncryptionAlgorithms").Array() {
+		encryptionAlgos = append(encryptionAlgos, types.StringValue(item.String()))
+	}
+	plan.EncryptionAlgorithms = encryptionAlgos
+
+	plan.ExpirationModel = types.StringValue(gjson.Get(response, "aws_param.ExpirationModel").String())
+	plan.KeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.KeyManager = types.StringValue(gjson.Get(response, "aws_param.KeyManager").String())
+	plan.KeyMaterialOrigin = types.StringValue(gjson.Get(response, "key_material_origin").String())
+	plan.KeyRotationEnabled = types.BoolValue(gjson.Get(response, "aws_param.KeyRotationEnabled").Bool())
+	plan.KeyState = types.StringValue(gjson.Get(response, "aws_param.KeyState").String())
+	plan.KeyType = types.StringValue(gjson.Get(response, "key_type").String())
+	plan.KMSID = types.StringValue(gjson.Get(response, "kms_id").String())
+	plan.LocalKeyID = types.StringValue(gjson.Get(response, "local_key_id").String())
+	plan.LocalKeyName = types.StringValue(gjson.Get(response, "local_key_name").String())
+	plan.Policy = types.StringValue(gjson.Get(response, "aws_param.Policy").String())
+	plan.RotationStatus = types.StringValue(gjson.Get(response, "rotation_status").String())
+	plan.SyncedAt = types.StringValue(gjson.Get(response, "synced_at").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.ValidTo = types.StringValue(gjson.Get(response, "aws_param.ValidTo").String())
+}
+
+func UploadKeyAWS(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, state *AWSKeyTFSDK, diag *diag.Diagnostics, id string) {
+	var payload UploadAWSKeyPayloadJSON
+
+	if plan.KMS.ValueString() != "" && plan.KMS.ValueString() != types.StringNull().ValueString() {
+		payload.KMS = plan.KMS.ValueString()
+	}
+	if plan.Region.ValueString() != "" && plan.Region.ValueString() != types.StringNull().ValueString() {
+		payload.Region = plan.Region.ValueString()
+	}
+	if plan.UploadKey.SourceKeyID.ValueString() != "" && plan.UploadKey.SourceKeyID.ValueString() != types.StringNull().ValueString() {
+		payload.SourceKeyIdentifier = plan.UploadKey.SourceKeyID.ValueString()
+	}
+	if plan.KeyPolicy.PolicyTemplate.ValueString() != "" && plan.KeyPolicy.PolicyTemplate.ValueString() != types.StringNull().ValueString() {
+		payload.PolicyTemplate = plan.KeyPolicy.PolicyTemplate.ValueString()
+	}
+	if plan.UploadKey.SourceKeyTier.ValueString() != "" && plan.UploadKey.SourceKeyTier.ValueString() != types.StringNull().ValueString() {
+		payload.SourceKeyTier = plan.UploadKey.SourceKeyTier.ValueString()
+	}
+	if plan.UploadKey.KeyExpiration.ValueBool() != types.BoolNull().ValueBool() {
+		payload.KeyExpiration = plan.UploadKey.KeyExpiration.ValueBool()
+	}
+
+	var externalAccounts []string
+	for _, externalAccount := range plan.ExternalAccounts {
+		externalAccounts = append(externalAccounts, externalAccount.ValueString())
+	}
+	payload.ExternalAccounts = externalAccounts
+
+	var keyAdmins []string
+	for _, keyAdmin := range plan.KeyAdmins {
+		keyAdmins = append(keyAdmins, keyAdmin.ValueString())
+	}
+	payload.KeyAdmins = keyAdmins
+
+	var keyAdminsRoles []string
+	for _, keyAdminsRole := range plan.KeyAdminsRoles {
+		keyAdminsRoles = append(keyAdminsRoles, keyAdminsRole.ValueString())
+	}
+	payload.KeyAdminsRoles = keyAdminsRoles
+
+	var keyUsers []string
+	for _, keyUser := range plan.KeyUsers {
+		keyUsers = append(keyUsers, keyUser.ValueString())
+	}
+	payload.KeyUsers = keyUsers
+
+	var keyUsersRoles []string
+	for _, keyUsersRole := range plan.KeyUsersRoles {
+		keyUsersRoles = append(keyUsersRoles, keyUsersRole.ValueString())
+	}
+	payload.KeyUsersRoles = keyUsersRoles
+
+	// Add aws_param to the payload if set
+	var awsParam UploadAWSKeyParamJSON
+	if plan.AliasKMSKey.ValueString() != "" && plan.AliasKMSKey.ValueString() != types.StringNull().ValueString() {
+		awsParam.Alias = plan.AliasKMSKey.ValueString()
+	}
+	if plan.BypassPolicyLockoutSafetyCheck.ValueBool() != types.BoolNull().ValueBool() {
+		awsParam.BypassPolicyLockoutSafetyCheck = plan.BypassPolicyLockoutSafetyCheck.ValueBool()
+	}
+	if plan.CustomerMasterKeySpec.ValueString() != "" && plan.CustomerMasterKeySpec.ValueString() != types.StringNull().ValueString() {
+		awsParam.CustomerMasterKeySpec = plan.CustomerMasterKeySpec.ValueString()
+	}
+	if plan.Description.ValueString() != "" && plan.Description.ValueString() != types.StringNull().ValueString() {
+		awsParam.Description = plan.Description.ValueString()
+	}
+	if plan.KeyUsage.ValueString() != "" && plan.KeyUsage.ValueString() != types.StringNull().ValueString() {
+		awsParam.KeyUsage = plan.KeyUsage.ValueString()
+	}
+	if plan.MultiRegion.ValueBool() != types.BoolNull().ValueBool() {
+		awsParam.MultiRegion = plan.MultiRegion.ValueBool()
+	}
+	if plan.ValidTo.ValueString() != "" && plan.ValidTo.ValueString() != types.StringNull().ValueString() {
+		awsParam.ValidTo = plan.ValidTo.ValueString()
+	}
+	policyPayload := make(map[string]interface{})
+	for k, v := range plan.AWSKeyPolicy.Elements() {
+		policyPayload[k] = v.(types.String).ValueString()
+	}
+	payload.AWSParam.Policy = policyPayload
+
+	var tags []AWSKeyParamTagJSON
+	for _, tagInput := range plan.Tags {
+		var tag AWSKeyParamTagJSON
+		if tagInput.TagKey.ValueString() != "" && tagInput.TagKey.ValueString() != types.StringNull().ValueString() {
+			tag.TagKey = tagInput.TagKey.ValueString()
+		}
+		if tagInput.TagValue.ValueString() != "" && tagInput.TagValue.ValueString() != types.StringNull().ValueString() {
+			tag.TagValue = tagInput.TagValue.ValueString()
+		}
+		tags = append(tags, tag)
+	}
+	payload.AWSParam.Tags = tags
+
+	payload.AWSParam = &awsParam
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Create]["+id+"]")
+		diag.AddError(
+			"Invalid data input: Upload AWS Key",
+			err.Error(),
+		)
+		return
+	}
+
+	response, err := r.client.PostDataV2(ctx, id, common.URL_KEY_MANAGEMENT, payloadJSON)
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_aws_key.go -> Create]["+id+"]")
+		diag.AddError(
+			"Error uploading AWS key: ",
+			"Could not create AWS key, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	//Fill with response
+	plan.ARN = types.StringValue(gjson.Get(response, "aws_param.Arn").String())
+	plan.AWSAccountID = types.StringValue(gjson.Get(response, "aws_param.AWSAccountId").String())
+	plan.AWSKeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Enabled = types.BoolValue(gjson.Get(response, "aws_param.Enabled").Bool())
+
+	var encryptionAlgos []types.String
+	for _, item := range gjson.Get(response, "aws_param.EncryptionAlgorithms").Array() {
+		encryptionAlgos = append(encryptionAlgos, types.StringValue(item.String()))
+	}
+	plan.EncryptionAlgorithms = encryptionAlgos
+
+	plan.ExpirationModel = types.StringValue(gjson.Get(response, "aws_param.ExpirationModel").String())
+	plan.KeyID = types.StringValue(gjson.Get(response, "aws_param.KeyID").String())
+	plan.KeyManager = types.StringValue(gjson.Get(response, "aws_param.KeyManager").String())
+	plan.KeyMaterialOrigin = types.StringValue(gjson.Get(response, "key_material_origin").String())
+	plan.KeyRotationEnabled = types.BoolValue(gjson.Get(response, "aws_param.KeyRotationEnabled").Bool())
+	plan.KeyState = types.StringValue(gjson.Get(response, "aws_param.KeyState").String())
+	plan.KeyType = types.StringValue(gjson.Get(response, "key_type").String())
+	plan.KMSID = types.StringValue(gjson.Get(response, "kms_id").String())
+	plan.LocalKeyID = types.StringValue(gjson.Get(response, "local_key_id").String())
+	plan.LocalKeyName = types.StringValue(gjson.Get(response, "local_key_name").String())
+	plan.Policy = types.StringValue(gjson.Get(response, "aws_param.Policy").String())
+	plan.RotationStatus = types.StringValue(gjson.Get(response, "rotation_status").String())
+	plan.SyncedAt = types.StringValue(gjson.Get(response, "synced_at").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 }
 
 func EnableDisableKey(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, state *AWSKeyTFSDK, diag *diag.Diagnostics) {
