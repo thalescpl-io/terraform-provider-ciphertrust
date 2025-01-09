@@ -258,8 +258,6 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 	}
 	getParamsFromResponse(response, &resp.Diagnostics, &plan)
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
-
 	tflog.Debug(ctx, "[resource_scp_connection.go -> Create Output]["+response+"]")
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_scp_connection.go -> Create]["+id+"]")
@@ -291,7 +289,7 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 		)
 		return
 	}
-	tflog.Debug(ctx, "vijay response - 1"+response)
+	tflog.Debug(ctx, "resource_scp_connection.go: response :"+response)
 
 	getParamsFromResponse(response, &resp.Diagnostics, &state)
 	// required parameters are fetched separately
@@ -301,7 +299,6 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 	state.PublicKey = types.StringValue(gjson.Get(response, "public_key").String())
 	state.Username = types.StringValue(gjson.Get(response, "username").String())
 
-	tflog.Debug(ctx, fmt.Sprintf("vijay whole state = %v", state))
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
