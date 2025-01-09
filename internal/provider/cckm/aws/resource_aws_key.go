@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	// "reflect"
+	"reflect"
 
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
@@ -502,7 +502,6 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 		payload.PolicyTemplate = plan.KeyPolicy.PolicyTemplate.ValueString()
 	}
 
-
 	var externalAccounts []string
 	for _, externalAccount := range plan.ExternalAccounts {
 		externalAccounts = append(externalAccounts, externalAccount.ValueString())
@@ -515,21 +514,17 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	payload.KeyAdmins = keyAdmins
 
-
 	var keyAdminsRoles []string
 	for _, keyAdminsRole := range plan.KeyAdminsRoles {
 		keyAdminsRoles = append(keyAdminsRoles, keyAdminsRole.ValueString())
 	}
 	payload.KeyAdminsRoles = keyAdminsRoles
-  
 
 	var keyUsers []string
 	for _, keyUser := range plan.KeyUsers {
 		keyUsers = append(keyUsers, keyUser.ValueString())
 	}
 	payload.KeyUsers = keyUsers
-
-
 
 	var keyUsersRoles []string
 	for _, keyUsersRole := range plan.KeyUsersRoles {
@@ -577,7 +572,6 @@ func (r *resourceAWSKey) Create(ctx context.Context, req resource.CreateRequest,
 	payload.AWSParam.Tags = tags
 
 	payload.AWSParam = &awsParam
- 
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -723,8 +717,6 @@ func (r *resourceAWSKey) Update(ctx context.Context, req resource.UpdateRequest,
 	if !reflect.DeepEqual((*AWSKeyEnableRotationTFSDK)(nil), plan.EnableRotation) {
 		EnableKeyRotationJob(r, ctx, &plan, &state, &resp.Diagnostics, id)
 	}
-
- 
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
@@ -994,7 +986,6 @@ func UploadKeyAWS(r *resourceAWSKey, ctx context.Context, plan *AWSKeyTFSDK, sta
 	payload.AWSParam.Tags = tags
 
 	payload.AWSParam = &awsParam
- 
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
