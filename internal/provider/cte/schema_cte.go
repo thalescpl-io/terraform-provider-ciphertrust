@@ -878,10 +878,9 @@ type CTEPolicyAddSecurityRuleTFSDK struct {
 }
 
 type CTEPolicyAddSignatureRuleTFSDK struct {
-	CTEClientPolicyID types.String   `tfsdk:"policy_id"`
-	SignatureRuleID   types.String   `tfsdk:"rule_id"`
-	SignatureSetList  []types.String `tfsdk:"signature_set_id_list"`
-	SignatureSetID    types.String   `tfsdk:"signature_set_id"`
+	CTEPolicyID      types.String   `tfsdk:"policy_id"`
+	SignatureRuleID  types.String   `tfsdk:"id"`
+	SignatureSetList []types.String `tfsdk:"signature_set_id_list"`
 }
 
 type CTEProcessTFSDK struct {
