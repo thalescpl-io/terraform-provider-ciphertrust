@@ -1,4 +1,6 @@
+
 default: fmt  install
+
 
 build:
 	go build -v ./...

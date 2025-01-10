@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/tidwall/gjson"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -41,29 +42,17 @@ func (r *resourceCTEPolicySignatureRule) Schema(_ context.Context, _ resource.Sc
 				Required:    true,
 				Description: "ID of the parent policy in which Signature Rule need to be added",
 			},
-			"rule_id": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "ID of the Signature Rule created in the parent policy",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"rule": schema.ListNestedAttribute{
+			"signature_set_id_list": schema.ListAttribute{
 				Optional:    true,
-				Description: "Signature Rule to be updated in the parent policy.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"signature_set_id_list": schema.ListAttribute{
-							Optional:    true,
-							ElementType: types.StringType,
-							Description: "List of domainsList of identifiers of signature sets. The identifiers can be the Name, ID (a UUIDv4), URI, or slug of the signature sets.",
-						},
-						"signature_set_id": schema.StringAttribute{
-							Optional:    true,
-							Description: "An identifier of the signature set. This can be the Name, ID (a UUIDv4), URI, or slug of the signature set.",
-						},
-					},
-				},
+				ElementType: types.StringType,
+				Description: "List of domainsList of identifiers of signature sets of Container_Image type for CSI Policy. The identifiers can be the Name, ID (a UUIDv4), URI, or slug of the signature sets.Only one sig set can be attached at once",
 			},
 		},
 	}
@@ -98,12 +87,11 @@ func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resourc
 		return
 	}
 
-	response, err := r.client.PostData(
+	response, err := r.client.PostDataV2(
 		ctx,
 		id,
-		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/signaturerules",
-		payloadJSON,
-		"id")
+		common.URL_CTE_POLICY+"/"+plan.CTEPolicyID.ValueString()+"/signaturerules",
+		payloadJSON)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Create]["+id+"]")
 		resp.Diagnostics.AddError(
@@ -113,7 +101,7 @@ func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resourc
 		return
 	}
 
-	plan.SignatureRuleID = types.StringValue(response)
+	plan.SignatureRuleID = types.StringValue(parseconfig(response)[0])
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -125,10 +113,35 @@ func (r *resourceCTEPolicySignatureRule) Create(ctx context.Context, req resourc
 
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceCTEPolicySignatureRule) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CTEPolicyAddSignatureRuleTFSDK
+
+	id := uuid.New().String()
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	_, err := r.client.GetById(ctx, id, state.SignatureRuleID.ValueString(), common.URL_CTE_POLICY+"/"+state.CTEPolicyID.ValueString()+"/signaturerules")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Read]["+id+"]")
+		resp.Diagnostics.AddError(
+			"Error reading Signature Rules on CipherTrust Manager: ",
+			"Could not read Security Rule: ,"+state.SignatureRuleID.ValueString()+err.Error(),
+		)
+		return
+	}
+
+	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Read]["+id+"]")
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+
 	var plan CTEPolicyAddSignatureRuleTFSDK
 	var payload SignatureRuleJSON
 
@@ -138,10 +151,7 @@ func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resourc
 		return
 	}
 
-	if plan.SignatureSetID.ValueString() != "" && plan.SignatureSetID.ValueString() != types.StringNull().ValueString() {
-		payload.SignatureSetID = string(plan.SignatureSetID.ValueString())
-	}
-
+	payload.SignatureSetID = plan.SignatureSetList[0].ValueString()
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cte_policy_signaturerules.go -> Update]["+plan.SignatureRuleID.ValueString()+"]")
@@ -155,7 +165,7 @@ func (r *resourceCTEPolicySignatureRule) Update(ctx context.Context, req resourc
 	response, err := r.client.UpdateData(
 		ctx,
 		plan.SignatureRuleID.ValueString(),
-		common.URL_CTE_POLICY+"/"+plan.CTEClientPolicyID.ValueString()+"/signaturerules",
+		common.URL_CTE_POLICY+"/"+plan.CTEPolicyID.ValueString()+"/signaturerules",
 		payloadJSON,
 		"id")
 	if err != nil {
@@ -184,13 +194,8 @@ func (r *resourceCTEPolicySignatureRule) Delete(ctx context.Context, req resourc
 		return
 	}
 
-	// Delete existing order
-	// output, err := r.client.DeleteByID(
-	// 	ctx,
-	// 	state.SignatureRuleID.ValueString(),
-	// 	common.URL_CTE_POLICY+"/"+state.CTEClientPolicyID.ValueString()+"/signaturerules")
-	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEClientPolicyID.ValueString(), "signaturerules", state.SignatureRuleID.ValueString())
-	output, err := r.client.DeleteByID(ctx, "DELETE", state.CTEClientPolicyID.ValueString(), url, nil)
+	url := fmt.Sprintf("%s/%s/%s/%s/%s", r.client.CipherTrustURL, common.URL_CTE_POLICY, state.CTEPolicyID.ValueString(), "signaturerules", state.SignatureRuleID.ValueString())
+	output, err := r.client.DeleteByID(ctx, "DELETE", state.CTEPolicyID.ValueString(), url, nil)
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_cte_policy_signaturerules.go -> Delete]["+state.SignatureRuleID.ValueString()+"]["+output+"]")
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -217,4 +222,16 @@ func (d *resourceCTEPolicySignatureRule) Configure(_ context.Context, req resour
 	}
 
 	d.client = client
+}
+
+func parseconfig(response string) []string {
+	var ids []string
+	SuccessSize := int((gjson.Get(response, "success_signature_rules.#")).Int())
+
+	k := 0
+	for k < SuccessSize {
+		ids = append(ids, gjson.Get(string(response), fmt.Sprintf("success_signature_rules.%d.signature_rule.id", k)).String())
+		k++
+	}
+	return ids
 }
