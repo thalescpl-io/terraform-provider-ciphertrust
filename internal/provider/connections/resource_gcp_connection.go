@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -13,6 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/thalescpl-io/terraform-provider-ciphertrust/internal/provider/common"
 	"github.com/tidwall/gjson"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 var (
@@ -52,25 +56,30 @@ func (r *resourceGCPConnection) Schema(_ context.Context, _ resource.SchemaReque
 			},
 			"cloud_name": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Name of the cloud. Default value is gcp.\n\nOptions:\n\ngcp",
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Description about the connection.",
 			},
 			"labels": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: labelsDescription,
 			},
 			"meta": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: "Optional end-user or service data stored with the connection.",
 			},
 			"products": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: productsDescription,
 			},
 			"client_email": schema.StringAttribute{
@@ -140,7 +149,7 @@ func (r *resourceGCPConnection) Create(ctx context.Context, req resource.CreateR
 	}
 
 	if plan.KeyFile.ValueString() != "" && plan.KeyFile.ValueString() != types.StringNull().ValueString() {
-		payload.KeyFile = plan.KeyFile.ValueString()
+		payload.KeyFile = getGcpKeyFile(ctx, plan.KeyFile.ValueString())
 	}
 
 	payloadJSON, err := json.Marshal(payload)
@@ -163,21 +172,8 @@ func (r *resourceGCPConnection) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.ClientEmail = types.StringValue(gjson.Get(response, "client_email").String())
-	plan.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Category = types.StringValue(gjson.Get(response, "category").String())
-	plan.Service = types.StringValue(gjson.Get(response, "service").String())
-	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
-	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
-	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
-	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
-
 	tflog.Debug(ctx, "[resource_gcp_connection.go -> Create Output]["+response+"]")
+	getGcpParamsFromResponse(response, &resp.Diagnostics, &plan)
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_gcp_connection.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -199,13 +195,25 @@ func (r *resourceGCPConnection) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_GCP_CONNECTION)
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_GCP_CONNECTION)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_gcp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error reading GCP Connection on CipherTrust Manager: ",
 			"Could not read gcp connection id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
 		)
+		return
+	}
+	tflog.Debug(ctx, "resource_gcp_connection.go: response :"+response)
+
+	getGcpParamsFromResponse(response, &resp.Diagnostics, &state)
+	// required parameters are fetched separately
+	state.Name = types.StringValue(gjson.Get(response, "name").String())
+	state.KeyFile = types.StringValue(gjson.Get(response, "keyFile").String())
+
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -253,7 +261,7 @@ func (r *resourceGCPConnection) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	if plan.KeyFile.ValueString() != "" && plan.KeyFile.ValueString() != types.StringNull().ValueString() {
-		payload.KeyFile = plan.KeyFile.ValueString()
+		payload.KeyFile = getGcpKeyFile(ctx, plan.KeyFile.ValueString())
 	}
 
 	payloadJSON, err := json.Marshal(payload)
@@ -275,20 +283,7 @@ func (r *resourceGCPConnection) Update(ctx context.Context, req resource.UpdateR
 		)
 		return
 	}
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.ClientEmail = types.StringValue(gjson.Get(response, "client_email").String())
-	plan.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Category = types.StringValue(gjson.Get(response, "category").String())
-	plan.Service = types.StringValue(gjson.Get(response, "service").String())
-	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
-	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
-	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
-	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
-
+	getGcpParamsFromResponse(response, &resp.Diagnostics, &plan)
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
 
 	diags = resp.State.Set(ctx, plan)
@@ -338,4 +333,44 @@ func (d *resourceGCPConnection) Configure(_ context.Context, req resource.Config
 	}
 
 	d.client = client
+}
+
+func getGcpKeyFile(ctx context.Context, file string) string {
+
+	file = strings.TrimSpace(file)
+	_, err := os.Stat(file)
+	if err == nil {
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			tflog.Error(ctx, "error reading google cloud key file file : "+err.Error())
+			return ""
+		}
+		return string(data)
+	}
+	return file
+}
+
+func getGcpParamsFromResponse(response string, diag *diag.Diagnostics, data *GCPConnectionTFSDK) {
+	// Common parameters for all connections
+	data.ID = types.StringValue(gjson.Get(response, "id").String())
+	data.URI = types.StringValue(gjson.Get(response, "uri").String())
+	data.Account = types.StringValue(gjson.Get(response, "account").String())
+	data.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	data.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	data.Category = types.StringValue(gjson.Get(response, "category").String())
+	data.Service = types.StringValue(gjson.Get(response, "service").String())
+	data.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	data.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	data.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	data.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+
+	// Parameters specific to the GCP connection
+	data.ClientEmail = types.StringValue(gjson.Get(response, "client_email").String())
+	data.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
+	data.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	data.Description = types.StringValue(gjson.Get(response, "description").String())
+	data.ClientEmail = types.StringValue(gjson.Get(response, "client_email").String())
+	data.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
+	data.Labels = common.ParseMap(response, diag, "labels")
+	data.Meta = common.ParseMap(response, diag, "meta")
 }

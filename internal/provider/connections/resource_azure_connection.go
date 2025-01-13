@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -57,6 +58,7 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 				},
 			},
 			"client_id": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: "Unique Identifier (client ID) for the Azure application.",
 			},
@@ -66,22 +68,27 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"tenant_id": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Tenant ID of the Azure application.",
 			},
 			"active_directory_endpoint": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Azure stack active directory authority URL",
 			},
 			"azure_stack_connection_type": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: azureStackConnectionTypeDescription,
 			},
 			"azure_stack_server_cert": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Azure stack server certificate.The certificate should be provided in \\n (newline) format.",
 			},
-			"cert_duration": schema.Int32Attribute{
+			"cert_duration": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Duration in days for which the azure certificate is valid, default (730 i.e. 2 Years).",
 			},
 			"certificate": schema.StringAttribute{
@@ -95,10 +102,12 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"cloud_name": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: cloudNameDescription,
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Description about the connection.",
 			},
 			"external_certificate_used": schema.BoolAttribute{
@@ -111,33 +120,40 @@ func (r *resourceAzureConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"key_vault_dns_suffix": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Azure stack key vault dns suffix",
 			},
 			"labels": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: labelsDescription,
 			},
 			"management_url": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Azure stack management URL",
 			},
 			"meta": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: "Optional end-user or service data stored with the connection.",
 			},
 			"products": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: productsDescription,
 			},
 			"resource_manager_url": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Azure stack resource manager URL.",
 			},
 			"vault_resource_url": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Azure stack vault service resource URL.",
 			},
 			"certificate_thumbprint": schema.StringAttribute{
@@ -197,8 +213,8 @@ func (r *resourceAzureConnection) Create(ctx context.Context, req resource.Creat
 		payload.AzureStackServerCert = plan.AzureStackServerCert.ValueString()
 	}
 
-	if plan.CertDuration.ValueInt32() != types.Int32Null().ValueInt32() {
-		payload.CertDuration = plan.CertDuration.ValueInt32()
+	if plan.CertDuration.ValueInt64() != types.Int64Null().ValueInt64() {
+		payload.CertDuration = plan.CertDuration.ValueInt64()
 	}
 
 	if plan.Certificate.ValueString() != "" && plan.Certificate.ValueString() != types.StringNull().ValueString() {
@@ -275,22 +291,8 @@ func (r *resourceAzureConnection) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.ExternalCertificateUsed = types.BoolValue(gjson.Get(response, "external_certificate_used").Bool())
-	plan.Certificate = types.StringValue(gjson.Get(response, "certificate").String())
-	plan.CertificateThumbprint = types.StringValue(gjson.Get(response, "certificate_thumbprint").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Category = types.StringValue(gjson.Get(response, "category").String())
-	plan.Service = types.StringValue(gjson.Get(response, "service").String())
-	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
-	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
-	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
-	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
-
 	tflog.Debug(ctx, "[resource_azure_connection.go -> Create Output]["+response+"]")
+	getAzureParamsFromResponse(response, &resp.Diagnostics, &plan)
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_azure_connection.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -311,13 +313,24 @@ func (r *resourceAzureConnection) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_AZURE_CONNECTION)
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_AZURE_CONNECTION)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_azure_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error reading Azure Connection on CipherTrust Manager: ",
 			"Could not read azure connection id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
 		)
+		return
+	}
+	tflog.Debug(ctx, "resource_azure_connection.go: response :"+response)
+
+	getAzureParamsFromResponse(response, &resp.Diagnostics, &state)
+	// required parameters are fetched separately
+	state.Name = types.StringValue(gjson.Get(response, "name").String())
+
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -371,6 +384,10 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 
 	if plan.IsCertificateUsed.ValueBool() != types.BoolNull().ValueBool() {
 		payload.IsCertificateUsed = plan.IsCertificateUsed.ValueBool()
+	}
+
+	if plan.ExternalCertificateUsed.ValueBool() != types.BoolNull().ValueBool() {
+		payload.ExternalCertificateUsed = plan.ExternalCertificateUsed.ValueBool()
 	}
 
 	if plan.KeyVaultDNSSuffix.ValueString() != "" && plan.KeyVaultDNSSuffix.ValueString() != types.StringNull().ValueString() {
@@ -429,22 +446,8 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	}
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.Certificate = types.StringValue(gjson.Get(response, "certificate").String())
-	plan.CertificateThumbprint = types.StringValue(gjson.Get(response, "certificateThumbprint").String())
-	plan.ExternalCertificateUsed = types.BoolValue(gjson.Get(response, "externalCertificateUsed").Bool())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Category = types.StringValue(gjson.Get(response, "category").String())
-	plan.Service = types.StringValue(gjson.Get(response, "service").String())
-	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
-	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
-	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
-	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
-
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
+	getAzureParamsFromResponse(response, &resp.Diagnostics, &plan)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -492,4 +495,38 @@ func (d *resourceAzureConnection) Configure(_ context.Context, req resource.Conf
 	}
 
 	d.client = client
+}
+
+func getAzureParamsFromResponse(response string, diag *diag.Diagnostics, data *AzureConnectionTFSDK) {
+	// Common parameters for all connections
+	data.ID = types.StringValue(gjson.Get(response, "id").String())
+	data.URI = types.StringValue(gjson.Get(response, "uri").String())
+	data.Account = types.StringValue(gjson.Get(response, "account").String())
+	data.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	data.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	data.Category = types.StringValue(gjson.Get(response, "category").String())
+	data.Service = types.StringValue(gjson.Get(response, "service").String())
+	data.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	data.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	data.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	data.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+
+	// Parameters for azure connection
+	data.Certificate = types.StringValue(gjson.Get(response, "certificate").String())
+	data.CertificateThumbprint = types.StringValue(gjson.Get(response, "certificate_thumbprint").String())
+	data.ExternalCertificateUsed = types.BoolValue(gjson.Get(response, "external_certificate_used").Bool())
+	data.Description = types.StringValue(gjson.Get(response, "description").String())
+	data.TenantID = types.StringValue(gjson.Get(response, "tenant_id").String())
+	data.ClientID = types.StringValue(gjson.Get(response, "client_id").String())
+	data.CloudName = types.StringValue(gjson.Get(response, "cloud_name").String())
+	data.ActiveDirectoryEndpoint = types.StringValue(gjson.Get(response, "active_directory_endpoint").String())
+	data.VaultResourceURL = types.StringValue(gjson.Get(response, "vault_resource_url").String())
+	data.ResourceManagerURL = types.StringValue(gjson.Get(response, "resource_manager_url").String())
+	data.KeyVaultDNSSuffix = types.StringValue(gjson.Get(response, "key_vault_dns_suffix").String())
+	data.ManagementURL = types.StringValue(gjson.Get(response, "management_url").String())
+	data.AzureStackServerCert = types.StringValue(gjson.Get(response, "azure_stack_server_cert").String())
+	data.AzureStackConnectionType = types.StringValue(gjson.Get(response, "azure_stack_connection_type").String())
+	data.Labels = common.ParseMap(response, diag, "labels")
+	data.Meta = common.ParseMap(response, diag, "meta")
+	data.CertDuration = types.Int64Value(gjson.Get(response, "cert_duration").Int())
 }
