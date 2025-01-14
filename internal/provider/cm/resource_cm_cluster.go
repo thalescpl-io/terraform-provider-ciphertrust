@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
@@ -120,6 +121,7 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 
 	// Retrieve values from plan
 	var plan CMClusterTFSDK
+	regexURL := regexp.MustCompile(`https://([a-zA-Z0-9.\-]+)`)
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -130,7 +132,7 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 	for _, node := range plan.Nodes {
 		if node.Original.ValueBool() {
 			//Let's check if the cluster already exists for the primary node
-			response, err := r.client.ReadDataByParam(ctx, id, "all", common.URL_DOMAIN)
+			response, err := r.client.ReadDataByParam(ctx, id, "all", common.URL_CLUSTER_INFO)
 			if err != nil {
 				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cluster.go -> Create]["+id+"]")
 				resp.Diagnostics.AddError(
@@ -144,13 +146,15 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 				//This means we need to create a new cluster with the primary node
 				var newClusterPayload NewCMClusterNodeJSON
 				if node.Host.ValueString() != "" && node.Host.ValueString() != types.StringNull().ValueString() {
-					newClusterPayload.LocalNodeHost = node.Host.ValueString()
+					url := regexURL.FindStringSubmatch(node.Host.ValueString())
+					newClusterPayload.LocalNodeHost = url[1]
 				}
 				if node.Port.ValueInt64() != types.Int64Null().ValueInt64() {
 					newClusterPayload.LocalNodePort = node.Port.ValueInt64()
 				}
 				if node.PublicAddress.ValueString() != "" && node.PublicAddress.ValueString() != types.StringNull().ValueString() {
-					newClusterPayload.PublicAddress = node.PublicAddress.ValueString()
+					url := regexURL.FindStringSubmatch(node.PublicAddress.ValueString())
+					newClusterPayload.PublicAddress = url[1]
 				}
 
 				payloadJSON, err := json.Marshal(newClusterPayload)
@@ -198,8 +202,13 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 			}
 
 			var payloadCSR NewCSRJSON
-			payloadCSR.LocalNodeHost = node.Host.ValueString()
-			payloadCSR.PublicAddress = r.client.CipherTrustURL
+
+			urlLocalNode := regexURL.FindStringSubmatch(node.Host.ValueString())
+			payloadCSR.LocalNodeHost = urlLocalNode[1]
+
+			urlLocalNodePubAddress := regexURL.FindStringSubmatch(r.client.CipherTrustURL)
+			payloadCSR.PublicAddress = urlLocalNodePubAddress[1]
+
 			payloadCSRJSON, err := json.Marshal(payloadCSR)
 			if err != nil {
 				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cluster.go -> Create]["+id+"]")
@@ -221,8 +230,13 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 			//2. Sign the CSR from an existing node in the cluster
 			var payloadSignCSR SignRequestJSON
 			payloadSignCSR.CSR = gjson.Get(responseCSR, "csr").String()
-			payloadSignCSR.NewNodeHost = node.Host.ValueString()
-			payloadSignCSR.PublicAddress = r.client.CipherTrustURL
+
+			urlNewNode := regexURL.FindStringSubmatch(node.Host.ValueString())
+			payloadSignCSR.NewNodeHost = urlNewNode[1]
+
+			urlNewNodePub := regexURL.FindStringSubmatch(r.client.CipherTrustURL)
+			payloadSignCSR.PublicAddress = urlNewNodePub[1]
+
 			payloadSignCSR.SharedHSMPartition = false
 			payloadSignCSRJSON, err := json.Marshal(payloadSignCSR)
 			if err != nil {
@@ -247,8 +261,11 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 			payloadJoinNode.CAChain = gjson.Get(responseSignCSR, "cachain").String()
 			payloadJoinNode.Cert = gjson.Get(responseSignCSR, "cert").String()
 			payloadJoinNode.MKEKBlob = gjson.Get(responseSignCSR, "mkek_blob").String()
-			payloadJoinNode.LocalNodeHost = node.Host.ValueString()
-			payloadJoinNode.MemberNodeHost = r.client.CipherTrustURL
+			urlJoinNode := regexURL.FindStringSubmatch(node.Host.ValueString())
+			urlMemberNodePub := regexURL.FindStringSubmatch(r.client.CipherTrustURL)
+			payloadJoinNode.LocalNodeHost = urlJoinNode[1]
+			payloadJoinNode.MemberNodeHost = urlMemberNodePub[1]
+
 			if node.Port.ValueInt64() != types.Int64Null().ValueInt64() {
 				payloadJoinNode.LocalNodePort = node.Port.ValueInt64()
 			}
@@ -261,7 +278,8 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 				)
 				return
 			}
-			responseJoinNode, err := r.client.PostDataV2(ctx, id, common.URL_CLUSTER_JOIN, payloadJoinNodeJSON)
+			//responseJoinNode, err := r.client.PostDataV2(ctx, id, common.URL_CLUSTER_JOIN, payloadJoinNodeJSON)
+			responseJoinNode, err := node_client.PostDataV2(ctx, id, common.URL_CLUSTER_JOIN, payloadJoinNodeJSON)
 			if err != nil {
 				tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_cluster.go -> Create]["+id+"]")
 				resp.Diagnostics.AddError(
@@ -270,6 +288,7 @@ func (r *resourceCMCluster) Create(ctx context.Context, req resource.CreateReque
 				return
 			}
 			plan.NodeCount = types.Int64Value(gjson.Get(responseJoinNode, "nodeCount").Int())
+			plan.ID = types.StringValue(gjson.Get(responseJoinNode, "nodeID").String())
 			plan.NodeId = types.StringValue(gjson.Get(responseJoinNode, "nodeID").String())
 			plan.StatusCode = types.StringValue(gjson.Get(responseJoinNode, "status.code").String())
 			plan.StatusDescription = types.StringValue(gjson.Get(responseJoinNode, "status.description").String())
@@ -306,6 +325,7 @@ func (r *resourceCMCluster) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	state.NodeCount = types.Int64Value(gjson.Get(response, "nodeCount").Int())
+	state.ID = types.StringValue(gjson.Get(response, "nodeID").String())
 	state.NodeId = types.StringValue(gjson.Get(response, "nodeID").String())
 	state.StatusCode = types.StringValue(gjson.Get(response, "status.code").String())
 	state.StatusDescription = types.StringValue(gjson.Get(response, "status.description").String())
