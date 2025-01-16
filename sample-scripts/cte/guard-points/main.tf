@@ -5,7 +5,7 @@ terraform {
 		version = "1.0.0"
 	  }
 	}
-  }
+}
 
 provider "ciphertrust" {
     address = "https://192.168.2.158"
@@ -16,12 +16,12 @@ provider "ciphertrust" {
 }
 
 resource "ciphertrust_cte_policy" "standard_policy" {
-    provider = ciphertrust.primary
-    name        = "TF_CTE_Policy"
-    policy_type        = "Standard"
-    description = "Created via TF"
-    never_deny  = true
-    security_rules = [{
+    provider        = ciphertrust.primary
+    name            = "TF_CTE_Policy"
+    policy_type     = "Standard"
+    description     = "Created via TF"
+    never_deny      = true
+    security_rules  = [{
         effect               = "permit,audit"
         action               = "all_ops"
         partial_match        = false
@@ -29,13 +29,26 @@ resource "ciphertrust_cte_policy" "standard_policy" {
     }]
 }
 
-resource "ciphertrust_cte_client_guardpoint" "dir_auto_gp" {
-    provider = ciphertrust.primary
-    guard_paths = ["/opt/path1"]
-    guard_point_params = {
-        guard_point_type = "directory_auto"
-        guard_enabled = true
+resource "ciphertrust_cte_client" "cte_client" {
+    provider                    = ciphertrust.primary
+    name                        = "TF_CTE_Client"
+    client_type                 = "FS"
+    registration_allowed        = true
+    communication_enabled       = true
+    description                 = "Created via TF"
+    password_creation_method    = "GENERATE"
+    labels                      = {
+      color = "blue"
     }
-    client_id     = aws_instance.cte_agents[count.index].private_dns
-    policy_id     = ciphertrust_cte_policy.standard_policy.name
+}
+
+resource "ciphertrust_cte_client_guardpoint" "dir_auto_gp" {
+    provider            = ciphertrust.primary
+    guard_paths         = ["/opt/path1"]
+    guard_point_params  = {
+        guard_point_type  = "directory_auto"
+        guard_enabled     = true
+        policy_id         = ciphertrust_cte_policy.standard_policy.name
+    }
+    client_id           = ciphertrust_cte_client.cte_client.id
 }
