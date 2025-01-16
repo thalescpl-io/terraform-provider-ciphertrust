@@ -1,29 +1,31 @@
 terraform {
-	required_providers {
-	  ciphertrust = {
-		source = "thalesgroup.com/oss/ciphertrust"
-		version = "1.0.0"
-	  }
-	}
+  required_providers {
+    ciphertrust = {
+      source  = "thales.com/terraform/ciphertrust"
+      version = "1.0.0"
+    }
   }
-
-provider "ciphertrust" {
-    address = "https://192.168.2.158"
-    username = "admin"
-    password = "ChangeIt01!"
-    bootstrap = "no"
-    alias = "primary"
 }
 
-resource "ciphertrust_cte_client" "cte_client" {
-    provider = ciphertrust.primary
-    name        = "TF_CTE_Client"
-    client_type = "FS"
-    registration_allowed = true
-    communication_enabled = true
-    description = "Created via TF"
-    password_creation_method = "GENERATE"
-    labels = {
-      color = "blue"
-    }
+provider "ciphertrust" {}
+
+# Creating a client with Password_creation method as GENERATE 
+resource "ciphertrust_cte_client" "client" {
+  name                     = "test_client"
+  password_creation_method = "GENERATE"
+  description              = "Temp host for testing."
+  registration_allowed     = true
+  communication_enabled    = true
+  client_type              = "FS"
+}
+
+# Creating a client with Password_creation method as MANUAL 
+resource "ciphertrust_cte_client" "client" {
+  name                     = "test_client1"
+  password_creation_method = "MANUAL"
+  password                 = "redacted"
+  description              = "Temp host for testing."
+  registration_allowed     = true
+  communication_enabled    = true
+  client_type              = "FS"
 }
