@@ -25,6 +25,15 @@ var (
 	_                           resource.ResourceWithConfigure = &resourceCTEClient{}
 	CtePasswordGenarationMethod                                = []string{"GENERATE", "MANUAL"}
 	CteClientType                                              = []string{"FS", "CTE-U"}
+
+	CTEResourceDescription = `CipherTrust Transparent Encryption (CTE) delivers data-at-rest encryption with centralized key management, privileged user access control, and detailed data access audit logging. This protects data wherever it resides—on-premises, across multiple clouds, and within big data.
+
+	CTE:
+
+	- Encrypts files and raw data
+	- Controls which users can decrypt and access that data
+	- Controls which processes and executables can decrypt and encrypt that data
+	- Generates fine-grained audit trails on those processes, executables, and users`
 )
 
 func NewResourceCTEClient() resource.Resource {
@@ -42,6 +51,7 @@ func (r *resourceCTEClient) Metadata(_ context.Context, req resource.MetadataReq
 // Schema defines the schema for the resource.
 func (r *resourceCTEClient) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: CTEResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,

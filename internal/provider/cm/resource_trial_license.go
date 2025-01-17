@@ -155,7 +155,7 @@ func (r *resourceCMTrialLicense) Read(ctx context.Context, req resource.ReadRequ
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_trial_license.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error reading trial license on CipherTrust Manager: ",
-			"Could not read trial license id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
+			"Could not read trial license id : "+state.ID.ValueString()+"unexpected error: "+err.Error(),
 		)
 		return
 	}

@@ -29,3 +29,7 @@ go.work.sum
 *.backup
 /docs
 /docs
+
+.codegpt
+/sample-scripts/cm/cluster/.terraform
+*.hcl

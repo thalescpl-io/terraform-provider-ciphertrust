@@ -1,8 +1,9 @@
 package cm
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 type LocalCAsListModelJSON struct {
@@ -642,8 +643,8 @@ type CMNTPJSON struct {
 }
 
 type CMClusterNodeCredsTFSDK struct {
-	Username    types.String `tfsdk:"host"`
-	Password    types.String `tfsdk:"original"`
+	Username    types.String `tfsdk:"username"`
+	Password    types.String `tfsdk:"password"`
 	Domain      types.String `tfsdk:"domain"`
 	AuthDomain  types.String `tfsdk:"auth_domain"`
 	NoSSLVerify types.Bool   `tfsdk:"no_ssl_verify"`

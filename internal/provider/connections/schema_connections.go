@@ -131,7 +131,7 @@ type AzureConnectionTFSDK struct {
 	ActiveDirectoryEndpoint  types.String   `tfsdk:"active_directory_endpoint"`
 	AzureStackConnectionType types.String   `tfsdk:"azure_stack_connection_type"`
 	AzureStackServerCert     types.String   `tfsdk:"azure_stack_server_cert"`
-	CertDuration             types.Int32    `tfsdk:"cert_duration"`
+	CertDuration             types.Int64    `tfsdk:"cert_duration"`
 	Certificate              types.String   `tfsdk:"certificate"`
 	ClientSecret             types.String   `tfsdk:"client_secret"`
 	CloudName                types.String   `tfsdk:"cloud_name"`
@@ -157,7 +157,7 @@ type AzureConnectionJSON struct {
 	ActiveDirectoryEndpoint  string                 `json:"active_directory_endpoint"`
 	AzureStackConnectionType string                 `json:"azure_stack_connection_type"`
 	AzureStackServerCert     string                 `json:"azure_stack_server_cert"`
-	CertDuration             int32                  `json:"cert_duration"`
+	CertDuration             int64                  `json:"cert_duration"`
 	Certificate              string                 `json:"certificate"`
 	ClientSecret             string                 `json:"client_secret"`
 	CloudName                string                 `json:"cloud_name"`

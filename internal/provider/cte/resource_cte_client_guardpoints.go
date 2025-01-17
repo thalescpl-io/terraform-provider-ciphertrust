@@ -44,10 +44,10 @@ func (r *resourceCTEClientGP) Metadata(_ context.Context, req resource.MetadataR
 // Schema defines the schema for the resource.
 func (r *resourceCTEClientGP) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "A GuardPoint specifies the list of folders that contains paths to be protected."+
-				" Access to files and encryption of files under the GuardPoint is controlled by security policies."+
-				"GuardPoints created on a client group are applied to all clients in the group."+
-				"NOTE: Any updation performed will be applicable to each gurad paths.Terraform Destroy will unguard the paths.",
+		Description: "A GuardPoint specifies the list of folders that contains paths to be protected." +
+			" Access to files and encryption of files under the GuardPoint is controlled by security policies." +
+			"GuardPoints created on a client group are applied to all clients in the group." +
+			"NOTE: Any updation performed will be applicable to each gurad paths.Terraform Destroy will unguard the paths.",
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
 				Required:    true,

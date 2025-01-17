@@ -38,9 +38,11 @@ func (r *resourceCTECSIGroup) Metadata(_ context.Context, req resource.MetadataR
 // Schema defines the schema for the resource.
 func (r *resourceCTECSIGroup) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "This section contains APIs for managing Storage Group resources related to Kubernetes Container Storage Interface (CSI).",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "The ID of this resource.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

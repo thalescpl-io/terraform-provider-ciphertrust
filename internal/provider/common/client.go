@@ -51,7 +51,7 @@ func NewCMClientBoot(ctx context.Context, uuid string, address *string) (*CMClie
 
 	c := CMClientBootstrap{
 		HTTPClient: &http.Client{
-			Timeout:   10 * time.Second,
+			Timeout:   180 * time.Second,
 			Transport: tr,
 		},
 		// Default CM URL
@@ -75,7 +75,7 @@ func NewClient(ctx context.Context, uuid string, address, auth_domain, domain, u
 
 	c := Client{
 		HTTPClient: &http.Client{
-			Timeout:   10 * time.Second,
+			Timeout:   180 * time.Second,
 			Transport: tr,
 		},
 		// Default URL
