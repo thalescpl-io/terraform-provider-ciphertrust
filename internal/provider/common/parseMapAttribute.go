@@ -39,3 +39,19 @@ func ParseMap(response string, diagnostics *diag.Diagnostics, paramName string) 
 
 	return types.MapValueMust(types.StringType, convertedMap)
 }
+
+func ParseArray(response string, paramName string) types.List {
+	productsField := gjson.Get(response, paramName)
+	var products types.List
+	if productsField.IsArray() {
+		var productValues []attr.Value
+		productsField.ForEach(func(_, value gjson.Result) bool {
+			productValues = append(productValues, types.StringValue(value.String()))
+			return true
+		})
+		products, _ = types.ListValue(types.StringType, productValues)
+	} else {
+		products = types.ListNull(types.StringType)
+	}
+	return products
+}

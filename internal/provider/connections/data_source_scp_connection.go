@@ -159,12 +159,13 @@ func (d *dataSourceScpConnection) Read(ctx context.Context, req datasource.ReadR
 			},
 			ID:   types.StringValue(scp.ID),
 			Name: types.StringValue(scp.Name),
-			Products: func() []types.String {
-				var products []types.String
+			Products: func() types.List {
+				var productValues []attr.Value
 				for _, product := range scp.Products {
-					products = append(products, types.StringValue(product))
+					productValues = append(productValues, types.StringValue(product))
 				}
-				return products
+				listValue, _ := types.ListValue(types.StringType, productValues) // Create a ListValue
+				return listValue
 			}(),
 			Description: types.StringValue(scp.Description),
 			Host:        types.StringValue(scp.Host),

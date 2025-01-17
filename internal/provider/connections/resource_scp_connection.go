@@ -142,7 +142,7 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			"products": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				//Computed:    true,
+				Computed:    true,
 				Description: productsDescription,
 			},
 			"protocol": schema.StringAttribute{
@@ -227,11 +227,16 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 		payload.Port = plan.Port.ValueInt64()
 	}
 
-	var scpProducts []string
-	for _, str := range plan.Products {
-		scpProducts = append(scpProducts, str.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var scpProducts []string
+		diags = plan.Products.ElementsAs(ctx, &scpProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = scpProducts
 	}
-	payload.Products = scpProducts
 
 	if plan.Protocol.ValueString() != "" && plan.Protocol.ValueString() != types.StringNull().ValueString() {
 		payload.Protocol = plan.Protocol.ValueString()
@@ -256,7 +261,7 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 		)
 		return
 	}
-	getParamsFromResponse(response, &resp.Diagnostics, &plan)
+	getParamsFromResponse(ctx, response, &resp.Diagnostics, &plan)
 
 	tflog.Debug(ctx, "[resource_scp_connection.go -> Create Output]["+response+"]")
 
@@ -291,7 +296,7 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 	}
 	tflog.Debug(ctx, "resource_scp_connection.go: response :"+response)
 
-	getParamsFromResponse(response, &resp.Diagnostics, &state)
+	getParamsFromResponse(ctx, response, &resp.Diagnostics, &state)
 	// required parameters are fetched separately
 	state.AuthMethod = types.StringValue(gjson.Get(response, "auth_method").String())
 	state.Host = types.StringValue(gjson.Get(response, "host").String())
@@ -364,11 +369,16 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		payload.Port = plan.Port.ValueInt64()
 	}
 
-	var scpProducts []string
-	for _, str := range plan.Products {
-		scpProducts = append(scpProducts, str.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var scpProducts []string
+		diags = plan.Products.ElementsAs(ctx, &scpProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = scpProducts
 	}
-	payload.Products = scpProducts
 
 	if plan.Protocol.ValueString() != "" && plan.Protocol.ValueString() != types.StringNull().ValueString() {
 		payload.Protocol = plan.Protocol.ValueString()
@@ -393,7 +403,7 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	}
-	getParamsFromResponse(response, &resp.Diagnostics, &plan)
+	getParamsFromResponse(ctx, response, &resp.Diagnostics, &plan)
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
 	diags = resp.State.Set(ctx, plan)
@@ -443,7 +453,7 @@ func (d *resourceCMScpConnection) Configure(_ context.Context, req resource.Conf
 	d.client = client
 }
 
-func getParamsFromResponse(response string, diag *diag.Diagnostics, data *CMScpConnectionTFSDK) {
+func getParamsFromResponse(ctx context.Context, response string, diag *diag.Diagnostics, data *CMScpConnectionTFSDK) {
 	data.ID = types.StringValue(gjson.Get(response, "id").String())
 	data.URI = types.StringValue(gjson.Get(response, "uri").String())
 	data.Account = types.StringValue(gjson.Get(response, "account").String())
@@ -460,4 +470,6 @@ func getParamsFromResponse(response string, diag *diag.Diagnostics, data *CMScpC
 	data.Port = types.Int64Value(gjson.Get(response, "port").Int())
 	data.Labels = common.ParseMap(response, diag, "labels")
 	data.Meta = common.ParseMap(response, diag, "meta")
+	data.Products = common.ParseArray(response, "products")
+	tflog.Debug(ctx, fmt.Sprintf("products ===== %v", data.Products))
 }
