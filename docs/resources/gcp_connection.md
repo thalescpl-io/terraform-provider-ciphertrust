@@ -39,7 +39,7 @@ resource "ciphertrust_gcp_connection" "gcp_connection" {
 
 ### Required
 
-- `key_file` (String) The contents of private key json file of a GCP service account.
+- `key_file` (String) The private key JSON file of a Google Cloud Platform (GCP) service account can be provided either as a JSON file or as a string, as demonstrated in the example below.
    
   Example:
   ```terraform

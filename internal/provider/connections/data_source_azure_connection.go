@@ -194,12 +194,13 @@ func (d *dataSourceAzureConnection) Read(ctx context.Context, req datasource.Rea
 			ExternalCertificateUsed:  types.BoolValue(azure.ExternalCertificateUsed),
 			KeyVaultDNSSuffix:        types.StringValue(azure.KeyVaultDNSSuffix),
 			ManagementURL:            types.StringValue(azure.ManagementURL),
-			Products: func() []types.String {
-				var products []types.String
+			Products: func() types.List {
+				var productValues []attr.Value
 				for _, product := range azure.Products {
-					products = append(products, types.StringValue(product))
+					productValues = append(productValues, types.StringValue(product))
 				}
-				return products
+				listValue, _ := types.ListValue(types.StringType, productValues)
+				return listValue
 			}(),
 			ResourceManagerURL: types.StringValue(azure.ResourceManagerURL),
 			VaultResourceURL:   types.StringValue(azure.VaultResourceURL),
