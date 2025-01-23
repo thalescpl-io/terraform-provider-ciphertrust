@@ -257,11 +257,16 @@ func (r *resourceAzureConnection) Create(ctx context.Context, req resource.Creat
 	}
 	payload.Meta = azureMetadataPayload
 
-	var azureProducts []string
-	for _, product := range plan.Products {
-		azureProducts = append(azureProducts, product.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var azureProducts []string
+		diags = plan.Products.ElementsAs(ctx, &azureProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = azureProducts
 	}
-	payload.Products = azureProducts
 
 	if plan.ResourceManagerURL.ValueString() != "" && plan.ResourceManagerURL.ValueString() != types.StringNull().ValueString() {
 		payload.ResourceManagerURL = plan.ResourceManagerURL.ValueString()
@@ -410,11 +415,16 @@ func (r *resourceAzureConnection) Update(ctx context.Context, req resource.Updat
 	}
 	payload.Meta = azureMetadataPayload
 
-	var azureProducts []string
-	for _, product := range plan.Products {
-		azureProducts = append(azureProducts, product.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var azureProducts []string
+		diags = plan.Products.ElementsAs(ctx, &azureProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = azureProducts
 	}
-	payload.Products = azureProducts
 
 	if plan.ResourceManagerURL.ValueString() != "" && plan.ResourceManagerURL.ValueString() != types.StringNull().ValueString() {
 		payload.ResourceManagerURL = plan.ResourceManagerURL.ValueString()
@@ -529,4 +539,5 @@ func getAzureParamsFromResponse(response string, diag *diag.Diagnostics, data *A
 	data.Labels = common.ParseMap(response, diag, "labels")
 	data.Meta = common.ParseMap(response, diag, "meta")
 	data.CertDuration = types.Int64Value(gjson.Get(response, "cert_duration").Int())
+	data.Products = common.ParseArray(response, "products")
 }

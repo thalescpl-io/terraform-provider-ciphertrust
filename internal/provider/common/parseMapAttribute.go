@@ -40,15 +40,18 @@ func ParseMap(response string, diagnostics *diag.Diagnostics, paramName string) 
 	return types.MapValueMust(types.StringType, convertedMap)
 }
 
-//
-//func ParseProducts(response string, diagnostics *diag.Diagnostics, paramName string) []types.String {
-//	configJSON := gjson.Get(response, paramName).Raw
-//
-//	if configJSON == "" {
-//		tflog.Debug(context.Background(), fmt.Sprintf("The '%s' field in the response is empty or missing.", paramName))
-//		return []types.String{types.StringNull()}
-//	}
-//
-//	var products []string
-//	return []types.String{}
-//}
+func ParseArray(response string, paramName string) types.List {
+	productsField := gjson.Get(response, paramName)
+	var products types.List
+	if productsField.IsArray() {
+		var productValues []attr.Value
+		productsField.ForEach(func(_, value gjson.Result) bool {
+			productValues = append(productValues, types.StringValue(value.String()))
+			return true
+		})
+		products, _ = types.ListValue(types.StringType, productValues)
+	} else {
+		products = types.ListNull(types.StringType)
+	}
+	return products
+}
