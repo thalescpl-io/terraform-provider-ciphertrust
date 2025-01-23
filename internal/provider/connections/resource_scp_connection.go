@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -114,15 +115,18 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Description about the connection.",
 			},
 			"labels": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: labelsDescription,
 			},
 			"meta": schema.MapAttribute{
 				ElementType: types.StringType,
+				Computed:    true,
 				Optional:    true,
 				Description: "Optional end-user or service data stored with the connection.",
 			},
@@ -132,15 +136,18 @@ func (r *resourceCMScpConnection) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"port": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Port where SCP/SFTP service runs on host (usually 22).",
 			},
 			"products": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
 				Description: productsDescription,
 			},
 			"protocol": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Use 'sftp' or 'scp'. 'sftp' is the default value",
 			},
 			//common response parameters (optional)
@@ -220,11 +227,16 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 		payload.Port = plan.Port.ValueInt64()
 	}
 
-	var scpProducts []string
-	for _, str := range plan.Products {
-		scpProducts = append(scpProducts, str.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var scpProducts []string
+		diags = plan.Products.ElementsAs(ctx, &scpProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = scpProducts
 	}
-	payload.Products = scpProducts
 
 	if plan.Protocol.ValueString() != "" && plan.Protocol.ValueString() != types.StringNull().ValueString() {
 		payload.Protocol = plan.Protocol.ValueString()
@@ -249,19 +261,7 @@ func (r *resourceCMScpConnection) Create(ctx context.Context, req resource.Creat
 		)
 		return
 	}
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Category = types.StringValue(gjson.Get(response, "category").String())
-	plan.Service = types.StringValue(gjson.Get(response, "service").String())
-	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
-	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
-	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
-	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
-
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
+	getParamsFromResponse(response, &resp.Diagnostics, &plan)
 
 	tflog.Debug(ctx, "[resource_scp_connection.go -> Create Output]["+response+"]")
 
@@ -284,13 +284,28 @@ func (r *resourceCMScpConnection) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_SCP_CONNECTION)
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_SCP_CONNECTION)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_scp_connection.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError(
 			"Error reading SCP Connection on CipherTrust Manager: ",
 			"Could not read scp connection id : ,"+state.ID.ValueString()+"unexpected error: "+err.Error(),
 		)
+		return
+	}
+	tflog.Debug(ctx, "resource_scp_connection.go: response :"+response)
+
+	getParamsFromResponse(response, &resp.Diagnostics, &state)
+	// required parameters are fetched separately
+	state.AuthMethod = types.StringValue(gjson.Get(response, "auth_method").String())
+	state.Host = types.StringValue(gjson.Get(response, "host").String())
+	state.PathTo = types.StringValue(gjson.Get(response, "path_to").String())
+	state.PublicKey = types.StringValue(gjson.Get(response, "public_key").String())
+	state.Username = types.StringValue(gjson.Get(response, "username").String())
+
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -353,11 +368,16 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		payload.Port = plan.Port.ValueInt64()
 	}
 
-	var scpProducts []string
-	for _, str := range plan.Products {
-		scpProducts = append(scpProducts, str.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var scpProducts []string
+		diags = plan.Products.ElementsAs(ctx, &scpProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = scpProducts
 	}
-	payload.Products = scpProducts
 
 	if plan.Protocol.ValueString() != "" && plan.Protocol.ValueString() != types.StringNull().ValueString() {
 		payload.Protocol = plan.Protocol.ValueString()
@@ -382,20 +402,9 @@ func (r *resourceCMScpConnection) Update(ctx context.Context, req resource.Updat
 		)
 		return
 	}
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Category = types.StringValue(gjson.Get(response, "category").String())
-	plan.Service = types.StringValue(gjson.Get(response, "service").String())
-	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
-	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
-	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
-	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+	getParamsFromResponse(response, &resp.Diagnostics, &plan)
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", response))
-
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -441,4 +450,24 @@ func (d *resourceCMScpConnection) Configure(_ context.Context, req resource.Conf
 	}
 
 	d.client = client
+}
+
+func getParamsFromResponse(response string, diag *diag.Diagnostics, data *CMScpConnectionTFSDK) {
+	data.ID = types.StringValue(gjson.Get(response, "id").String())
+	data.URI = types.StringValue(gjson.Get(response, "uri").String())
+	data.Account = types.StringValue(gjson.Get(response, "account").String())
+	data.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	data.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	data.Category = types.StringValue(gjson.Get(response, "category").String())
+	data.Service = types.StringValue(gjson.Get(response, "service").String())
+	data.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	data.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	data.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	data.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
+	data.Description = types.StringValue(gjson.Get(response, "description").String())
+	data.Protocol = types.StringValue(gjson.Get(response, "protocol").String())
+	data.Port = types.Int64Value(gjson.Get(response, "port").Int())
+	data.Labels = common.ParseMap(response, diag, "labels")
+	data.Meta = common.ParseMap(response, diag, "meta")
+	data.Products = common.ParseArray(response, "products")
 }
