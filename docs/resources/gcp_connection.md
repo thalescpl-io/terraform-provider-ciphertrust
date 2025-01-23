@@ -39,12 +39,40 @@ resource "ciphertrust_gcp_connection" "gcp_connection" {
 
 ### Required
 
-- `key_file` (String) The private key JSON file of a Google Cloud Platform (GCP) service account can be provided either as a JSON file or as a string, as demonstrated in the example below.
+- `key_file` (String) The private key for a Google Cloud Platform (GCP) service account. It can be provided in two formats:
+  - As a JSON file
+    
+    Example:
+    ```terraform
+    key_file    = "gcp-key-file.json"
+    ```
+    Sample gcp-key-file.json :
+    ```terraform
+        {
+        "type": "service_account",
+        "project_id": "gemalto-kyloeng",
+        "private_key_id": "ca88f58659893c00a10099dcfa7142d5512f2514",
+        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC4zjmgA2RuxViS\nC4jpClgHENzcsV9aLOvNK1k95klFGbPv6pFh0EwF\/ZNPb\/FakwQEUuaSegN8mPuG\neMYNgukdp\/bBWtHeeo9DnuiBR92luq1bYw4dUt\/DGVt0qcR2+ihWKF7iRhnwSwBc\ncukPz3rD1cU32MZrkKXU0IVkTdJT8ex2cN2nbp14SpC9p3JxkIf2BoLtuGDo0IpR\n23DTR+npgbw4eP5fzsNb0hdyPWDkDpKBAhGunXgHZt8ckexFXx7ic0gAnk297vRR\nA5WgOgSpZnA92wzfVlDaN\/\/2uWkBzaDdxTbuiLKxcZjlJ2rzgQrczZ01+t+DDI63\nDJdoE7cZAgMBAAECggEADtyErU3AiJjlpb74OFdc21qbjELWSmvk3YewIkZv23b0\n7aT1IoLL7kplS4TSyagbcVaSVLKrr5wk0\/xH3wPJR9l\/Qi7RxDyiYzt28piLJj30\nHW6CjtCgjnGuVVwmoLO+xSjzcmpVQSni4kxaWiti8bcx6CsOT82ezFWleHq6oIXn\nr6QTKhhGEAzbGU2rm1\/D14EDrfLOBkU3LB+7I5OHHuXnX1TPgeA7M1frbKpxBMsP\nAngRey9c4e95nIb1BwrWpnhHKgUNa91QX131ExXbx+9cUVJS\/HGZCxK173IryIbV\nr1AhH3YLNdeUkQsHOxZBIDA\/aEmP5zKj7zgnujhlFQKBgQDg8TgWDVqCU3Kxaiev\nH4sMx\/e+eXIYrt5jBYbOJ40hvYxmsbP10zkxhc07IVffdxUD32ih4MnYnZ98nPXy\n1k0Lc6JIs9tNt2+IQ6fyQVSftTnyq\/dcY0zFVLAPqDqJwc82mVmc7wYz9twMoAN4\n+pWK5UDgeB95y4rRTPdCKvpPHQKBgQDSUlbkql28xapWsLyq6\/K+xT2lIzduiS8C\nD7n2GEYC48malokNOkA+qR49bKzuee2nYO5DMClH19TWbwSKYV3wo3ZpT70Qka06\nf1J13cziAcFxuJJ4TqPqYR\/LYeJBsFdL1xzBi6a\/Yxl04BzmlpG\/gVmI+LsZIF1v\np0I0zx7bLQKBgCRIZF6SOtYotahOUiZaNSiTnK95kWDP3Akm3A6mrIoTs\/DgmwF8\n143YYjk2cKEX6SjdwVfTFVu+WPpVqwpHbNf7B+MoN6h6fSACobVeulKkfbtZ56Vc\nUwbFWTy9Suvregv5gk3g9CQvnmDe8pByAusLfYJ3fcQ8g6CtBHkEy6k1AoGBAMiO\nV+nJQ4Wk\/9+WvPJH+LxNnZEBWfR\/wGG42V2AnBJZYH+XGK2SZHzcC8gK\/4SQpDy9\nw7YyEMs\/Vuf8CVpjqo6zcVDPBrzsDUIA84MNtDe38N0eYh1y7\/+qCgWJG5YEL9pU\nEEnHf4R1XWsD4stHvUfecqCYfuFg6Xh1CD8PWp8pAoGAHPzIR9k3Jqhh1Cc3aHP1\n4QJme\/TMxuwk\/eysyuluAn\/fvf\/wiJuZD6YWmjQzjrtOGBVqCfc+GV0Zo+7z70gR\nnUkFtLMDJpTPQsNNBUaEqPIgbYd8zPyvp4ZWtuamQ2PqcTpJgkmZLKPw+7ij1fzG\n59zHQ5Zmb24e\/LqRpfjrQVo=\n-----END PRIVATE KEY-----\n",
+        "client_email": "cckm-testing-sa@gemalto-kyloeng.iam.gserviceaccount.com",
+        "client_id": "107668316025104934890",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-sa%40gemalto-kyloeng.iam.gserviceaccount.comtest-sa@gemalto-kyloeng.iam.gserviceaccount.com",
+        "client_id": "111569595609317848627",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-sa%40gemalto-kyloeng.iam.gserviceaccount.com"
+        }
+    ```
+    
+  - As a string
    
-  Example:
-  ```terraform
-  key_file    = "{\"type\":\"service_account\",\"private_key_id\":\"y437c51g956b8ab4908yb41541262a2fa3b0f84f\",\"private_key\":\"-----BEGIN RSA PRIVATE KEY-----\\nMIICXAIBAAKBgQDnC1YYTtcpsbj6cV9M/1rOhEYWG9iNdnsMCK0AjMRtb79toU2v\\nyW0JfJR/sR2vqFMD1wJFgpayqo5GDPa8Us23I/vvyWCkatouGYO27r84y5G2h74a\\nZnnEaK7uLQ2OdGNHWcZv8gZhy7X5e6RJfKVVlYrgYtfEKv55E9dQSZrohQIDAQAB\\nAoGAbzre7P7vyQvdkPyJs+jvj6LQlw462AflPyriFvSuED2PPDk+zFU9oCaQ21Sq\\nhQmVRbD6T/qJkGRZ8FGHa6y1if6UVbUymr+0a1hIM7BbPwsG2hLXznYjXWZ8WFDb\\nQyRWTZh4Zj0Br2DtoRjQOG8CHhC7LuFx434acu12VXxN8vUCQQDtS8GRzktOWRBL\\n2l7MWCja3lkqyYR2Ns+tw79eEAYVrGsFZLu6gAMdmn53M+eO5h++Ypr7G+bazvwC\\nD1XtiN+7AkEA+UFuq04YR3lTpCN1OeJ0VKXatVMFMjAejulHF3d3tRc4pIfAjgTk\\n4M+K9y++4QtVdhsGO9sk1jwfHrRTn340vwJBAIJ25DYF9eFdllgd94Dh95ReKygb\\nI3jbKdOfi9drd+zynuSYPZ6MQypDhsSDBQzL+SfzjsIA1Sv4IRYA2H2Ag4ECQAYw\\nHKo+DxY/KddqVe+w8ohjcbGMtRVQ4oFTw0MO4Tbqs6pKAHrGHlSCcoW+drOpj16W\\nPypfP2PeLDub6HOOM4sCQGWUXaHqJzfy2nHRAkr9WJEGgEMCMlGtFuMPH/Jc7aUt\\nNXk9HfcpVO/spIVpyL7x480hq5DHn7KaGwi+Lk2W0A8=\\n-----END RSA PRIVATE KEY-----\\n\\n\",\"client_email\":\"test@some-project.iam.gserviceaccount.com\"}"
-  ```
+    Example:
+    ```terraform
+    key_file    = "{\"type\":\"service_account\",\"private_key_id\":\"y437c51g956b8ab4908yb41541262a2fa3b0f84f\",\"private_key\":\"-----BEGIN RSA PRIVATE KEY-----\\nMIICXAIBAAKBgQDnC1YYTtcpsbj6cV9M/1rOhEYWG9iNdnsMCK0AjMRtb79toU2v\\nyW0JfJR/sR2vqFMD1wJFgpayqo5GDPa8Us23I/vvyWCkatouGYO27r84y5G2h74a\\nZnnEaK7uLQ2OdGNHWcZv8gZhy7X5e6RJfKVVlYrgYtfEKv55E9dQSZrohQIDAQAB\\nAoGAbzre7P7vyQvdkPyJs+jvj6LQlw462AflPyriFvSuED2PPDk+zFU9oCaQ21Sq\\nhQmVRbD6T/qJkGRZ8FGHa6y1if6UVbUymr+0a1hIM7BbPwsG2hLXznYjXWZ8WFDb\\nQyRWTZh4Zj0Br2DtoRjQOG8CHhC7LuFx434acu12VXxN8vUCQQDtS8GRzktOWRBL\\n2l7MWCja3lkqyYR2Ns+tw79eEAYVrGsFZLu6gAMdmn53M+eO5h++Ypr7G+bazvwC\\nD1XtiN+7AkEA+UFuq04YR3lTpCN1OeJ0VKXatVMFMjAejulHF3d3tRc4pIfAjgTk\\n4M+K9y++4QtVdhsGO9sk1jwfHrRTn340vwJBAIJ25DYF9eFdllgd94Dh95ReKygb\\nI3jbKdOfi9drd+zynuSYPZ6MQypDhsSDBQzL+SfzjsIA1Sv4IRYA2H2Ag4ECQAYw\\nHKo+DxY/KddqVe+w8ohjcbGMtRVQ4oFTw0MO4Tbqs6pKAHrGHlSCcoW+drOpj16W\\nPypfP2PeLDub6HOOM4sCQGWUXaHqJzfy2nHRAkr9WJEGgEMCMlGtFuMPH/Jc7aUt\\nNXk9HfcpVO/spIVpyL7x480hq5DHn7KaGwi+Lk2W0A8=\\n-----END RSA PRIVATE KEY-----\\n\\n\",\"client_email\":\"test@some-project.iam.gserviceaccount.com\"}"
+    ```
   
 - `name` (String) Unique connection name.
 
