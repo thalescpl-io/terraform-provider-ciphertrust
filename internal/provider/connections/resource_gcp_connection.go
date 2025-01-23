@@ -48,7 +48,7 @@ func (r *resourceGCPConnection) Schema(_ context.Context, _ resource.SchemaReque
 			},
 			"key_file": schema.StringAttribute{
 				Required:    true,
-				Description: "The contents of private key file of a GCP service account.",
+				Description: "The private key JSON file of a Google Cloud Platform (GCP) service account can be provided either as a JSON file or as a string.",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -138,11 +138,16 @@ func (r *resourceGCPConnection) Create(ctx context.Context, req resource.CreateR
 	}
 	payload.Meta = gcpMetadataPayload
 
-	var gcpProducts []string
-	for _, product := range plan.Products {
-		gcpProducts = append(gcpProducts, product.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var gcpProducts []string
+		diags = plan.Products.ElementsAs(ctx, &gcpProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = gcpProducts
 	}
-	payload.Products = gcpProducts
 
 	if plan.CloudName.ValueString() != "" && plan.CloudName.ValueString() != types.StringNull().ValueString() {
 		payload.CloudName = plan.CloudName.ValueString()
@@ -250,11 +255,16 @@ func (r *resourceGCPConnection) Update(ctx context.Context, req resource.UpdateR
 	}
 	payload.Meta = gcpMetadataPayload
 
-	var gcpProducts []string
-	for _, product := range plan.Products {
-		gcpProducts = append(gcpProducts, product.ValueString())
+	if !plan.Products.IsNull() && !plan.Products.IsUnknown() {
+		var gcpProducts []string
+		diags = plan.Products.ElementsAs(ctx, &gcpProducts, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			tflog.Debug(ctx, fmt.Sprintf("Error converting products: %v", resp.Diagnostics.Errors()))
+			return
+		}
+		payload.Products = gcpProducts
 	}
-	payload.Products = gcpProducts
 
 	if plan.CloudName.ValueString() != "" && plan.CloudName.ValueString() != types.StringNull().ValueString() {
 		payload.CloudName = plan.CloudName.ValueString()
@@ -373,4 +383,5 @@ func getGcpParamsFromResponse(response string, diag *diag.Diagnostics, data *GCP
 	data.PrivateKeyID = types.StringValue(gjson.Get(response, "private_key_id").String())
 	data.Labels = common.ParseMap(response, diag, "labels")
 	data.Meta = common.ParseMap(response, diag, "meta")
+	data.Products = common.ParseArray(response, "products")
 }

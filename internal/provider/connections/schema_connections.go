@@ -124,28 +124,28 @@ type CMCreateConnectionResponseCommon struct {
 
 type AzureConnectionTFSDK struct {
 	CMCreateConnectionResponseCommonTFSDK
-	ID                       types.String   `tfsdk:"id"`
-	ClientID                 types.String   `tfsdk:"client_id"`
-	Name                     types.String   `tfsdk:"name"`
-	TenantID                 types.String   `tfsdk:"tenant_id"`
-	ActiveDirectoryEndpoint  types.String   `tfsdk:"active_directory_endpoint"`
-	AzureStackConnectionType types.String   `tfsdk:"azure_stack_connection_type"`
-	AzureStackServerCert     types.String   `tfsdk:"azure_stack_server_cert"`
-	CertDuration             types.Int64    `tfsdk:"cert_duration"`
-	Certificate              types.String   `tfsdk:"certificate"`
-	ClientSecret             types.String   `tfsdk:"client_secret"`
-	CloudName                types.String   `tfsdk:"cloud_name"`
-	Description              types.String   `tfsdk:"description"`
-	ExternalCertificateUsed  types.Bool     `tfsdk:"external_certificate_used"`
-	IsCertificateUsed        types.Bool     `tfsdk:"is_certificate_used"`
-	KeyVaultDNSSuffix        types.String   `tfsdk:"key_vault_dns_suffix"`
-	Labels                   types.Map      `tfsdk:"labels"`
-	ManagementURL            types.String   `tfsdk:"management_url"`
-	Meta                     types.Map      `tfsdk:"meta"`
-	Products                 []types.String `tfsdk:"products"`
-	ResourceManagerURL       types.String   `tfsdk:"resource_manager_url"`
-	VaultResourceURL         types.String   `tfsdk:"vault_resource_url"`
-	CertificateThumbprint    types.String   `tfsdk:"certificate_thumbprint"`
+	ID                       types.String `tfsdk:"id"`
+	ClientID                 types.String `tfsdk:"client_id"`
+	Name                     types.String `tfsdk:"name"`
+	TenantID                 types.String `tfsdk:"tenant_id"`
+	ActiveDirectoryEndpoint  types.String `tfsdk:"active_directory_endpoint"`
+	AzureStackConnectionType types.String `tfsdk:"azure_stack_connection_type"`
+	AzureStackServerCert     types.String `tfsdk:"azure_stack_server_cert"`
+	CertDuration             types.Int64  `tfsdk:"cert_duration"`
+	Certificate              types.String `tfsdk:"certificate"`
+	ClientSecret             types.String `tfsdk:"client_secret"`
+	CloudName                types.String `tfsdk:"cloud_name"`
+	Description              types.String `tfsdk:"description"`
+	ExternalCertificateUsed  types.Bool   `tfsdk:"external_certificate_used"`
+	IsCertificateUsed        types.Bool   `tfsdk:"is_certificate_used"`
+	KeyVaultDNSSuffix        types.String `tfsdk:"key_vault_dns_suffix"`
+	Labels                   types.Map    `tfsdk:"labels"`
+	ManagementURL            types.String `tfsdk:"management_url"`
+	Meta                     types.Map    `tfsdk:"meta"`
+	Products                 types.List   `tfsdk:"products"`
+	ResourceManagerURL       types.String `tfsdk:"resource_manager_url"`
+	VaultResourceURL         types.String `tfsdk:"vault_resource_url"`
+	CertificateThumbprint    types.String `tfsdk:"certificate_thumbprint"`
 }
 
 type AzureConnectionJSON struct {
@@ -176,16 +176,16 @@ type AzureConnectionJSON struct {
 
 type GCPConnectionTFSDK struct {
 	CMCreateConnectionResponseCommonTFSDK
-	ID           types.String   `tfsdk:"id"`
-	Name         types.String   `tfsdk:"name"`
-	Products     []types.String `tfsdk:"products"`
-	Meta         types.Map      `tfsdk:"meta"`
-	Description  types.String   `tfsdk:"description"`
-	Labels       types.Map      `tfsdk:"labels"`
-	CloudName    types.String   `tfsdk:"cloud_name"`
-	KeyFile      types.String   `tfsdk:"key_file"`
-	ClientEmail  types.String   `tfsdk:"client_email"`
-	PrivateKeyID types.String   `tfsdk:"private_key_id"`
+	ID           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Products     types.List   `tfsdk:"products"`
+	Meta         types.Map    `tfsdk:"meta"`
+	Description  types.String `tfsdk:"description"`
+	Labels       types.Map    `tfsdk:"labels"`
+	CloudName    types.String `tfsdk:"cloud_name"`
+	KeyFile      types.String `tfsdk:"key_file"`
+	ClientEmail  types.String `tfsdk:"client_email"`
+	PrivateKeyID types.String `tfsdk:"private_key_id"`
 }
 
 type GCPConnectionJSON struct {
