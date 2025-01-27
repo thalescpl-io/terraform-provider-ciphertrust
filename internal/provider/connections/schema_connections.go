@@ -11,13 +11,10 @@ type IAMRoleAnywhereTFSDK struct {
 }
 
 type AWSConnectionModelTFSDK struct {
+	CMCreateConnectionResponseCommonTFSDK
 	ID                      types.String          `tfsdk:"id"`
-	URI                     types.String          `tfsdk:"uri"`
-	Account                 types.String          `tfsdk:"account"`
 	Application             types.String          `tfsdk:"application"`
 	DevAccount              types.String          `tfsdk:"dev_account"`
-	CreatedAt               types.String          `tfsdk:"created_at"`
-	UpdatedAt               types.String          `tfsdk:"updated_at"`
 	Name                    types.String          `tfsdk:"name"`
 	Description             types.String          `tfsdk:"description"`
 	AccessKeyID             types.String          `tfsdk:"access_key_id"`
@@ -43,6 +40,9 @@ type IAMRoleAnywhereJSON struct {
 }
 
 type AWSConnectionModelJSON struct {
+	CMCreateConnectionResponseCommon
+	Application             types.String           `tfsdk:"application"`
+	DevAccount              types.String           `tfsdk:"dev_account"`
 	ID                      string                 `json:"id"`
 	Name                    string                 `json:"name"`
 	Description             string                 `json:"description"`
@@ -55,7 +55,7 @@ type AWSConnectionModelJSON struct {
 	IsRoleAnywhere          bool                   `json:"is_role_anywhere"`
 	IAMRoleAnywhere         *IAMRoleAnywhereJSON   `json:"iam_role_anywhere"`
 	Labels                  map[string]interface{} `json:"labels"`
-	Meta                    map[string]interface{} `json:"meta"`
+	Meta                    interface{}            `json:"meta"`
 	Products                []string               `json:"products"`
 	SecretAccessKey         string                 `json:"secret_access_key"`
 }
