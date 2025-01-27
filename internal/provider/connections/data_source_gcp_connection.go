@@ -146,12 +146,13 @@ func (d *dataSourceGCPConnection) Read(ctx context.Context, req datasource.ReadR
 			},
 			ID:   types.StringValue(gcp.ID),
 			Name: types.StringValue(gcp.Name),
-			Products: func() []types.String {
-				var products []types.String
+			Products: func() types.List {
+				var productValues []attr.Value
 				for _, product := range gcp.Products {
-					products = append(products, types.StringValue(product))
+					productValues = append(productValues, types.StringValue(product))
 				}
-				return products
+				listValue, _ := types.ListValue(types.StringType, productValues)
+				return listValue
 			}(),
 			Description:  types.StringValue(gcp.Description),
 			CloudName:    types.StringValue(gcp.CloudName),
