@@ -297,6 +297,7 @@ func (p *ciphertrustProvider) DataSources(_ context.Context) []func() datasource
 		connections.NewDataSourceGCPConnection,
 		connections.NewDataSourceAzureConnection,
 		cm.NewDataSourceScheduler,
+		connections.NewDataSourceAWSConnection,
 	}
 }
 

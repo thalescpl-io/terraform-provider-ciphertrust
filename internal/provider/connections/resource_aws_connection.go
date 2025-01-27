@@ -47,28 +47,12 @@ func (r *resourceCCKMAWSConnection) Schema(_ context.Context, _ resource.SchemaR
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"uri": schema.StringAttribute{
-				Description: "A human readable unique identifier of the resource",
-				Computed:    true,
-			},
-			"account": schema.StringAttribute{
-				Description: "The account which owns this resource.",
-				Computed:    true,
-			},
 			"dev_account": schema.StringAttribute{
 				Description: "The developer account which owns this resource's application.",
 				Computed:    true,
 			},
 			"application": schema.StringAttribute{
 				Description: "The application this resource belongs to.",
-				Computed:    true,
-			},
-			"created_at": schema.StringAttribute{
-				Description: "Date/time the application was created",
-				Computed:    true,
-			},
-			"updated_at": schema.StringAttribute{
-				Description: "Date/time the application was updated",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -112,30 +96,29 @@ func (r *resourceCCKMAWSConnection) Schema(_ context.Context, _ resource.SchemaR
 				Optional:    true,
 				Description: "Description about the connection",
 			},
-			"iam_role_anywhere": schema.ListNestedAttribute{
+
+			"iam_role_anywhere": schema.SingleNestedAttribute{
 				Optional: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"anywhere_role_arn": schema.StringAttribute{
-							Required:    true,
-							Description: "Specify AWS IAM Anywhere Role ARN",
-						},
-						"certificate": schema.StringAttribute{
-							Required:    true,
-							Description: "Upload the external certificate for AWS IAM Anywhere Cloud connections. This option is used when \"role_anywhere\" is set to \"true\".",
-						},
-						"profile_arn": schema.StringAttribute{
-							Required:    true,
-							Description: "Specify AWS IAM Anywhere Profile ARN",
-						},
-						"trust_anchor_arn": schema.StringAttribute{
-							Required:    true,
-							Description: "Specify AWS IAM Anywhere Trust Anchor ARN",
-						},
-						"private_key": schema.StringAttribute{
-							Optional:    true,
-							Description: "The private key associated with the certificate",
-						},
+				Attributes: map[string]schema.Attribute{
+					"anywhere_role_arn": schema.StringAttribute{
+						Required:    true,
+						Description: "Specify AWS IAM Anywhere Role ARN",
+					},
+					"certificate": schema.StringAttribute{
+						Required:    true,
+						Description: "Upload the external certificate for AWS IAM Anywhere Cloud connections. This option is used when \"role_anywhere\" is set to \"true\".",
+					},
+					"profile_arn": schema.StringAttribute{
+						Required:    true,
+						Description: "Specify AWS IAM Anywhere Profile ARN",
+					},
+					"trust_anchor_arn": schema.StringAttribute{
+						Required:    true,
+						Description: "Specify AWS IAM Anywhere Trust Anchor ARN",
+					},
+					"private_key": schema.StringAttribute{
+						Optional:    true,
+						Description: "The private key associated with the certificate",
 					},
 				},
 			},
@@ -162,6 +145,17 @@ func (r *resourceCCKMAWSConnection) Schema(_ context.Context, _ resource.SchemaR
 				Optional:    true,
 				Description: "Secret associated with the access key ID of the AWS user",
 			},
+			//common response parameters (optional)
+			"uri":                   schema.StringAttribute{Computed: true},
+			"account":               schema.StringAttribute{Computed: true},
+			"created_at":            schema.StringAttribute{Computed: true},
+			"updated_at":            schema.StringAttribute{Computed: true},
+			"service":               schema.StringAttribute{Computed: true},
+			"category":              schema.StringAttribute{Computed: true},
+			"resource_url":          schema.StringAttribute{Computed: true},
+			"last_connection_ok":    schema.BoolAttribute{Computed: true},
+			"last_connection_error": schema.StringAttribute{Computed: true},
+			"last_connection_at":    schema.StringAttribute{Computed: true},
 		},
 	}
 }
@@ -279,6 +273,12 @@ func (r *resourceCCKMAWSConnection) Create(ctx context.Context, req resource.Cre
 	plan.Application = types.StringValue(gjson.Get(response, "application").String())
 	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
 	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.Category = types.StringValue(gjson.Get(response, "category").String())
+	plan.Service = types.StringValue(gjson.Get(response, "service").String())
+	plan.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	plan.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	plan.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	plan.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_aws_connection.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
@@ -317,6 +317,12 @@ func (r *resourceCCKMAWSConnection) Read(ctx context.Context, req resource.ReadR
 	state.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
 	state.Name = types.StringValue(gjson.Get(response, "name").String())
 	state.Description = types.StringValue(gjson.Get(response, "description").String())
+	state.Category = types.StringValue(gjson.Get(response, "category").String())
+	state.Service = types.StringValue(gjson.Get(response, "service").String())
+	state.ResourceURL = types.StringValue(gjson.Get(response, "resource_url").String())
+	state.LastConnectionOK = types.BoolValue(gjson.Get(response, "last_connection_ok").Bool())
+	state.LastConnectionError = types.StringValue(gjson.Get(response, "last_connection_error").String())
+	state.LastConnectionAt = types.StringValue(gjson.Get(response, "last_connection_at").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_aws_connection.go -> Read]["+id+"]")
 }
