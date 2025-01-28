@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
-// ObjectUseStateForUnknown is a custom plan modifier for SingleNestedAttribute.
+// ListUseStateForUnknown is a custom plan modifier for SingleNestedAttribute.
 type ListUseStateForUnknown struct{}
 
 func (m ListUseStateForUnknown) Description(ctx context.Context) string {
