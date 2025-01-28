@@ -529,14 +529,8 @@ func getParamsFromResponse(response string, plan *CreateJobConfigParamsTFSDK) {
 		dbParams.Description = types.StringValue(gjson.Get(response, "job_config_params.description").String())
 		dbParams.DoSCP = types.BoolValue(gjson.Get(response, "job_config_params.do_scp").Bool())
 		dbParams.TiedToHSM = types.BoolValue(gjson.Get(response, "job_config_params.tiedToHSM").Bool()) // Corrected key
-
-		if gjson.Get(response, "job_config_params.retentionCount").Exists() {
-			dbParams.RetentionCount = types.Int64Value(gjson.Get(response, "job_config_params.retentionCount").Int())
-		}
-
-		if gjson.Get(response, "job_config_params.scope").Exists() {
-			dbParams.Scope = types.StringValue(gjson.Get(response, "job_config_params.scope").String())
-		}
+		dbParams.RetentionCount = types.Int64Value(gjson.Get(response, "job_config_params.retentionCount").Int())
+		dbParams.Scope = types.StringValue(gjson.Get(response, "job_config_params.scope").String())
 
 		// Parse filters
 		filtersArray := gjson.Get(response, "job_config_params.filters").Array()
