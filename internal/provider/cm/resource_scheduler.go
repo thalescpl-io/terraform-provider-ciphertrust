@@ -80,10 +80,12 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: runAt,
 			},
 			"description": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: "Description for the job configuration.",
 			},
 			"run_on": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: "Default is 'any'. For database_backup, the default will be the current node if in a cluster.",
 			},
@@ -93,6 +95,7 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "By default, the job configuration starts in an active state. True disables the job configuration.",
 			},
 			"start_date": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: "Date the job configuration becomes active. RFC3339 format. For example, 2018-10-02T14:24:37.436073Z",
 				Validators: []validator.String{
@@ -103,6 +106,7 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"end_date": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: "Date the job configuration becomes inactive. RFC3339 format. For example, 2018-10-02T14:24:37.436073Z",
 				Validators: []validator.String{
@@ -114,39 +118,54 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 			},
 
 			"database_backup_params": schema.SingleNestedAttribute{
-				Optional:    true,
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.Object{
+					common.NewObjectUseStateForUnknown(),
+				},
 				Description: "Database backup operation specific arguments. Should be JSON-serializable. Required only for \"database_backup\" operations. Not allowed for other operations.",
 				Attributes: map[string]schema.Attribute{
 					"tied_to_hsm": schema.BoolAttribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "If true, the system backup can only be restored to instances that use the same HSM partition. Valid only with the system scoped backup.",
 					},
 					"scope": schema.StringAttribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "Scope of the backup to be taken - system (default) or domain.",
 					},
 					"retention_count": schema.Int64Attribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "Number of backups saved for this job config. Default is an unlimited quantity.",
 					},
 					"do_scp": schema.BoolAttribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "If true, the system backup will also be transferred to the external server via SCP.",
 					},
 					"description": schema.StringAttribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "User defined description associated with the backup. This is stored along with the backup, and is returned while retrieving the backup information, or while listing backups. Users may find it useful to store various types of information here: a backup name or description, ID of the HSM the backup is tied to, etc.",
 					},
 					"connection": schema.StringAttribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "Name or ID of the SCP connection which stores the details for SCP server.",
 					},
 					"backup_key": schema.StringAttribute{
+						Computed:    true,
 						Optional:    true,
 						Description: "ID of backup key used for encrypting the backup. The default backup key is used if this is not specified.",
 					},
 					"filters": schema.ListNestedAttribute{
-						Optional:    true,
+						Optional: true,
+						Computed: true,
+						PlanModifiers: []planmodifier.List{
+							common.NewListUseStateForUnknown(),
+						},
 						Description: filterDescription,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -156,6 +175,7 @@ func (r *resourceScheduler) Schema(_ context.Context, _ resource.SchemaRequest, 
 								},
 								"resource_query": schema.StringAttribute{
 									Optional:    true,
+									Computed:    true,
 									Description: resourceQueryDescription,
 								},
 							},
@@ -258,14 +278,8 @@ func (r *resourceScheduler) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
-	plan.Application = types.StringValue(gjson.Get(response, "application").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Disabled = types.BoolValue(gjson.Get(response, "disabled").Bool())
+
+	getParamsFromResponse(response, &plan)
 
 	tflog.Debug(ctx, "[resource_scheduler.go -> Create Output]["+response+"]")
 
@@ -288,14 +302,23 @@ func (r *resourceScheduler) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	_, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_SCHEDULER_JOB_CONFIGS)
+	response, err := r.client.GetById(ctx, id, state.ID.ValueString(), common.URL_SCHEDULER_JOB_CONFIGS)
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_scheduler.go -> Read]["+id+"]")
 		resp.Diagnostics.AddError("Read Error", "Error fetching scheduler job configs : "+err.Error())
 		return
 	}
+	getParamsFromResponse(response, &state)
+	state.Name = types.StringValue(gjson.Get(response, "name").String())
+	state.Operation = types.StringValue(gjson.Get(response, "operation").String())
+	state.RunAt = types.StringValue(gjson.Get(response, "run_at").String())
 
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_scheduler.go -> Read]["+id+"]")
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 }
 
@@ -378,14 +401,7 @@ func (r *resourceScheduler) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	plan.ID = types.StringValue(gjson.Get(response, "id").String())
-	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
-	plan.Account = types.StringValue(gjson.Get(response, "account").String())
-	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
-	plan.Application = types.StringValue(gjson.Get(response, "application").String())
-	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
-	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
-	plan.Disabled = types.BoolValue(gjson.Get(response, "disabled").Bool())
+	getParamsFromResponse(response, &plan)
 
 	tflog.Debug(ctx, "[resource_scheduler.go -> Update Output]["+response+"]")
 
@@ -490,4 +506,48 @@ func getDatabaseOperationBackupParams(plan CreateJobConfigParamsTFSDK) *Database
 		return &databaseBackupParams
 	}
 	return nil
+}
+
+func getParamsFromResponse(response string, plan *CreateJobConfigParamsTFSDK) {
+	plan.ID = types.StringValue(gjson.Get(response, "id").String())
+	plan.URI = types.StringValue(gjson.Get(response, "uri").String())
+	plan.Account = types.StringValue(gjson.Get(response, "account").String())
+	plan.DevAccount = types.StringValue(gjson.Get(response, "devAccount").String())
+	plan.Application = types.StringValue(gjson.Get(response, "application").String())
+	plan.UpdatedAt = types.StringValue(gjson.Get(response, "updatedAt").String())
+	plan.CreatedAt = types.StringValue(gjson.Get(response, "createdAt").String())
+	plan.Disabled = types.BoolValue(gjson.Get(response, "disabled").Bool())
+	plan.Description = types.StringValue(gjson.Get(response, "description").String())
+	plan.RunOn = types.StringValue(gjson.Get(response, "run_on").String())
+	plan.StartDate = types.StringValue(gjson.Get(response, "start_date").String())
+	plan.EndDate = types.StringValue(gjson.Get(response, "end_date").String())
+
+	if gjson.Get(response, "job_config_params").Exists() {
+		dbParams := &DatabaseBackupParamsTFSDK{}
+		dbParams.BackupKey = types.StringValue(gjson.Get(response, "job_config_params.backupKey").String())
+		dbParams.Connection = types.StringValue(gjson.Get(response, "job_config_params.connection").String())
+		dbParams.Description = types.StringValue(gjson.Get(response, "job_config_params.description").String())
+		dbParams.DoSCP = types.BoolValue(gjson.Get(response, "job_config_params.do_scp").Bool())
+		dbParams.TiedToHSM = types.BoolValue(gjson.Get(response, "job_config_params.tiedToHSM").Bool()) // Corrected key
+
+		if gjson.Get(response, "job_config_params.retentionCount").Exists() {
+			dbParams.RetentionCount = types.Int64Value(gjson.Get(response, "job_config_params.retentionCount").Int())
+		}
+
+		if gjson.Get(response, "job_config_params.scope").Exists() {
+			dbParams.Scope = types.StringValue(gjson.Get(response, "job_config_params.scope").String())
+		}
+
+		// Parse filters
+		filtersArray := gjson.Get(response, "job_config_params.filters").Array()
+		var filters []BackupFilterTFSDK
+		for _, filter := range filtersArray {
+			filters = append(filters, BackupFilterTFSDK{
+				ResourceType:  types.StringValue(filter.Get("resourceType").String()),
+				ResourceQuery: types.StringValue(filter.Get("resourceQuery").Raw),
+			})
+		}
+		dbParams.Filters = filters
+		plan.DatabaseBackupParams = dbParams
+	}
 }
