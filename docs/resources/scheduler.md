@@ -82,6 +82,9 @@ For example:
      filters = [
       {
         resource_type = "customer_fragments"
-        resource_query = "{\"ids\": [\"56fc2127-3a96-428e-b93b-ab169728c23c\", \"a6c8d8eb-1b69-42f0-97d7-4f0845fbf602\"]}"
+        resource_query = jsonencode({
+          ids = ["56fc2127-3a96-428e-b93b-ab169728c23c", "a6c8d8eb-1b69-42f0-97d7-4f0845fbf602"]
+        })
       }
     ]
+NOTE: resource_query has to be json encoded. 
