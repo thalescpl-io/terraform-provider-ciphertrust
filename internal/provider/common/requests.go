@@ -160,6 +160,31 @@ func (c *Client) PostDataV2(ctx context.Context, uuid string, endpoint string, d
 	return string(body), nil
 }
 
+func (c *Client) PutData(ctx context.Context, uuid string, endpoint string, data []byte) (string, error) {
+	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> PutData]["+uuid+"]")
+	var payload io.Reader
+	if len(data) == 0 {
+		payload = nil
+	} else {
+		payload = bytes.NewBuffer(data)
+	}
+
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/%s", c.CipherTrustURL, endpoint), payload)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> PutData]["+uuid+"]")
+		return "", err
+	}
+
+	body, err := c.doRequest(ctx, uuid, req, nil)
+	if err != nil {
+		tflog.Debug(ctx, ERR_METHOD_END+err.Error()+" [requests.go -> PutData]["+uuid+"]")
+		return "", err
+	}
+	tflog.Trace(ctx, MSG_METHOD_END+"[requests.go -> PutData]["+uuid+"]")
+
+	return string(body), nil
+}
+
 func (c *Client) UpdateData(ctx context.Context, uuid string, endpoint string, data []byte, id string) (string, error) {
 	tflog.Trace(ctx, MSG_METHOD_START+"[requests.go -> UpdateData]["+uuid+"]")
 	var payload io.Reader

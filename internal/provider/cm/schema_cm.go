@@ -450,7 +450,7 @@ type CMDomainTFSDK struct {
 	AllowUserManagement types.Bool     `tfsdk:"allow_user_management"`
 	HSMConnectionId     types.String   `tfsdk:"hsm_connection_id"`
 	HSMKEKLabel         types.String   `tfsdk:"hsm_kek_label"`
-	Meta                types.Map      `tfsdk:"meta"`
+	Meta                types.Map      `tfsdk:"meta_data"`
 	ParentCAId          types.String   `tfsdk:"parent_ca_id"`
 	URI                 types.String   `tfsdk:"uri"`
 	Account             types.String   `tfsdk:"account"`
@@ -839,4 +839,207 @@ type CreateJobConfigParamsListJSON struct {
 	StartDate            time.Time                 `json:"start_date"`
 	EndDate              time.Time                 `json:"end_date"`
 	DatabaseBackupParams *DatabaseBackupParamsJSON `json:"job_config_params"`
+}
+
+type CMPropertyTFSDK struct {
+	Name        types.String `tfsdk:"name"`
+	Value       types.String `tfsdk:"value"`
+	Description types.String `tfsdk:"description"`
+}
+
+type CMPropertyJSON struct {
+	Value string `json:"value"`
+}
+
+type CMPolicyConditionTFSDK struct {
+	Negate types.Bool     `tfsdk:"negate"`
+	Op     types.String   `tfsdk:"op"`
+	Path   types.String   `tfsdk:"path"`
+	Values []types.String `tfsdk:"values"`
+}
+type CMPolicyTFSDK struct {
+	ID                        types.String             `tfsdk:"id"`
+	Actions                   []types.String           `tfsdk:"actions"`
+	Allow                     types.Bool               `tfsdk:"allow"`
+	Conditions                []CMPolicyConditionTFSDK `tfsdk:"conditions"`
+	Effect                    types.String             `tfsdk:"effect"`
+	IncludeDescendantAccounts types.Bool               `tfsdk:"include_descendant_accounts"`
+	Name                      types.String             `tfsdk:"name"`
+	Resources                 []types.String           `tfsdk:"resources"`
+	URI                       types.String             `tfsdk:"uri"`
+	Account                   types.String             `tfsdk:"account"`
+	CreatedAt                 types.String             `tfsdk:"createdAt"`
+}
+type CMPolicyConditionJSON struct {
+	Negate bool     `json:"negate"`
+	Op     string   `json:"op"`
+	Path   string   `json:"path"`
+	Values []string `json:"values"`
+}
+type CMPolicyJSON struct {
+	ID                        string                  `json:"id"`
+	Actions                   []string                `json:"actions"`
+	Allow                     bool                    `json:"allow"`
+	Conditions                []CMPolicyConditionJSON `json:"conditions"`
+	Effect                    string                  `json:"effect"`
+	IncludeDescendantAccounts bool                    `json:"include_descendant_accounts"`
+	Name                      string                  `json:"name"`
+	Resources                 []string                `json:"resources"`
+	URI                       string                  `json:"uri"`
+	Account                   string                  `json:"account"`
+	CreatedAt                 string                  `json:"createdAt"`
+}
+
+type CMPolicyAttachmentTFSDK struct {
+	ID                types.String   `tfsdk:"id"`
+	Policy            types.String   `tfsdk:"policy"`
+	PrincipalSelector types.Map      `tfsdk:"principal_selector"`
+	Jurisdiction      types.String   `tfsdk:"jurisdiction"`
+	Actions           []types.String `tfsdk:"actions"`
+	Resources         []types.String `tfsdk:"resources"`
+	URI               types.String   `tfsdk:"uri"`
+	Account           types.String   `tfsdk:"account"`
+	CreatedAt         types.String   `tfsdk:"createdAt"`
+}
+
+type CMPolicyAttachmentJSON struct {
+	ID                string                 `json:"id"`
+	Policy            string                 `json:"policy"`
+	PrincipalSelector map[string]interface{} `json:"principalSelector"`
+	Jurisdiction      string                 `json:"jurisdiction"`
+	URI               string                 `json:"uri"`
+	Account           string                 `json:"account"`
+	CreatedAt         string                 `json:"createdAt"`
+}
+
+type CMSyslogTFSDK struct {
+	ID            types.String `tfsdk:"id"`
+	Host          types.String `tfsdk:"host"`
+	Transport     types.String `tfsdk:"transport"`
+	CACert        types.String `tfsdk:"ca_cert"`
+	MessageFormat types.String `tfsdk:"message_format"`
+	Port          types.Int64  `tfsdk:"port"`
+	Account       types.String `tfsdk:"account"`
+	CreatedAt     types.String `tfsdk:"created_at"`
+	UpdatedAt     types.String `tfsdk:"updated_at"`
+}
+
+type CMSyslogJSON struct {
+	ID            string `json:"id"`
+	Host          string `json:"host"`
+	Transport     string `json:"transport"`
+	CACert        string `json:"ca_cert"`
+	MessageFormat string `json:"message_format"`
+	Port          int64  `json:"port"`
+	Account       string `json:"account"`
+	CreatedAt     string `json:"created_at"`
+	UpdatedAt     string `json:"updated_at"`
+}
+
+type CMProxyTFSDK struct {
+	Certificate types.String   `tfsdk:"certificate"`
+	HTTPProxy   types.String   `tfsdk:"http_proxy"`
+	HTTPSProxy  types.String   `tfsdk:"https_proxy"`
+	NoProxy     []types.String `tfsdk:"no_proxy"`
+}
+
+type CMProxyJSON struct {
+	Certificate string   `json:"certificate"`
+	HTTPProxy   string   `json:"http_proxy"`
+	HTTPSProxy  string   `json:"https_proxy"`
+	NoProxy     []string `json:"no_proxy"`
+}
+
+type CMPasswordPolicyTFSDK struct {
+	Name                          types.String  `tfsdk:"policy_name"`
+	FailedLoginsLockoutThresholds []types.Int64 `tfsdk:"failed_logins_lockout_thresholds"`
+	InclusiveMaxTotalLength       types.Int64   `tfsdk:"inclusive_max_total_length"`
+	InclusiveMinDigits            types.Int64   `tfsdk:"inclusive_min_digits"`
+	InclusiveMinLowerCase         types.Int64   `tfsdk:"inclusive_min_lower_case"`
+	InclusiveMinOther             types.Int64   `tfsdk:"inclusive_min_other"`
+	InclusiveMinTotalLength       types.Int64   `tfsdk:"inclusive_min_total_length"`
+	InclusiveMinUpperCase         types.Int64   `tfsdk:"inclusive_min_upper_case"`
+	PasswordChangeMinDays         types.Int64   `tfsdk:"password_change_min_days"`
+	PasswordHistoryThreshold      types.Int64   `tfsdk:"password_history_threshold"`
+	PasswordLifetime              types.Int64   `tfsdk:"password_lifetime"`
+}
+
+type CMPasswordPolicyJSON struct {
+	Name                          string  `json:"policy_name"`
+	FailedLoginsLockoutThresholds []int64 `json:"failed_logins_lockout_thresholds"`
+	InclusiveMaxTotalLength       int64   `json:"inclusive_max_total_length"`
+	InclusiveMinDigits            int64   `json:"inclusive_min_digits"`
+	InclusiveMinLowerCase         int64   `json:"inclusive_min_lower_case"`
+	InclusiveMinOther             int64   `json:"inclusive_min_other"`
+	InclusiveMinTotalLength       int64   `json:"inclusive_min_total_length"`
+	InclusiveMinUpperCase         int64   `json:"inclusive_min_upper_case"`
+	PasswordChangeMinDays         int64   `json:"password_change_min_days"`
+	PasswordHistoryThreshold      int64   `json:"password_history_threshold"`
+	PasswordLifetime              int64   `json:"password_lifetime"`
+}
+type CMLogForwardersESOrLokiParamsTFSDK struct {
+	ActivityKMIP       types.String `tfsdk:"activity_kmip"`
+	ActivityNAE        types.String `tfsdk:"activity_nae"`
+	ClientAuditRecords types.String `tfsdk:"client_audit_records"`
+	ServerAuditRecords types.String `tfsdk:"server_audit_records"`
+}
+type CMLogForwardersESTFSDK struct {
+	Indices *CMLogForwardersESOrLokiParamsTFSDK `tfsdk:"indices"`
+}
+type CMLogForwardersLokiTFSDK struct {
+	Labels *CMLogForwardersESOrLokiParamsTFSDK `tfsdk:"labels"`
+}
+type CMLogForwardersSyslogParamsTFSDK struct {
+	ActivityKMIP       types.Bool `tfsdk:"activity_kmip"`
+	ActivityNAE        types.Bool `tfsdk:"activity_nae"`
+	ClientAuditRecords types.Bool `tfsdk:"client_audit_records"`
+	ServerAuditRecords types.Bool `tfsdk:"server_audit_records"`
+}
+type CMLogForwardersSyslogTFSDK struct {
+	SyslogParams *CMLogForwardersSyslogParamsTFSDK `tfsdk:"syslog_params"`
+}
+type CMLogForwardersTFSDK struct {
+	ID                  types.String                `tfsdk:"id"`
+	ConnectionID        types.String                `tfsdk:"connection_id"`
+	Name                types.String                `tfsdk:"name"`
+	Type                types.String                `tfsdk:"type"`
+	ElasticsearchParams *CMLogForwardersESTFSDK     `tfsdk:"elasticsearch_params"`
+	LokiParams          *CMLogForwardersLokiTFSDK   `tfsdk:"loki_params"`
+	SyslogParams        *CMLogForwardersSyslogTFSDK `tfsdk:"syslog_params"`
+	Account             types.String                `tfsdk:"account"`
+	CreatedAt           types.String                `tfsdk:"created_at"`
+	UpdatedAt           types.String                `tfsdk:"updated_at"`
+}
+type CMLogForwardersESOrLokiParamsJSON struct {
+	ActivityKMIP       string `json:"activity_kmip"`
+	ActivityNAE        string `json:"activity_nae"`
+	ClientAuditRecords string `json:"client_audit_records"`
+	ServerAuditRecords string `json:"server_audit_records"`
+}
+type CMLogForwardersESJSON struct {
+	Indices *CMLogForwardersESOrLokiParamsJSON `json:"indices"`
+}
+type CMLogForwardersLokiJSON struct {
+	Labels *CMLogForwardersESOrLokiParamsJSON `json:"labels"`
+}
+type CMLogForwardersSyslogParamsJSON struct {
+	ActivityKMIP       bool `json:"activity_kmip"`
+	ActivityNAE        bool `json:"activity_nae"`
+	ClientAuditRecords bool `json:"client_audit_records"`
+	ServerAuditRecords bool `json:"server_audit_records"`
+}
+type CMLogForwardersSyslogJSON struct {
+	SyslogParams *CMLogForwardersSyslogParamsJSON `json:"syslog_params"`
+}
+type CMLogForwardersJSON struct {
+	ID                  string                     `json:"id"`
+	ConnectionID        string                     `json:"connection_id"`
+	Name                string                     `json:"name"`
+	Type                string                     `json:"type"`
+	ElasticsearchParams *CMLogForwardersESJSON     `json:"elasticsearch_params"`
+	LokiParams          *CMLogForwardersLokiJSON   `json:"loki_params"`
+	SyslogParams        *CMLogForwardersSyslogJSON `json:"syslog_params"`
+	Account             string                     `json:"account"`
+	CreatedAt           string                     `json:"createdAt"`
+	UpdatedAt           string                     `json:"updatedAt"`
 }

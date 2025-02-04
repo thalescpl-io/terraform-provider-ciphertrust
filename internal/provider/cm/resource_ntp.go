@@ -161,6 +161,7 @@ func (r *resourceCMNTP) Read(ctx context.Context, req resource.ReadRequest, resp
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceCMNTP) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	resp.Diagnostics.AddError("Updating NTP configuration is not supported", "Unsupported Operation")
 }
 
 // Delete deletes the resource and removes the Terraform state on success.

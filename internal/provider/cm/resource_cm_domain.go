@@ -65,7 +65,7 @@ func (r *resourceCMDomain) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 				Description: "Optional name field for the domain KEK for an HSM-anchored domain. If not provided, a random UUID is assigned for KEK label.",
 			},
-			"meta": schema.MapAttribute{
+			"meta_data": schema.MapAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Description: "Optional end-user or service data stored with the domain. Should be JSON-serializable.",
@@ -235,6 +235,12 @@ func (r *resourceCMDomain) Update(ctx context.Context, req resource.UpdateReques
 	if plan.HSMConnectionId.ValueString() != "" && plan.HSMConnectionId.ValueString() != types.StringNull().ValueString() {
 		payload.HSMConnectionId = plan.HSMConnectionId.ValueString()
 	}
+
+	metadataPayload := make(map[string]interface{})
+	for k, v := range plan.Meta.Elements() {
+		metadataPayload[k] = v.(types.String).ValueString()
+	}
+	payload.Meta = metadataPayload
 
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
