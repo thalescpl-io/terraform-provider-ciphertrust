@@ -339,5 +339,13 @@ func (p *ciphertrustProvider) Resources(_ context.Context) []func() resource.Res
 		connections.NewResourceGCPConnection,
 		connections.NewResourceAzureConnection,
 		cm.NewResourceScheduler,
+		cm.NewResourceCMDomain,
+		cm.NewResourceCMLogForwarders,
+		cm.NewResourceCMPasswordPolicy,
+		cm.NewResourceCMPolicy,
+		cm.NewResourceCMPolicyAttachment,
+		cm.NewResourceCMProperty,
+		cm.NewResourceCMProxy,
+		cm.NewResourceCMSyslog,
 	}
 }
