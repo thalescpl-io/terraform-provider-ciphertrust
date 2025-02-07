@@ -51,13 +51,6 @@ resource "ciphertrust_cm_key" "cte_key" {
 					resource.TestCheckResourceAttrSet("ciphertrust_cm_key.cte_key", "id"),
 				),
 			},
-			//ImportState testing
-			/*{
-				ResourceName:            "ciphertrust_cm_key.cte_key",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"last_updated"},
-			},*/
 			// Update and Read testing
 			{
 				Config: providerConfig + `

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -104,6 +105,13 @@ func (r *resourceCMPasswordPolicy) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
+	var passwordPolicyName string
+	if plan.Name.ValueString() != "" && plan.Name.ValueString() != types.StringNull().ValueString() {
+		passwordPolicyName = plan.Name.ValueString()
+	} else {
+		passwordPolicyName = "global"
+	}
+
 	var thresholds []int64
 	for _, int := range plan.FailedLoginsLockoutThresholds {
 		thresholds = append(thresholds, int.ValueInt64())
@@ -148,18 +156,63 @@ func (r *resourceCMPasswordPolicy) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	response, err := r.client.UpdateDataV2(
+	var response string
+	responseUPD, errUPD := r.client.UpdateDataV2(
 		ctx,
-		id,
-		common.URL_CM_PASSWORD_POLICY+"/"+plan.Name.ValueString(),
+		passwordPolicyName,
+		common.URL_CM_PASSWORD_POLICY,
 		payloadJSON)
-	if err != nil {
-		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_password_policy.go -> Create]["+id+"]")
-		resp.Diagnostics.AddError(
-			"Error patching User's password policy on CipherTrust Manager: ",
-			"Could not patch User's password policy, unexpected error: "+err.Error(),
-		)
-		return
+	tflog.Debug(ctx, "[resource_password_policy.go -> Create][Payload and URL]"+
+		common.URL_CM_PASSWORD_POLICY+"/"+passwordPolicyName+
+		string(payloadJSON))
+	if errUPD != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+errUPD.Error()+" [resource_password_policy.go -> Create]["+id+"]")
+		if strings.Contains(errUPD.Error(), "404") {
+			var payloadMarshal CMPasswordPolicyJSON
+			errUnmarshal := json.Unmarshal(payloadJSON, &payloadMarshal)
+			if errUnmarshal != nil {
+				tflog.Debug(ctx, common.ERR_METHOD_END+errUnmarshal.Error()+" [resource_password_policy.go -> Create]["+id+"]")
+				resp.Diagnostics.AddError(
+					"Unable to unmarshal payload JSON",
+					errUnmarshal.Error(),
+				)
+				return
+			}
+			payloadMarshal.Name = passwordPolicyName
+
+			payloadMarshalJSON, errMarshal := json.Marshal(payloadMarshal)
+			if errMarshal != nil {
+				tflog.Debug(ctx, common.ERR_METHOD_END+errMarshal.Error()+" [resource_password_policy.go -> Create]["+id+"]")
+				resp.Diagnostics.AddError(
+					"Invalid data input: Password Policy Update",
+					errMarshal.Error(),
+				)
+				return
+			}
+
+			responseCreate, errCreate := r.client.PostDataV2(
+				ctx,
+				id,
+				common.URL_CM_PASSWORD_POLICY,
+				payloadMarshalJSON)
+			if errCreate != nil {
+				tflog.Debug(ctx, common.ERR_METHOD_END+errCreate.Error()+" [resource_password_policy.go -> Create]["+id+"]")
+				resp.Diagnostics.AddError(
+					"Error creating User's password policy on CipherTrust Manager: ",
+					"Could not create User's password policy, unexpected error: "+errCreate.Error(),
+				)
+			} else {
+				response = responseCreate
+			}
+		} else {
+			resp.Diagnostics.AddError(
+				"Error patching User's password policy on CipherTrust Manager: ",
+				"Could not patch User's password policy, unexpected error: "+errUPD.Error(),
+			)
+			return
+		}
+	} else {
+		response = responseUPD
 	}
 
 	tflog.Debug(ctx, "[resource_password_policy.go -> Create Output]["+response+"]")
