@@ -39,7 +39,6 @@ func (r *resourceCMProperty) Schema(_ context.Context, _ resource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Computed: true,
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -47,11 +46,11 @@ func (r *resourceCMProperty) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "Name of property",
 			},
 			"value": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "Value to be set",
 			},
 			"description": schema.StringAttribute{
-				Computed:    true,
+				Optional:    true,
 				Description: "Description of the property and its value",
 			},
 		},
@@ -99,12 +98,8 @@ func (r *resourceCMProperty) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	plan.Name = types.StringValue(gjson.Get(response, "name").String())
-	plan.Value = types.StringValue(gjson.Get(response, "value").String())
-	plan.Description = types.StringValue(gjson.Get(response, "description").String())
 
-	tflog.Debug(ctx, "[resource_property.go -> Create Output]["+response+"]")
-
+	tflog.Debug(ctx, "[resource_property.go -> Create Output -> Response]["+response+"]")
 	tflog.Trace(ctx, common.MSG_METHOD_END+"[resource_property.go -> Create]["+id+"]")
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -177,6 +172,7 @@ func (r *resourceCMProperty) Update(ctx context.Context, req resource.UpdateRequ
 		common.URL_CM_PROPERTIES+"/"+plan.Name.ValueString(),
 		payloadJSON,
 		"name")
+	tflog.Debug(ctx, "[resource_property.go -> Update -> Response]["+response+"]")
 	if err != nil {
 		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_property.go -> Update]["+plan.Name.ValueString()+"]")
 		resp.Diagnostics.AddError(
@@ -185,18 +181,38 @@ func (r *resourceCMProperty) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
-	plan.Value = types.StringValue(gjson.Get(response, "value").String())
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceCMProperty) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	resp.Diagnostics.AddError("Deleting Property is not supported", "Unsupported Operation")
+	var state CMPropertyTFSDK
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var payload []byte
+
+	response, err := r.client.PostDataV2(
+		ctx,
+		state.Name.ValueString(),
+		common.URL_CM_PROPERTIES+"/"+state.Name.ValueString()+"/reset",
+		payload)
+	tflog.Debug(ctx, "[resource_property.go -> delete -> Response]["+response+"]")
+	if err != nil {
+		tflog.Debug(ctx, common.ERR_METHOD_END+err.Error()+" [resource_property.go -> delete]["+state.Name.ValueString()+"]")
+		resp.Diagnostics.AddError(
+			"Error resetting property on CipherTrust Manager: ",
+			"Could not reset property "+state.Name.ValueString()+", unexpected error: "+err.Error(),
+		)
+		return
+	}
 }
 
 func (d *resourceCMProperty) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

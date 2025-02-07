@@ -30,6 +30,7 @@ resource "ciphertrust_policy_attachments" "policy_attachment" {
 		acct = "pers-jsmith"
 		user = "apitestuser"
 	}
+	depends_on = [ciphertrust_policies.policy]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
