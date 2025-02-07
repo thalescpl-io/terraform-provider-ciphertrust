@@ -868,7 +868,7 @@ type CMPolicyTFSDK struct {
 	Resources                 []types.String           `tfsdk:"resources"`
 	URI                       types.String             `tfsdk:"uri"`
 	Account                   types.String             `tfsdk:"account"`
-	CreatedAt                 types.String             `tfsdk:"createdAt"`
+	CreatedAt                 types.String             `tfsdk:"created_at"`
 }
 type CMPolicyConditionJSON struct {
 	Negate bool     `json:"negate"`
@@ -899,7 +899,7 @@ type CMPolicyAttachmentTFSDK struct {
 	Resources         []types.String `tfsdk:"resources"`
 	URI               types.String   `tfsdk:"uri"`
 	Account           types.String   `tfsdk:"account"`
-	CreatedAt         types.String   `tfsdk:"createdAt"`
+	CreatedAt         types.String   `tfsdk:"created_at"`
 }
 
 type CMPolicyAttachmentJSON struct {

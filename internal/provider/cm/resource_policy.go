@@ -61,10 +61,10 @@ func (r *resourceCMPolicy) Schema(_ context.Context, _ resource.SchemaRequest, r
 						"negate": schema.BoolAttribute{
 							Optional: true,
 						},
-						"op": schema.BoolAttribute{
+						"op": schema.StringAttribute{
 							Optional: true,
 						},
-						"path": schema.BoolAttribute{
+						"path": schema.StringAttribute{
 							Optional: true,
 						},
 						"values": schema.ListAttribute{

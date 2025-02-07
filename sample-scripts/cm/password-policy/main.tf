@@ -14,7 +14,8 @@ provider "ciphertrust" {
 	bootstrap = "no"
 }
 
-resource "ciphertrust_password_policy" "PasswordPolicy" {
+resource "ciphertrust_password_policy" "CustomPasswordPolicy" {
+	policy_name = "testCustomPolicyName"
     inclusive_min_upper_case = 1
     inclusive_min_lower_case = 1
     inclusive_min_digits = 1
@@ -27,6 +28,6 @@ resource "ciphertrust_password_policy" "PasswordPolicy" {
     password_change_min_days = 1
 }
 
-output "generalPolicy" {
-	value = ciphertrust_password_policy.PasswordPolicy.policy_name
+output "customPolicy" {
+	value = ciphertrust_password_policy.CustomPasswordPolicy.policy_name
 }

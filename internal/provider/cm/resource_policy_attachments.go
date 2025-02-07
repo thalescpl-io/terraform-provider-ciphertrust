@@ -45,20 +45,18 @@ func (r *resourceCMPolicyAttachment) Schema(_ context.Context, _ resource.Schema
 				},
 				Description: "The ID of this resource.",
 			},
-			"policy": schema.ListAttribute{
+			"policy": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID for the policy to be attached.",
-				ElementType: types.StringType,
 			},
 			"principal_selector": schema.MapAttribute{
 				ElementType: types.StringType,
 				Required:    true,
 				Description: "Selects which principals to apply the policy to. This can also be done using the conditions set while creating a policy.",
 			},
-			"jurisdiction": schema.ListAttribute{
+			"jurisdiction": schema.StringAttribute{
 				Optional:    true,
 				Description: "Jurisdiction to which the policy applies.",
-				ElementType: types.StringType,
 			},
 			"actions": schema.ListAttribute{
 				Optional:    true,
